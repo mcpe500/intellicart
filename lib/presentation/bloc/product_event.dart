@@ -12,13 +12,20 @@ class LoadProducts extends ProductEvent {}
 
 class LoadLocalProducts extends ProductEvent {}
 
-class CreateProduct extends ProductEvent {
+class CreateProductEvent extends ProductEvent {
   final Product product;
 
-  const CreateProduct(this.product);
+  const CreateProductEvent(this.product);
 
   @override
   List<Object> get props => [product];
 }
 
-class SyncProducts extends ProductEvent {}
+class SyncProductsEvent extends ProductEvent {
+  final List<Product> products;
+
+  const SyncProductsEvent(this.products);
+
+  @override
+  List<Object> get props => [products];
+}

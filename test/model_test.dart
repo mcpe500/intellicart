@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart/domain/entities/product.dart';
 
 void main() {
   group('Product Model', () {
@@ -46,6 +46,17 @@ void main() {
       expect(copiedProduct.description, equals('Copied Description'));
       expect(copiedProduct.price, equals(199.99));
       expect(copiedProduct.imageUrl, equals('https://example.com/image.jpg'));
+      
+      // Test equality
+      final product2 = Product(
+        id: 1,
+        name: 'Test Product',
+        description: 'Test Description',
+        price: 99.99,
+        imageUrl: 'https://example.com/image.jpg',
+      );
+      
+      expect(product, equals(product2));
     });
   });
 }

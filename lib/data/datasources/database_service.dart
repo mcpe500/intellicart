@@ -1,6 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart/domain/entities/product.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();

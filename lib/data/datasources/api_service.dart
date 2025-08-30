@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart/domain/entities/product.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:5000';
@@ -35,6 +35,41 @@ class ApiService {
         return Product.fromJson(jsonData);
       } else {
         throw Exception('Failed to create product: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+  
+  // Update an existing product
+  Future<Product> updateProduct(Product product) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/products/${product.id}'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(product.toJson()),
+      );
+      
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return Product.fromJson(jsonData);
+      } else {
+        throw Exception('Failed to update product: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to connect to the server: $e');
+    }
+  }
+  
+  // Delete a product
+  Future<void> deleteProduct(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/api/products/$id'),
+      );
+      
+      if (response.statusCode != 200 && response.statusCode != 204) {
+        throw Exception('Failed to delete product: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');

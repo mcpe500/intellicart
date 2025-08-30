@@ -17,12 +17,25 @@ The app follows clean architecture principles with a clear separation of concern
 
 ```
 lib/
-├── bloc/          # BLoC pattern implementation
-├── models/        # Data models
-├── screens/       # UI screens
-├── services/      # Business logic and data access
-└── main.dart      # Entry point
+├── data/
+│   ├── datasources/    # External data sources (API, database)
+│   ├── models/         # Data models (DTOs)
+│   └── repositories/   # Repository implementations
+├── domain/
+│   ├── entities/       # Business entities
+│   ├── repositories/   # Repository interfaces
+│   └── usecases/       # Business logic
+└── presentation/
+    ├── bloc/           # BLoC pattern implementation
+    ├── screens/        # UI screens
+    └── widgets/        # Reusable UI components
 ```
+
+### Clean Architecture Layers
+
+1. **Presentation Layer**: Contains UI components and BLoC for state management
+2. **Domain Layer**: Contains business logic, entities, and repository interfaces
+3. **Data Layer**: Contains implementations of repositories and data sources
 
 ### BLoC Pattern
 
@@ -36,9 +49,10 @@ The Business Logic Component (BLoC) pattern is used for state management:
 
 1. UI triggers events (LoadProducts, CreateProduct, etc.)
 2. ProductBloc processes events and manages state transitions
-3. Services handle data access (API calls and database operations)
-4. Models represent the data structures
-5. UI updates based on state changes
+3. Use cases execute business logic
+4. Repositories handle data access (API calls and database operations)
+5. Entities represent the business data
+6. UI updates based on state changes
 
 ## Dependencies
 
@@ -48,6 +62,7 @@ The Business Logic Component (BLoC) pattern is used for state management:
 - `path` - For handling file paths
 - `equatable` - For value equality comparisons
 - `flutter_dotenv` - For environment variable management
+- `mockito` - For mocking in tests
 
 ## Getting Started
 
@@ -60,6 +75,7 @@ The Business Logic Component (BLoC) pattern is used for state management:
 The app includes both unit tests and widget tests:
 
 - `model_test.dart` - Tests for data models
+- `usecase_test.dart` - Tests for use cases
 - `widget_test.dart` - Tests for UI components
 
 Run tests with `flutter test`.

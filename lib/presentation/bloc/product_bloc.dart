@@ -1,106 +1,64 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/presentation/bloc/product_event.dart';
 import 'package:intellicart/presentation/bloc/product_state.dart';
-import 'package:intellicart/domain/entities/product.dart';
-import 'package:intellicart/data/datasources/api_service.dart';
-import 'package:intellicart/data/datasources/database_service.dart';
+import 'package:intellicart/domain/usecases/get_all_products.dart';
+import 'package:intellicart/domain/usecases/create_product.dart';
+import 'package:intellicart/domain/usecases/sync_products.dart';
 
 class ProductBloc extends Bloc<ProductEvent, ProductState> {
-  final ApiService apiService;
-  final DatabaseService databaseService;
+  final GetAllProducts getAllProducts;
+  final CreateProduct createProductUseCase;
+  final SyncProducts syncProductsUseCase;
 
-  ProductBloc({required this.apiService, required this.databaseService}) : super(ProductInitial()) {
+  ProductBloc({
+    required this.getAllProducts,
+    required this.createProductUseCase,
+    required this.syncProductsUseCase,
+  }) : super(ProductInitial()) {
     on<LoadProducts>(_onLoadProducts);
-    on<CreateProduct>(_onCreateProduct);
+    on<CreateProductEvent>(_onCreateProduct);
     on<LoadLocalProducts>(_onLoadLocalProducts);
-    on<SyncProducts>(_onSyncProducts);
+    on<SyncProductsEvent>(_onSyncProducts);
   }
 
   Future<void> _onLoadProducts(LoadProducts event, Emitter<ProductState> emit) async {
     emit(ProductLoading());
     try {
-      // First, try to load from local database
-      final localProducts = await databaseService.readAll();
-      
-      // If we have local data, emit it immediately
-      if (localProducts.isNotEmpty) {
-        emit(ProductLoaded(localProducts));
-      }
-      
-      // Then try to fetch from API
-      final products = await apiService.getProducts();
-      
-      // Update local database with fresh data
-      await _updateLocalDatabase(products);
-      
-      // Emit the fresh data
+      final products = await getAllProducts();
       emit(ProductLoaded(products));
     } catch (e) {
-      // If API fails, try to load from local database
-      try {
-        final localProducts = await databaseService.readAll();
-        if (localProducts.isNotEmpty) {
-          emit(ProductLoaded(localProducts));
-        } else {
-          emit(ProductError('No products available'));
-        }
-      } catch (dbError) {
-        emit(ProductError('Failed to load products: ${e.toString()}'));
-      }
+      emit(ProductError('Failed to load products: ${e.toString()}'));
     }
   }
 
   Future<void> _onLoadLocalProducts(LoadLocalProducts event, Emitter<ProductState> emit) async {
     emit(ProductLoading());
     try {
-      final products = await databaseService.readAll();
+      // For this example, we'll just reload all products
+      // In a real app, you might have a separate use case for this
+      final products = await getAllProducts();
       emit(ProductLoaded(products));
     } catch (e) {
       emit(ProductError('Failed to load local products: ${e.toString()}'));
     }
   }
 
-  Future<void> _onCreateProduct(CreateProduct event, Emitter<ProductState> emit) async {
+  Future<void> _onCreateProduct(CreateProductEvent event, Emitter<ProductState> emit) async {
     try {
-      // Save to local database first
-      final localProduct = await databaseService.create(event.product);
-      
-      // Try to sync with API
-      try {
-        final newProduct = await apiService.createProduct(localProduct);
-        // Update local database with product from API (which might have an updated ID)
-        await databaseService.update(newProduct);
-        
-        // Reload all products to show the updated list
-        add(LoadProducts());
-      } catch (apiError) {
-        // If API fails, we still have the local product
-        // Reload all products to show the updated list
-        add(LoadLocalProducts());
-      }
+      await createProductUseCase(event.product);
+      // Reload all products to show the updated list
+      add(LoadProducts());
     } catch (e) {
       emit(ProductError('Failed to create product: ${e.toString()}'));
     }
   }
 
-  Future<void> _onSyncProducts(SyncProducts event, Emitter<ProductState> emit) async {
+  Future<void> _onSyncProducts(SyncProductsEvent event, Emitter<ProductState> emit) async {
     try {
-      final products = await apiService.getProducts();
-      await _updateLocalDatabase(products);
+      await syncProductsUseCase(event.products);
       add(LoadLocalProducts());
     } catch (e) {
       emit(ProductError('Failed to sync products: ${e.toString()}'));
-    }
-  }
-
-  Future<void> _updateLocalDatabase(List<Product> products) async {
-    // Clear existing data
-    final db = await databaseService.database;
-    await db.delete('products');
-    
-    // Insert fresh data
-    for (var product in products) {
-      await databaseService.create(product);
     }
   }
 }

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart/domain/entities/product.dart';
 
 abstract class ProductState extends Equatable {
   const ProductState();

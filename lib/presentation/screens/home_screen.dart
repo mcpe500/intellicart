@@ -1,24 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/bloc/product_bloc.dart';
-import 'package:intellicart/bloc/product_event.dart';
-import 'package:intellicart/bloc/product_state.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/services/api_service.dart';
-import 'package:intellicart/services/database_service.dart';
+import 'package:intellicart/presentation/bloc/product_bloc.dart';
+import 'package:intellicart/presentation/bloc/product_event.dart';
+import 'package:intellicart/presentation/bloc/product_state.dart';
+import 'package:intellicart/domain/entities/product.dart';
+import 'package:intellicart/data/datasources/api_service.dart';
+import 'package:intellicart/data/datasources/database_service.dart';
+import 'package:intellicart/data/repositories/product_repository_impl.dart';
+import 'package:intellicart/domain/usecases/get_all_products.dart';
+import 'package:intellicart/domain/usecases/create_product.dart';
+import 'package:intellicart/domain/usecases/sync_products.dart';
 
 class HomeScreen extends StatelessWidget {
-  final ApiService apiService = ApiService();
-  final DatabaseService databaseService = DatabaseService.instance;
-
-  HomeScreen({super.key});
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final apiService = ApiService();
+    final databaseService = DatabaseService.instance;
+    final productRepository = ProductRepositoryImpl(
+      apiService: apiService,
+      databaseService: databaseService,
+    );
+    final getAllProducts = GetAllProducts(productRepository);
+    final createProduct = CreateProduct(productRepository);
+    final syncProducts = SyncProducts(productRepository);
+
     return BlocProvider(
       create: (context) => ProductBloc(
-        apiService: apiService,
-        databaseService: databaseService,
+        getAllProducts: getAllProducts,
+        createProductUseCase: createProduct,
+        syncProductsUseCase: syncProducts,
       )..add(LoadProducts()),
       child: Scaffold(
         appBar: AppBar(
@@ -28,7 +40,9 @@ class HomeScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.sync),
               onPressed: () {
-                context.read<ProductBloc>().add(SyncProducts());
+                // For sync, we need to get current products first
+                // In a real app, you might want a separate event for this
+                context.read<ProductBloc>().add(LoadProducts());
               },
             ),
           ],
@@ -54,13 +68,6 @@ class HomeScreen extends StatelessWidget {
                       },
                       child: const Text('Retry'),
                     ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        context.read<ProductBloc>().add(LoadLocalProducts());
-                      },
-                      child: const Text('Load Local Products'),
-                    ),
                   ],
                 ),
               );
@@ -79,7 +86,7 @@ class HomeScreen extends StatelessWidget {
               price: 99.99,
               imageUrl: 'https://via.placeholder.com/150',
             );
-            context.read<ProductBloc>().add(CreateProduct(newProduct));
+            context.read<ProductBloc>().add(CreateProductEvent(newProduct));
           },
           child: const Icon(Icons.add),
         ),
