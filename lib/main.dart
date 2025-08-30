@@ -1,12 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:intellicart/presentation/screens/home_screen.dart';
-import 'package:intellicart/data/datasources/database_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize the database
-  await DatabaseService.instance.database;
+  // await DatabaseService.instance.database; // Commented out as DatabaseService is not implemented yet
   runApp(const MyApp());
+}
+
+// Simple placeholder HomeScreen widget
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Intellicart'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: const Center(
+        child: Text('Welcome to Intellicart!'),
+      ),
+    );
+  }
 }
 
 class MyApp extends StatelessWidget {
