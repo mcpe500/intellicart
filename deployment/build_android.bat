@@ -1,0 +1,1 @@
+@echo off\nREM build_android.bat - Build script for Android (Windows)\n\necho Building Android APK...\nflutter build apk --release\n\necho Building Android App Bundle...\nflutter build appbundle\n\necho Android builds completed!\necho APK location: build\\app\\outputs\\flutter-apk\\app-release.apk\necho App Bundle location: build\\app\\outputs\\bundle\\release\\app-release.aab

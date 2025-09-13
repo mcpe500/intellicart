@@ -50,6 +50,22 @@ dependencies:
   # SQLite database
   sqflite: ^2.3.3
   path: ^1.9.1
+  
+  # Firebase dependencies
+  firebase_core: ^2.14.0
+  cloud_firestore: ^4.8.1
+  firebase_auth: ^4.6.3
+  firebase_storage: ^11.2.3
+  firebase_messaging: ^14.6.3
+  firebase_analytics: ^10.4.3
+  firebase_crashlytics: ^3.3.3
+  
+  # Dependency injection
+  get_it: ^7.6.0
+  
+  # Voice recognition and text-to-speech
+  speech_to_text: ^6.1.1
+  flutter_tts: ^3.6.3
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +81,9 @@ dev_dependencies:
   # Mocking framework for tests
   mockito: ^5.4.4
   build_runner: ^2.4.9
+  
+  # Bloc testing
+  bloc_test: ^9.1.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

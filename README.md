@@ -90,4 +90,15 @@ Firestore provides offline persistence automatically:
 
 1. Data is cached locally and kept in sync when the device goes online  
 2. Reads and writes work even when offline  
-3. Changes are synchronized with the server when the connection is restored  
+3. Changes are synchronized with the server when the connection is restored
+
+## Backup and Recovery
+
+The application includes comprehensive backup and recovery capabilities:
+
+- Automatic database backups
+- Manual backup and restore operations
+- JSON export/import functionality
+- Backup management (list, delete)
+
+See [Backup Documentation](lib/core/services/backup/README.md) for more details.  
