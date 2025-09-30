@@ -1,6 +1,6 @@
 {
-    "name": "intellicart",
-    "short_name": "intellicart",
+    "name": "intellicart_frontend",
+    "short_name": "intellicart_frontend",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
