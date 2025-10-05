@@ -1,28 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:intellicart/screens/ecommerce_home_page.dart'; // Adjust the import path as needed
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize the database
-  // await DatabaseService.instance.database; // Commented out as DatabaseService is not implemented yet
   runApp(const MyApp());
-}
-
-// Simple placeholder HomeScreen widget
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Intellicart'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: const Center(
-        child: Text('Welcome to Intellicart!'),
-      ),
-    );
-  }
 }
 
 class MyApp extends StatelessWidget {
@@ -35,8 +16,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
+        fontFamily: 'Plus Jakarta Sans', // Apply the font family if you've added it
       ),
-      home: const HomeScreen(),
+      home: const EcommerceHomePage(), // Use your new modular page here
     );
   }
 }
