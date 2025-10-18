@@ -1,11 +1,11 @@
 // lib/screens/ecommerce_home_page.dart (UPDATED)
 import 'package:flutter/material.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/presentation/screens/buyer/ecommerce_search_page.dart';
-import 'package:intellicart/presentation/screens/buyer/product_details_page.dart';
-import 'package:intellicart/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
-import 'package:intellicart/presentation/screens/buyer/cart_page.dart'; // Import the new CartPage
-import 'package:intellicart/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_search_page.dart';
+import 'package:intellicart_frontend/presentation/screens/buyer/product_details_page.dart';
+import 'package:intellicart_frontend/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
+import 'package:intellicart_frontend/presentation/screens/buyer/cart_page.dart'; // Import the new CartPage
+import 'package:intellicart_frontend/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
 
 class EcommerceHomePage extends StatefulWidget {
   final List<Product> products;
@@ -269,7 +269,7 @@ class _ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withAlpha((255 * 0.1).round()),
               spreadRadius: 1,
               blurRadius: 3,
               offset: const Offset(0, 1),

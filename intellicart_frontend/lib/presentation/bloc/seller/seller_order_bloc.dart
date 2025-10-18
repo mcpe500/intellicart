@@ -1,8 +1,8 @@
 // lib/presentation/bloc/seller_order_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:intellicart/models/order.dart';
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart_frontend/models/order.dart';
+import 'package:intellicart_frontend/models/product.dart';
 
 // --- EVENTS ---
 abstract class SellerOrderEvent extends Equatable {

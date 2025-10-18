@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 // FIX: Changed to a direct package import for better path resolution.
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart_frontend/models/product.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});

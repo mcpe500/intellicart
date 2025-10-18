@@ -1,10 +1,10 @@
 // lib/presentation/screens/core/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/main.dart'; // For AppInitializer
-import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/presentation/screens/core/login_page.dart'; // For LoginPage
-import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart'; // <-- ADD THIS IMPORT
+import 'package:intellicart_frontend/main.dart'; // For AppInitializer
+import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
+import 'package:intellicart_frontend/presentation/screens/core/login_page.dart'; // For LoginPage
+import 'package:intellicart_frontend/presentation/screens/seller/seller_dashboard_page.dart'; // <-- ADD THIS IMPORT
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -236,7 +236,7 @@ class ProfilePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withAlpha((255 * 0.05).round()),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),

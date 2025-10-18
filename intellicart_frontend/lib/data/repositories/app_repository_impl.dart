@@ -1,7 +1,7 @@
 // lib/data/repositories/app_repository_impl.dart
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/data/repositories/app_repository.dart';
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/data/repositories/app_repository.dart';
 
 class AppRepositoryImpl implements AppRepository {
   static const String _appModeKey = 'app_mode';

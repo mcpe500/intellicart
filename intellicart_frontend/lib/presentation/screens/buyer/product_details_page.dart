@@ -1,8 +1,8 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/review.dart'; // Ensure Review model is imported
-import 'package:intellicart/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
+import 'package:intellicart_frontend/models/product.dart';
+
+import 'package:intellicart_frontend/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
@@ -150,9 +150,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 width: _currentPage == index ? 10.0 : 8.0,
                                 height: _currentPage == index ? 10.0 : 8.0,
                                 decoration: BoxDecoration(
-                                  color: _currentPage == index
-                                      ? Colors.white
-                                      : Colors.white.withOpacity(0.5),
+                                  color: Colors.white.withAlpha((255 * 0.5).round()),
                                   shape: BoxShape.circle,
                                 ),
                               );
@@ -347,7 +345,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withAlpha((255 * 0.05).round()),
                     blurRadius: 10,
                   )
                 ],

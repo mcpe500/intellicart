@@ -1,7 +1,7 @@
 // lib/data/datasources/sqlite_helper.dart
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart_frontend/models/product.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();

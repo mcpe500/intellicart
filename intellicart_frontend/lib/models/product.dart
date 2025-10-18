@@ -1,5 +1,5 @@
 // lib/models/product.dart
-import 'package:intellicart/models/review.dart'; // Import the new Review model
+import 'package:intellicart_frontend/models/review.dart'; // Import the new Review model
 
 class Product {
   final String name;

@@ -1,8 +1,8 @@
 // lib/data/datasources/api_service.dart
-import 'package:intellicart/data/datasources/mock_backend.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/user.dart';
-import 'package:intellicart/models/order.dart';
+import 'package:intellicart_frontend/data/datasources/mock_backend.dart';
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/models/user.dart';
+import 'package:intellicart_frontend/models/order.dart';
 
 class ApiService {
   final MockBackend _mockBackend = MockBackend();

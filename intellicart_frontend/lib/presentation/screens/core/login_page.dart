@@ -1,10 +1,10 @@
 // lib/presentation/screens/core/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/data/datasources/api_service.dart';
-import 'package:intellicart/models/user.dart';
-import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/main.dart'; // For AppInitializer
+import 'package:intellicart_frontend/data/datasources/api_service.dart';
+import 'package:intellicart_frontend/models/user.dart';
+import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
+import 'package:intellicart_frontend/main.dart'; // For AppInitializer
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

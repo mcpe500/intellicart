@@ -11,7 +11,7 @@ class EcommerceSearchPage extends StatelessWidget {
     const Color accentRed = Color(0xFFE57373);
     const Color lightGreyBackground = Color(0xFFF5F2F0);
     const Color greyIconColor = Color(0xFF8A7260);
-    const Color orangeAccent = Color(0xFFE65100);
+    
 
     return Scaffold(
       backgroundColor: Colors.white,

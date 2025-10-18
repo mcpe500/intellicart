@@ -1,8 +1,8 @@
 // lib/data/datasources/mock_backend.dart
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/review.dart';
-import 'package:intellicart/models/user.dart';
-import 'package:intellicart/models/order.dart';
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/models/review.dart';
+import 'package:intellicart_frontend/models/user.dart';
+import 'package:intellicart_frontend/models/order.dart';
 
 class MockBackend {
   // Mock data stores

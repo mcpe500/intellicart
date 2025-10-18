@@ -1,5 +1,5 @@
 // lib/models/order.dart
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart_frontend/models/product.dart';
 
 class Order {
   final String id;

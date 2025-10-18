@@ -1,13 +1,13 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/data/datasources/api_service.dart';
-import 'package:intellicart/data/repositories/app_repository_impl.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/presentation/screens/buyer/ecommerce_home_page.dart';
-import 'package:intellicart/presentation/screens/core/splash_screen.dart';
-import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart';
+import 'package:intellicart_frontend/data/datasources/api_service.dart';
+import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
+import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_home_page.dart';
+import 'package:intellicart_frontend/presentation/screens/core/splash_screen.dart';
+import 'package:intellicart_frontend/presentation/screens/seller/seller_dashboard_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

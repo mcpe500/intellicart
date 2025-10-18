@@ -1,8 +1,8 @@
 // lib/presentation/bloc/seller_product_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/review.dart';
+import 'package:intellicart_frontend/models/product.dart';
+
 
 // --- EVENTS ---
 abstract class SellerProductEvent extends Equatable {
