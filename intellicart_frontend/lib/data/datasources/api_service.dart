@@ -63,4 +63,10 @@ class ApiService {
     // Here, it just calls the mock backend
     return await _mockBackend.updateOrderStatus(orderId, status);
   }
+
+  Future<User?> getUserById(String userId) async {
+    // In a real app, this would make an HTTP request to a backend API
+    // Here, it just calls the mock backend
+    return await _mockBackend.getUserById(userId);
+  }
 }

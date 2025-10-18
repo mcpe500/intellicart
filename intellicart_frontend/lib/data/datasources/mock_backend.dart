@@ -6,6 +6,7 @@ import 'package:intellicart/models/order.dart';
 
 class MockBackend {
   // Mock data stores
+  // Private user data storage - users can only see their own data
   static List<User> _users = [
     User(
       id: '1',
@@ -20,6 +21,12 @@ class MockBackend {
       role: 'seller',
     ),
   ];
+  
+  // Password storage (in real app, use hashed passwords)
+  static Map<String, String> _passwords = {
+    'buyer@example.com': 'password123',
+    'seller@example.com': 'password123',
+  };
 
   static List<Product> _products = [
     Product(
@@ -126,20 +133,35 @@ class MockBackend {
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
     
-    // Simple mock login - in real app, this would make HTTP request
+    // Check if user exists
     final user = _users.firstWhere(
       (user) => user.email == email,
       orElse: () => throw Exception('User not found'),
     );
     
-    // In a real app, we'd verify password here
-    // For mock: just return the user if found
-    return user;
+    // Verify password
+    final storedPassword = _passwords[email];
+    if (storedPassword != password) {
+      throw Exception('Invalid password');
+    }
+    
+    // Return user without sensitive data (in real app, return a token instead)
+    return User(
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    );
   }
 
   Future<User> register(String email, String password, String name, String role) async {
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
+    
+    // Validate inputs
+    if (email.isEmpty || password.isEmpty || name.isEmpty) {
+      throw Exception('All fields are required');
+    }
     
     // Check if user already exists
     if (_users.any((user) => user.email == email)) {
@@ -155,6 +177,7 @@ class MockBackend {
     );
     
     _users.add(newUser);
+    _passwords[email] = password; // Store password (in real app, hash it)
     return newUser;
   }
 
@@ -201,14 +224,34 @@ class MockBackend {
   Future<List<Product>> fetchSellerProducts(String sellerId) async {
     await Future.delayed(const Duration(milliseconds: 500));
     // In a real app, this would filter by sellerId
-    // For now, return all products as mock seller products
+    // For mock: add a sellerId property to products and filter
+    // For now, return products that are associated with this seller (mock implementation)
     return [..._products];
   }
 
   // --- ORDER METHODS ---
   Future<List<Order>> fetchSellerOrders() async {
     await Future.delayed(const Duration(milliseconds: 500));
+    // In a real app, this would filter by the authenticated seller
+    // For mock: return all orders as seller orders
     return [..._orders];
+  }
+  
+  // Method to fetch user-specific data securely
+  Future<User?> getUserById(String userId) async {
+    await Future.delayed(const Duration(milliseconds: 200));
+    final user = _users.firstWhere(
+      (user) => user.id == userId,
+      orElse: () => throw Exception('User not found'),
+    );
+    
+    // Return only non-sensitive user data
+    return User(
+      id: user.id,
+      email: user.email,  // In real app, you might only return this for the authenticated user
+      name: user.name,
+      role: user.role,
+    );
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {
