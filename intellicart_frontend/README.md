@@ -1,49 +1,61 @@
-# IntelliCart Frontend
+# IntelliCart
 
-A comprehensive Flutter shopping cart application with intelligent features supporting multiple platforms (Android, iOS, Web, Windows, macOS, Linux).
+An intelligent shopping cart application with AI capabilities, built with Flutter. This comprehensive Flutter shopping cart application with intelligent features supporting multiple platforms (Android, iOS, Web, Windows, macOS, Linux).
 
 ## Features
 
 - **Multi-platform Support**: Works on Android, iOS, Web, Windows, macOS, and Linux
-- **BLoC Architecture**: Clean architecture with Business Logic Components
-- **Firebase Integration**: Real-time database and authentication
+- **BLoC Architecture**: Clean architecture with Business Logic Components for state management
+- **Firebase Integration**: Real-time database and authentication, Firebase Storage for media assets, and Firebase Cloud Messaging (FCM) for push notifications
 - **Location Services**: GPS and location-based features
 - **Local Database**: SQLite for offline storage
 - **Responsive UI**: Adapts to different screen sizes
-- **State Management**: Comprehensive state management with BLoC
 - **Route Management**: Go Router for navigation
 - **Theme Support**: Light and dark theme support
+- **Unit and widget tests**
 
 ## Architecture
 
+The app follows clean architecture principles with a clear separation of concerns:
+
 ```
 lib/
-├── bloc/                    # Business Logic Components
-│   ├── auth/               # Authentication logic
-│   ├── cart/               # Shopping cart logic
-│   ├── product/            # Product management
-│   └── location/           # Location services
-├── data/                   # Data models and repositories
-│   ├── models/             # Data models
-│   └── repositories/       # Data repositories
-├── pages/                  # UI screens
-│   ├── home/               # Home screen
-│   ├── products/           # Product listing
-│   ├── cart/               # Shopping cart
-│   ├── profile/            # User profile
-│   └── settings/           # App settings
-├── services/               # Backend services
-│   ├── database_service.dart  # SQLite operations
-│   ├── firebase_service.dart  # Firebase operations
-│   └── sensor_service.dart    # Device sensors
-├── utils/                  # Utilities
-│   ├── constants.dart      # App constants
-│   ├── routes.dart         # Navigation routes
-│   └── themes.dart         # App themes
-├── widgets/                # Reusable UI components
-│   └── common/             # Common widgets
-└── main.dart               # App entry point
+├── data/
+│   ├── datasources/    # Firebase data sources (Firestore, Auth, Storage)
+│   ├── models/         # Data models (DTOs)
+│   └── repositories/   # Repository implementations
+├── domain/
+│   ├── entities/       # Business entities
+│   ├── repositories/   # Repository interfaces
+│   └── usecases/       # Business logic
+└── presentation/
+    ├── bloc/           # BLoC pattern implementation
+    ├── screens/        # UI screens
+    └── widgets/        # Reusable UI components
 ```
+
+### Clean Architecture Layers
+
+1. **Presentation Layer**: Contains UI components and BLoC for state management  
+2. **Domain Layer**: Contains business logic, entities, and repository interfaces  
+3. **Data Layer**: Contains implementations of repositories and Firebase data sources  
+
+### BLoC Pattern
+
+The Business Logic Component (BLoC) pattern is used for state management:
+
+- `product_bloc.dart` - Manages the business logic for product operations  
+- `product_event.dart` - Defines events that can be dispatched to the BLoC  
+- `product_state.dart` - Defines the different states the UI can be in  
+
+### Data Flow
+
+1. UI triggers events (LoadProducts, CreateProduct, etc.)  
+2. ProductBloc processes events and manages state transitions  
+3. Use cases execute business logic  
+4. Repositories interact with Firebase (Firestore, Auth, Storage)  
+5. Entities represent the business data  
+6. UI updates based on state changes  
 
 ## Dependencies
 
@@ -52,11 +64,16 @@ lib/
 - `sqflite`: SQLite database
 - `firebase_core`: Firebase initialization
 - `cloud_firestore`: Firestore database
+- `firebase_auth`: For authentication  
+- `firebase_storage`: For handling media assets  
+- `firebase_messaging`: For push notifications  
 - `location`: Device location services
 - `go_router`: Navigation
 - `flutter_screenutil`: Responsive UI
 - `dio`: HTTP requests
 - `json_annotation`: JSON serialization
+- `flutter_dotenv`: For environment variable management  
+- `mockito`: For mocking in tests  
 
 ## Getting Started
 
@@ -100,39 +117,13 @@ Add location permissions to `macos/Runner/DebugProfile.entitlements` and `macos/
 <true/>
 ```
 
-## Project Structure Details
-
-### BLoC (Business Logic Component)
-- Separates business logic from UI
-- Ensures testability and maintainability
-- Handles state changes predictably
-
-### Services
-- `DatabaseService`: Handles local SQLite operations
-- `FirebaseService`: Manages Firebase interactions
-- `SensorService`: Handles device sensors (location, etc.)
-
-### Pages
-- `HomePage`: Main application dashboard
-- `ProductsPage`: Product listing and search
-- `CartPage`: Shopping cart management
-- `ProfilePage`: User profile management
-- `SettingsPage`: App settings
-
-### Widgets
-- Reusable UI components
-- Follow Flutter best practices
-- Consistent design system
-
-## Development Guidelines
-
-- Use BLoC for state management
-- Follow Flutter's widget composition patterns
-- Implement responsive design using constraints
-- Handle errors gracefully
-- Write unit and widget tests
-
 ## Testing
+
+The app includes both unit tests and widget tests:
+
+- `model_test.dart` - Tests for data models  
+- `usecase_test.dart` - Tests for use cases  
+- `widget_test.dart` - Tests for UI components  
 
 Run tests with:
 ```bash
@@ -162,6 +153,14 @@ flutter build windows
 flutter build macos
 flutter build linux
 ```
+
+## Offline Capability
+
+Firestore provides offline persistence automatically:  
+
+1. Data is cached locally and kept in sync when the device goes online  
+2. Reads and writes work even when offline  
+3. Changes are synchronized with the server when the connection is restored  
 
 ## Notes
 
