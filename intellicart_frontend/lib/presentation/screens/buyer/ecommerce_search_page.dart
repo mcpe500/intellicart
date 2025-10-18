@@ -135,42 +135,6 @@ class EcommerceSearchPage extends StatelessWidget {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.black12)),
-        ),
-        child: BottomNavigationBar(
-          currentIndex: 1, // Assuming Categories is the second item (index 1)
-          selectedItemColor: orangeAccent,
-          unselectedItemColor: Colors.grey[500],
-          backgroundColor: Colors.white,
-          selectedLabelStyle: const TextStyle(fontSize: 12.0),
-          unselectedLabelStyle: const TextStyle(fontSize: 12.0),
-          type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.category),
-              label: 'Categories',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.shopping_cart), // Changed from 'shopping_cart' as per new image
-              label: 'Cart',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person), // Changed from 'person' as per new image
-              label: 'Profile',
-            ),
-          ],
-          onTap: (index) {
-            // No functionality required, so we just have an empty onTap
-          },
-        ),
-      ),
     );
   }
 

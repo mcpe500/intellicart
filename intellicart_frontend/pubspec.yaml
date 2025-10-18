@@ -50,6 +50,9 @@ dependencies:
   # SQLite database
   sqflite: ^2.3.3
   path: ^1.9.1
+  
+  # For shared preferences (cross-platform storage)
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

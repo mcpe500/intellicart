@@ -1,5 +1,10 @@
-// lib/screens/profile_page.dart
+// lib/presentation/screens/core/profile_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intellicart/main.dart'; // For AppInitializer
+import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
+import 'package:intellicart/presentation/screens/core/login_page.dart'; // For LoginPage
+import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart'; // <-- ADD THIS IMPORT
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -88,6 +93,46 @@ class ProfilePage extends StatelessWidget {
               ),
               const SizedBox(height: 32),
 
+              // --- MODIFICATION: ADDED SELLER MODE BUTTON ---
+              _buildProfileOption(
+                icon: Icons.storefront_outlined, // New Icon
+                title: 'Switch to Seller Mode', // New Title
+                iconBgColor: iconBgColor,
+                primaryTextColor: primaryTextColor,
+                accentColor: accentColor,
+                onTap: () {
+                  // Dispatch event to change mode
+                  context.read<AppModeBloc>().add(const SetAppMode(AppMode.seller));
+                  // Navigate and replace the current screen
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SellerDashboardPage()),
+                    (route) => false,
+                  );
+                },
+              ),
+              // --- END MODIFICATION ---
+
+              // --- DEMO: ADD BUTTON TO SWITCH BACK TO BUYER MODE ---
+              _buildProfileOption(
+                icon: Icons.shopping_bag_outlined, // New Icon
+                title: 'Switch to Buyer Mode', // New Title
+                iconBgColor: iconBgColor,
+                primaryTextColor: primaryTextColor,
+                accentColor: accentColor,
+                onTap: () {
+                  // Dispatch event to change mode back to buyer
+                  context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
+                  // Navigate and replace the current screen
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AppInitializer()),
+                    (route) => false,
+                  );
+                },
+              ),
+              // --- END DEMO MODIFICATION ---
+
               // Profile Options List
               _buildProfileOption(
                 icon: Icons.person_outline,
@@ -138,7 +183,16 @@ class ProfilePage extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // Dispatch event to change mode back to buyer
+                    context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
+                    // Navigate and replace the current screen with the login page
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginPage()),
+                      (route) => false,
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: accentColorBright,
                     padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -165,13 +219,14 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  // Helper widget to build each option item, making the code cleaner and reusable
+  // --- MODIFICATION: ADDED OPTIONAL onTap PARAMETER ---
   Widget _buildProfileOption({
     required IconData icon,
     required String title,
     required Color iconBgColor,
     required Color primaryTextColor,
     required Color accentColor,
+    VoidCallback? onTap, // Make onTap optional
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
@@ -190,7 +245,7 @@ class ProfilePage extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {},
+            onTap: onTap ?? () {}, // Use the provided onTap or an empty function
             borderRadius: BorderRadius.circular(12.0),
             child: Padding(
               padding: const EdgeInsets.all(16.0),

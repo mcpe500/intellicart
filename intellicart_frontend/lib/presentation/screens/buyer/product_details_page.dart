@@ -1,6 +1,8 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
-import 'package:intellicart/models/product.dart'; // Make sure this path is correct
+import 'package:intellicart/models/product.dart';
+import 'package:intellicart/models/review.dart'; // Ensure Review model is imported
+import 'package:intellicart/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
@@ -271,9 +273,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              // Navigate to the AddReviewPage
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AddReviewPage(
+                                    // We'll use the product name as a stand-in for ID
+                                    productId: widget.product.name,
+                                  ),
+                                ),
+                              );
+                            },
                             child: const Text(
-                              'See All',
+                              'Write a Review', // <-- CHANGED TEXT
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.bold,

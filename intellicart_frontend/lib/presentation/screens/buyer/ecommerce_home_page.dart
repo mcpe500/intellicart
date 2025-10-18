@@ -1,9 +1,11 @@
 // lib/screens/ecommerce_home_page.dart (UPDATED)
 import 'package:flutter/material.dart';
 import 'package:intellicart/models/product.dart';
-import 'package:intellicart/screens/ecommerce_search_page.dart';
-import 'package:intellicart/screens/product_details_page.dart';
-import 'package:intellicart/screens/profile_page.dart'; // Import the new ProfilePage
+import 'package:intellicart/presentation/screens/buyer/ecommerce_search_page.dart';
+import 'package:intellicart/presentation/screens/buyer/product_details_page.dart';
+import 'package:intellicart/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
+import 'package:intellicart/presentation/screens/buyer/cart_page.dart'; // Import the new CartPage
+import 'package:intellicart/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
 
 class EcommerceHomePage extends StatefulWidget {
   final List<Product> products;
@@ -28,9 +30,11 @@ class _EcommerceHomePageState extends State<EcommerceHomePage> {
       _HomePageContent(products: widget.products),
       // Index 1: Categories (using the search page for now)
       const EcommerceSearchPage(),
-      // Index 2: Wishlist (Placeholder)
-      const Center(child: Text('Wishlist Page')),
-      // Index 3: Profile
+      // Index 2: Cart
+      const CartPage(),
+      // Index 3: Wishlist
+      const WishlistPage(),
+      // Index 4: Profile
       const ProfilePage(),
     ];
   }
@@ -70,6 +74,10 @@ class _EcommerceHomePageState extends State<EcommerceHomePage> {
             BottomNavigationBarItem(
               icon: Icon(Icons.category),
               label: 'Categories',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_cart),
+              label: 'Cart',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
@@ -144,7 +152,13 @@ class _HomePageContent extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.shopping_cart, color: warmGray800),
-                    onPressed: () {},
+                    onPressed: () {
+                      // Navigate to cart page
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartPage()),
+                      );
+                    },
                   ),
                   IconButton(
                     icon: const Icon(Icons.notifications, color: warmGray800),
