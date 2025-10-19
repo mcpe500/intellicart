@@ -1,6 +1,7 @@
 // lib/screens/ecommerce_home_page.dart (UPDATED)
 import 'package:flutter/material.dart';
 import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_search_page.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/product_details_page.dart';
 import 'package:intellicart_frontend/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
@@ -8,9 +9,7 @@ import 'package:intellicart_frontend/presentation/screens/buyer/cart_page.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
 
 class EcommerceHomePage extends StatefulWidget {
-  final List<Product> products;
-
-  const EcommerceHomePage({super.key, required this.products});
+  const EcommerceHomePage({super.key});
 
   @override
   State<EcommerceHomePage> createState() => _EcommerceHomePageState();
@@ -18,25 +17,33 @@ class EcommerceHomePage extends StatefulWidget {
 
 class _EcommerceHomePageState extends State<EcommerceHomePage> {
   int _currentIndex = 0; // State to track the selected tab index
-
-  // List of the pages to be displayed for each tab
-  late final List<Widget> _pages;
+  List<Product> _products = [];
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      // Index 0: Home Content
-      _HomePageContent(products: widget.products),
-      // Index 1: Categories (using the search page for now)
-      const EcommerceSearchPage(),
-      // Index 2: Cart
-      const CartPage(),
-      // Index 3: Wishlist
-      const WishlistPage(),
-      // Index 4: Profile
-      const ProfilePage(),
-    ];
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      // Try to load products from the repository
+      final repository = AppRepositoryImpl();
+      List<Product> products = await repository.getProducts();
+      
+      // If no products in repository, keep the empty list
+      // No mock data should be used, as per requirements
+      
+      setState(() {
+        _products = products;
+      });
+    } catch (e) {
+      print('Error loading products: $e');
+      // On error, keep the empty list
+      setState(() {
+        _products = [];
+      });
+    }
   }
 
   void _onTabTapped(int index) {
@@ -47,11 +54,25 @@ class _EcommerceHomePageState extends State<EcommerceHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // Define the pages list inside build so it updates when _products changes
+    final List<Widget> pages = [
+      // Index 0: Home Content
+      _HomePageContent(products: _products),
+      // Index 1: Categories (using the search page for now)
+      const EcommerceSearchPage(),
+      // Index 2: Cart
+      const CartPage(),
+      // Index 3: Wishlist
+      const WishlistPage(),
+      // Index 4: Profile
+      const ProfilePage(),
+    ];
+
     const Color warmOrange500 = Color(0xFFFF9800);
     const Color warmGray500 = Color(0xFF9E9E9E);
 
     return Scaffold(
-      body: _pages[_currentIndex], // Display the page corresponding to the current index
+      body: pages[_currentIndex], // Display the page corresponding to the current index
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -181,7 +202,7 @@ class _HomePageContent extends StatelessWidget {
                     const SizedBox(height: 12.0),
                     _buildProductGrid(
                       context,
-                      products: products.sublist(0, 2),
+                      products: products.length >= 2 ? products.sublist(0, 2) : products,
                       warmOrange700: warmOrange700,
                     ),
                     const SizedBox(height: 24.0),
@@ -204,7 +225,7 @@ class _HomePageContent extends StatelessWidget {
                     const SizedBox(height: 12.0),
                     _buildProductGrid(
                       context,
-                      products: products.sublist(2),
+                      products: products.length > 2 ? products.sublist(2) : [],
                       warmOrange700: warmOrange700,
                     ),
                   ],

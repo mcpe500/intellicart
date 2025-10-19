@@ -1,11 +1,10 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart_frontend/data/datasources/api_service.dart';
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
-import 'package:intellicart_frontend/models/product.dart';
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_home_page.dart';
+import 'package:intellicart_frontend/presentation/screens/core/login_page.dart';
 import 'package:intellicart_frontend/presentation/screens/core/splash_screen.dart';
 import 'package:intellicart_frontend/presentation/screens/seller/seller_dashboard_page.dart';
 
@@ -45,7 +44,6 @@ class AppInitializer extends StatefulWidget {
 
 class _AppInitializerState extends State<AppInitializer> {
   bool _isInitialized = false;
-  List<Product> _products = [];
 
   @override
   void initState() {
@@ -54,18 +52,7 @@ class _AppInitializerState extends State<AppInitializer> {
   }
 
   Future<void> _initializeApp() async {
-    // 1. Fetch products from the API Service (which uses the mock backend)
-    final apiService = ApiService();
-    final productsFromApi = await apiService.getProducts();
-
-    // 2. Save fetched products to the local repository
-    final repository = AppRepositoryImpl();
-    await repository.insertProducts(productsFromApi);
-
-    // 3. Load products from the repository to be used by the UI
-    _products = await repository.getProducts();
-
-    // Simulate other loading tasks
+    // Simulate loading tasks
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
@@ -88,7 +75,7 @@ class _AppInitializerState extends State<AppInitializer> {
           return const SellerDashboardPage();
         }
         // Default to Buyer mode
-        return EcommerceHomePage(products: _products);
+        return const EcommerceHomePage(); // Will load products internally
       },
     );
   }

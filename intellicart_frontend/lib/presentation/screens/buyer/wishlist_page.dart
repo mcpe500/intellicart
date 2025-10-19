@@ -16,6 +16,7 @@ class _WishlistPageState extends State<WishlistPage> {
   // - Changed the 'price' to a String to match the model's data type.
   final List<Product> wishlist = [
     Product(
+      id: '1',
       name: 'Classic Leather Jacket',
       description: 'A timeless leather jacket for all seasons.',
       price: '\$129.99',
@@ -23,6 +24,7 @@ class _WishlistPageState extends State<WishlistPage> {
       reviews: [],
     ),
     Product(
+      id: '2',
       name: 'Wireless Bluetooth Headphones',
       description: 'High-fidelity sound with noise cancellation.',
       price: '\$89.99',
@@ -30,6 +32,7 @@ class _WishlistPageState extends State<WishlistPage> {
       reviews: [],
     ),
      Product(
+        id: '3',
         name: 'Stylish Headphones',
         description: 'For immersive audio',
         price: '\$49.99',

@@ -43,9 +43,10 @@ class _SellerAddEditProductPageState extends State<SellerAddEditProductPage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final product = Product(
+        id: widget.product?.id ?? DateTime.now().millisecondsSinceEpoch.toString(), // Generate a new ID or use existing one
         name: _nameController.text,
         description: _descController.text,
-        price: '\$${_priceController.text}', // Add currency symbol back
+        price: '\${_priceController.text}', // Add currency symbol back
         imageUrl: _imageUrlController.text,
         reviews: widget.product?.reviews ?? [], // Preserve existing reviews
       );

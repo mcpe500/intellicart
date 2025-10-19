@@ -190,6 +190,7 @@ class DatabaseHelper {
 
     return List.generate(maps.length, (i) {
       return Product(
+        id: maps[i]['id'].toString(), // Use the database ID
         name: maps[i]['name'],
         description: maps[i]['description'],
         price: maps[i]['price'],

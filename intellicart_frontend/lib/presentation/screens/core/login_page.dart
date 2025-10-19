@@ -42,6 +42,10 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       User? user;
+      
+      // Try API first
+      await _apiService.ensureInitialized(); // Ensure API service is initialized
+      
       if (_isLogin) {
         // Login
         user = await _apiService.login(
@@ -59,6 +63,14 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       if (user != null) {
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isLogin ? 'Login successful!' : 'Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
         // Set mode based on user role
         final mode = user.role == 'seller' ? AppMode.seller : AppMode.buyer;
         context.read<AppModeBloc>().add(SetAppMode(mode));
@@ -69,14 +81,29 @@ class _LoginPageState extends State<LoginPage> {
           (route) => false,
         );
       }
-    } catch (e) {
+    } on Exception catch (e) {
+      String errorMessage = e.toString();
+      if (errorMessage.contains('User not found') || errorMessage.contains('Invalid password')) {
+        errorMessage = 'Invalid email or password';
+      } else if (errorMessage.contains('User already exists')) {
+        errorMessage = 'User already exists';
+      } else if (errorMessage.contains('All fields are required')) {
+        errorMessage = 'All fields are required';
+      } else {
+        errorMessage = 'An API error occurred: ${e.toString()}';
+      }
+      
       setState(() {
-        _errorMessage = e.toString().contains('User not found') 
-            ? 'Invalid email or password' 
-            : e.toString().contains('User already exists')
-                ? 'User already exists'
-                : 'An error occurred';
+        _errorMessage = errorMessage;
       });
+      
+      // Show error snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() {
         _isLoading = false;

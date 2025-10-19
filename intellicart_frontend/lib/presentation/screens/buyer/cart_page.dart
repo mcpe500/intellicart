@@ -14,6 +14,7 @@ class _CartPageState extends State<CartPage> {
   final List<CartItem> _cartItems = [
     CartItem(
       product: Product(
+        id: '1',
         name: 'Stylish Headphones',
         description: 'For immersive audio',
         price: '\$49.99',
@@ -25,6 +26,7 @@ class _CartPageState extends State<CartPage> {
     ),
     CartItem(
       product: Product(
+        id: '2',
         name: 'Wireless Earbuds',
         description: 'Compact and convenient',
         price: '\$79.99',

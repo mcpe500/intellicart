@@ -11,83 +11,127 @@ class ApiService {
   late Dio _dio;
   String _baseUrl = '';
   String? _token;
+  bool _isInitialized = false;
 
   ApiService() {
     _initializeDio();
   }
 
   void _initializeDio() async {
-    await dotenv.load(fileName: ".env");
-    _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://api.intellicart.com/v1';
-    
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: _baseUrl,
-        connectTimeout: const Duration(seconds: 10),
-        receiveTimeout: const Duration(seconds: 10),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      ),
-    );
+    try {
+      await dotenv.load(fileName: ".env");
+      _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://api.intellicart.com/v1';
+      
+      _dio = Dio(
+        BaseOptions(
+          baseUrl: _baseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
 
-    // Add interceptors for token management and comprehensive error handling
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          if (_token != null) {
-            options.headers['Authorization'] = 'Bearer $_token';
-          }
-          return handler.next(options);
-        },
-        onResponse: (response, handler) {
-          // Handle different success status codes appropriately
-          switch (response.statusCode) {
-            case 200:
-              // Standard success response
-              break;
-            case 201:
-              // Resource created
-              break;
-            case 204:
-              // No content (e.g., successful delete)
-              break;
-            default:
-              // For any other success code, continue normally
-              break;
-          }
-          return handler.next(response);
-        },
-        onError: (DioException error, ErrorInterceptorHandler handler) async {
-          switch (error.response?.statusCode) {
-            case 401:
-              // Unauthorized - token might be expired
-              // In a real app, you might try to refresh the token here
-              clearToken();
-              // Or redirect to login
-              break;
-            case 403:
-              // Forbidden - user doesn't have permission
-              break;
-            case 404:
-              // Resource not found
-              break;
-            case 429:
-              // Too many requests - implement rate limiting
-              // You could add a retry delay here
-              break;
-            case 500:
-            case 502:
-            case 503:
-            case 504:
-              // Server errors - might want to queue request for later
-              break;
-          }
-          return handler.next(error);
-        },
-      ),
-    );
+      // Add interceptors for token management and comprehensive error handling
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            if (_token != null) {
+              options.headers['Authorization'] = 'Bearer $_token';
+            }
+            return handler.next(options);
+          },
+          onResponse: (response, handler) {
+            // Handle different success status codes appropriately
+            switch (response.statusCode) {
+              case 200:
+                // Standard success response
+                break;
+              case 201:
+                // Resource created
+                break;
+              case 204:
+                // No content (e.g., successful delete)
+                break;
+              default:
+                // For any other success code, continue normally
+                break;
+            }
+            return handler.next(response);
+          },
+          onError: (DioException error, ErrorInterceptorHandler handler) async {
+            switch (error.response?.statusCode) {
+              case 401:
+                // Unauthorized - token might be expired
+                // In a real app, you might try to refresh the token here
+                clearToken();
+                // Or redirect to login
+                break;
+              case 403:
+                // Forbidden - user doesn't have permission
+                break;
+              case 404:
+                // Resource not found
+                break;
+              case 429:
+                // Too many requests - implement rate limiting
+                // You could add a retry delay here
+                break;
+              case 500:
+              case 502:
+              case 503:
+              case 504:
+                // Server errors - might want to queue request for later
+                break;
+            }
+            return handler.next(error);
+          },
+        ),
+      );
+      _isInitialized = true;
+    } catch (e) {
+      // Set a default configuration if .env loading fails
+      _baseUrl = 'https://api.intellicart.com/v1';
+      
+      _dio = Dio(
+        BaseOptions(
+          baseUrl: _baseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      // Add interceptors for token management and comprehensive error handling
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            if (_token != null) {
+              options.headers['Authorization'] = 'Bearer $_token';
+            }
+            return handler.next(options);
+          },
+          onResponse: (response, handler) {
+            return handler.next(response);
+          },
+          onError: (DioException error, ErrorInterceptorHandler handler) async {
+            return handler.next(error);
+          },
+        ),
+      );
+      _isInitialized = true;
+    }
+  }
+
+  Future<void> ensureInitialized() async {
+    while (!_isInitialized) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
   }
 
   void setToken(String token) {
@@ -100,6 +144,7 @@ class ApiService {
 
   // --- AUTHENTICATION METHODS ---
   Future<User?> login(String email, String password) async {
+    await ensureInitialized();
     try {
       final response = await _dio.post(
         '/auth/login',
@@ -136,6 +181,7 @@ class ApiService {
   }
 
   Future<User> register(String email, String password, String name, String role) async {
+    await ensureInitialized();
     try {
       final response = await _dio.post(
         '/auth/register',
@@ -172,6 +218,7 @@ class ApiService {
 
   // --- PRODUCT METHODS ---
   Future<List<Product>> getProducts({int? page, int? limit, String? search, String? category}) async {
+    await ensureInitialized();
     try {
       final response = await _dio.get(
         '/products',
@@ -204,6 +251,7 @@ class ApiService {
   }
 
   Future<Product> addProduct(Product product) async {
+    await ensureInitialized();
     try {
       final response = await _dio.post(
         '/products',
@@ -235,6 +283,7 @@ class ApiService {
   }
 
   Future<Product> updateProduct(Product product) async {
+    await ensureInitialized();
     try {
       final response = await _dio.put(
         '/products/${product.id}',
@@ -269,6 +318,7 @@ class ApiService {
   }
 
   Future<void> deleteProduct(Product product) async {
+    await ensureInitialized();
     try {
       final response = await _dio.delete('/products/${product.id}');
 
@@ -294,6 +344,7 @@ class ApiService {
   }
 
   Future<List<Product>> getSellerProducts(String sellerId, {int? page, int? limit}) async {
+    await ensureInitialized();
     try {
       final response = await _dio.get(
         '/products/seller/$sellerId',
@@ -329,6 +380,7 @@ class ApiService {
 
   // --- ORDER METHODS ---
   Future<List<Order>> getSellerOrders({String? status, int? page, int? limit}) async {
+    await ensureInitialized();
     try {
       final response = await _dio.get(
         '/orders/seller',
@@ -364,6 +416,7 @@ class ApiService {
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {
+    await ensureInitialized();
     try {
       final response = await _dio.put(
         '/orders/$orderId/status',
@@ -398,6 +451,7 @@ class ApiService {
   }
 
   Future<User?> getUserById(String userId) async {
+    await ensureInitialized();
     try {
       final response = await _dio.get('/users/$userId');
 
