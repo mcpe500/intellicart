@@ -9,6 +9,7 @@ import 'package:intellicart_frontend/data/repositories/cart_repository.dart';
 import 'package:intellicart_frontend/data/repositories/wishlist_repository.dart';
 
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
+import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_home_page.dart';
 import 'package:intellicart_frontend/presentation/screens/core/login_page.dart';
 import 'package:intellicart_frontend/presentation/screens/core/splash_screen.dart';
@@ -35,6 +36,7 @@ void main() async {
             wishlistRepository: WishlistRepositoryImpl()
           ),
         ),
+
       ],
       child: const MyApp(),
     ),

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intellicart_frontend/models/review.dart';
 import 'package:intellicart_frontend/data/datasources/api_service.dart';
+import 'package:intellicart_frontend/data/exceptions/api_exception.dart';
 
 // --- EVENTS ---
 abstract class ReviewEvent extends Equatable {
@@ -81,7 +82,9 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
       );
 
       emit(ReviewSubmitSuccess(newReview));
-    } on Exception catch (e) {
+    } on ApiException catch (e) {
+      emit(ReviewSubmitFailure(e.message));
+    } catch (e) {
       emit(ReviewSubmitFailure(e.toString()));
     }
   }

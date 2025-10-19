@@ -2,10 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/models/review.dart';
 import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
 import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
 import 'package:intellicart_frontend/data/models/cart_item.dart';
 import 'package:intellicart_frontend/data/models/wishlist_item.dart';
+import 'package:intellicart_frontend/data/datasources/api_service.dart';
+import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
 
 import 'package:intellicart_frontend/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
 
@@ -22,6 +25,47 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   int _quantity = 1; // State variable for the quantity
+  List<Review> _reviews = [];
+  bool _isLoadingReviews = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      final page = _pageController.page;
+      if (page != null) {
+        setState(() {
+          _currentPage = page.round();
+        });
+      }
+    });
+    
+    // Load reviews when the page is initialized
+    _loadProductReviews();
+  }
+
+  // Function to load product reviews
+  Future<void> _loadProductReviews() async {
+    try {
+      final apiService = ApiService();
+      final reviews = await apiService.getProductReviews(widget.product.id);
+      if (mounted) {
+        setState(() {
+          _reviews = reviews;
+          _isLoadingReviews = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingReviews = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading reviews: $e')),
+        );
+      }
+    }
+  }
 
   // Function to increment quantity
   void _incrementQuantity() {
@@ -39,18 +83,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      final page = _pageController.page;
-      if (page != null) {
-        setState(() {
-          _currentPage = page.round();
-        });
-      }
-    });
-  }
+  
 
   @override
   void dispose() {
@@ -191,11 +224,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
-                      _buildStarRating(4.5, starColor),
+                      _buildStarRating(_calculateAverageRating(), starColor),
                       const SizedBox(width: 8.0),
-                      const Text(
-                        '4.5 (120 Reviews)',
-                        style: TextStyle(
+                      Text(
+                        '${_calculateAverageRating().toStringAsFixed(1)} (${_reviews.length} Reviews)',
+                        style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: secondaryTextColor,
@@ -279,16 +312,24 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {
-                              // Navigate to the AddReviewPage
-                              Navigator.push(
+                            onPressed: () async {
+                              // Navigate to the AddReviewPage and await result
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => AddReviewPage(
-                                    productId: widget.product.id,
+                                  builder: (context) => BlocProvider(
+                                    create: (context) => ReviewBloc(),
+                                    child: AddReviewPage(
+                                      productId: widget.product.id,
+                                    ),
                                   ),
                                 ),
                               );
+                              
+                              // If a new review was submitted, refresh the reviews list
+                              if (result != null) {
+                                _loadProductReviews(); // Refresh the reviews
+                              }
                             },
                             child: const Text(
                               'Write a Review', // <-- CHANGED TEXT
@@ -302,8 +343,15 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 8.0),
-                      // Build reviews from the product model
-                      if (widget.product.reviews.isEmpty)
+                      // Build reviews from fetched reviews
+                      if (_isLoadingReviews)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      else if (_reviews.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.0),
                           child: Text(
@@ -315,11 +363,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: widget.product.reviews.length,
+                          itemCount: _reviews.length,
                           separatorBuilder: (context, index) =>
                           const SizedBox(height: 12.0),
                           itemBuilder: (context, index) {
-                            final review = widget.product.reviews[index];
+                            final review = _reviews[index];
                             return _buildReviewCard(
                               review.title,
                               review.reviewText,
@@ -536,5 +584,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         ],
       ),
     );
+  }
+  
+  // Helper function to calculate average rating
+  double _calculateAverageRating() {
+    if (_reviews.isEmpty) {
+      return 0.0; // Return 0 if no reviews
+    }
+    
+    double totalRating = 0.0;
+    for (final review in _reviews) {
+      totalRating += review.rating.toDouble();
+    }
+    return totalRating / _reviews.length;
   }
 }
