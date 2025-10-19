@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
-  email: z.string().email({ message: 'Must be a valid email address' }).openapi({
+  email: z.string().min(1).regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { message: 'Must be a valid email address' }).openapi({
     example: 'john@example.com',
     description: 'User\'s email address'
   }),
@@ -16,7 +16,7 @@ export const RegisterSchema = z.object({
     example: 'John Doe',
     description: 'User\'s full name'
   }),
-  email: z.string().email({ message: 'Must be a valid email address' }).openapi({
+  email: z.string().min(1).regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, { message: 'Must be a valid email address' }).openapi({
     example: 'john@example.com',
     description: 'User\'s email address'
   }),

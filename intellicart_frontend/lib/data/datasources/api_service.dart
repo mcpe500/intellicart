@@ -15,6 +15,13 @@ class ApiService {
 
   // --- ADD THIS GETTER ---
   String? get token => _token;
+  
+  // Helper method to safely extract string from response data
+  String? _getStringFromResponse(Map<String, dynamic>? data, String key) {
+    if (data == null) return null;
+    final value = data[key];
+    return value is String ? value : null;
+  }
   // -------------------------
 
   ApiService() {
@@ -162,22 +169,28 @@ class ApiService {
       switch (response.statusCode) {
         case 200:
           final userData = response.data['user'];
-          _token = response.data['token'];
+          final tokenData = response.data['token'];
+          // Ensure token is a string before assignment
+          _token = tokenData is String ? tokenData : null;
           
           return User.fromJson(userData);
         case 400:
+          final message = response.data['message'];
           throw ApiException(400, "Invalid email or password format", 
-              serverMessage: response.data['message'] ?? "Bad request");
+              serverMessage: message is String ? message : "Bad request");
         case 401:
+          final message = response.data['message'];
           throw ApiException(401, "Invalid credentials", 
-              serverMessage: response.data['message'] ?? "Unauthorized");
+              serverMessage: message is String ? message : "Unauthorized");
         case 429:
+          final message = response.data['message'];
           throw ApiException(429, "Too many login attempts. Please try again later", 
-              serverMessage: response.data['message'] ?? "Rate limited");
+              serverMessage: message is String ? message : "Rate limited");
         default:
+          final message = response.data?['message'];
           throw ApiException(response.statusCode ?? 0, 
               "Login failed with status ${response.statusCode}", 
-              serverMessage: response.data?['message'] ?? "Unknown error");
+              serverMessage: message is String ? message : "Unknown error");
       }
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
@@ -201,19 +214,24 @@ class ApiService {
       switch (response.statusCode) {
         case 201:
           final userData = response.data['user'];
-          _token = response.data['token'];
+          final tokenData = response.data['token'];
+          // Ensure token is a string before assignment
+          _token = tokenData is String ? tokenData : null;
           
           return User.fromJson(userData);
         case 400:
+          final message = response.data['message'];
           throw ApiException(400, "Invalid registration data", 
-              serverMessage: response.data['message'] ?? "Bad request");
+              serverMessage: message is String ? message : "Bad request");
         case 409:
+          final message = response.data['message'];
           throw ApiException(409, "Email already exists", 
-              serverMessage: response.data['message'] ?? "Conflict");
+              serverMessage: message is String ? message : "Conflict");
         default:
+          final message = response.data?['message'];
           throw ApiException(response.statusCode ?? 0, 
               "Registration failed with status ${response.statusCode}", 
-              serverMessage: response.data?['message'] ?? "Unknown error");
+              serverMessage: message is String ? message : "Unknown error");
       }
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
@@ -239,15 +257,17 @@ class ApiService {
           final productsData = response.data['products'] as List;
           return productsData.map((json) => Product.fromJson(json)).toList();
         case 400:
+          final message = _getStringFromResponse(response.data, 'message');
           throw ApiException(400, "Invalid query parameters", 
-              serverMessage: response.data['message'] ?? "Bad request");
+              serverMessage: message ?? "Bad request");
         case 404:
           // Return empty list if no products found
           return [];
         default:
+          final message = _getStringFromResponse(response.data, 'message');
           throw ApiException(response.statusCode ?? 0, 
               "Failed to fetch products with status ${response.statusCode}", 
-              serverMessage: response.data?['message'] ?? "Unknown error");
+              serverMessage: message ?? "Unknown error");
       }
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);
@@ -267,19 +287,23 @@ class ApiService {
           final productData = response.data['product'];
           return Product.fromJson(productData);
         case 400:
+          final message = _getStringFromResponse(response.data, 'message');
           throw ApiException(400, "Invalid product data", 
-              serverMessage: response.data['message'] ?? "Bad request");
+              serverMessage: message ?? "Bad request");
         case 401:
         case 403:
+          final message = _getStringFromResponse(response.data, 'message');
           throw ApiException(response.statusCode!, "Not authorized to add products", 
-              serverMessage: response.data['message'] ?? "Unauthorized");
+              serverMessage: message ?? "Unauthorized");
         case 422:
+          final message = _getStringFromResponse(response.data, 'message');
           throw ApiException(422, "Product validation failed", 
-              serverMessage: response.data['message'] ?? "Validation error");
+              serverMessage: message ?? "Validation error");
         default:
+          final message = _getStringFromResponse(response.data, 'message');
           throw ApiException(response.statusCode ?? 0, 
               "Failed to add product with status ${response.statusCode}", 
-              serverMessage: response.data?['message'] ?? "Unknown error");
+              serverMessage: message ?? "Unknown error");
       }
     } on DioException catch (e) {
       throw ApiException.fromDioException(e);

@@ -139,106 +139,103 @@ class _HomePageContent extends StatelessWidget {
     const Color warmGray500 = Color(0xFF9E9E9E);
     const Color warmGray800 = Color(0xFF424242);
 
-    return Scaffold(
-      backgroundColor: warmGray100,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header Section
-            Container(
-              padding: const EdgeInsets.all(16.0),
-              color: warmOrange100,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const EcommerceSearchPage()),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8.0),
-                          border: Border.all(color: Colors.grey.shade300),
-                        ),
-                        child: const Row(
-                          children: [
-                            SizedBox(width: 12),
-                            Icon(Icons.search, color: warmGray500),
-                            SizedBox(width: 8),
-                            Text('Search for products...', style: TextStyle(fontSize: 14.0, color: warmGray500)),
-                          ],
-                        ),
+    return SafeArea(
+      child: Column(
+        children: [
+          // Header Section
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            color: warmOrange100,
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const EcommerceSearchPage()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: const Row(
+                        children: [
+                          SizedBox(width: 12),
+                          Icon(Icons.search, color: warmGray500),
+                          SizedBox(width: 8),
+                          Text('Search for products...', style: TextStyle(fontSize: 14.0, color: warmGray500)),
+                        ],
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.shopping_cart, color: warmGray800),
-                    onPressed: () {
-                      // Navigate to cart page
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const CartPage()),
-                      );
-                    },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.shopping_cart, color: warmGray800),
+                  onPressed: () {
+                    // Navigate to cart page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const CartPage()),
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.notifications, color: warmGray800),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+          // Main Content Area
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Based on Your Recent Searches',
+                    style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: warmGray800),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications, color: warmGray800),
-                    onPressed: () {},
+                  const SizedBox(height: 12.0),
+                  _buildProductGrid(
+                    context,
+                    products: products.length >= 2 ? products.sublist(0, 2) : products,
+                    warmOrange700: warmOrange700,
+                  ),
+                  const SizedBox(height: 24.0),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Popular Right Now',
+                        style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: warmGray800),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text(
+                          'See All',
+                          style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600, color: warmOrange500),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12.0),
+                  _buildProductGrid(
+                    context,
+                    products: products.length > 2 ? products.sublist(2) : [],
+                    warmOrange700: warmOrange700,
                   ),
                 ],
               ),
             ),
-            // Main Content Area
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Based on Your Recent Searches',
-                      style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: warmGray800),
-                    ),
-                    const SizedBox(height: 12.0),
-                    _buildProductGrid(
-                      context,
-                      products: products.length >= 2 ? products.sublist(0, 2) : products,
-                      warmOrange700: warmOrange700,
-                    ),
-                    const SizedBox(height: 24.0),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Popular Right Now',
-                          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: warmGray800),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: const Text(
-                            'See All',
-                            style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600, color: warmOrange500),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12.0),
-                    _buildProductGrid(
-                      context,
-                      products: products.length > 2 ? products.sublist(2) : [],
-                      warmOrange700: warmOrange700,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
