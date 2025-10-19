@@ -125,8 +125,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(12.0),
                               child: Image.network(
-                                productImages[index],
+                                productImages[index] ?? 'https://via.placeholder.com/300',
                                 fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                },
                                 errorBuilder: (context, error, stackTrace) =>
                                 const Center(
                                     child: Icon(Icons.broken_image)),

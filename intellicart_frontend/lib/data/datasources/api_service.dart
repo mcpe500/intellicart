@@ -13,6 +13,10 @@ class ApiService {
   String? _token;
   bool _isInitialized = false;
 
+  // --- ADD THIS GETTER ---
+  String? get token => _token;
+  // -------------------------
+
   ApiService() {
     _initializeDio();
   }

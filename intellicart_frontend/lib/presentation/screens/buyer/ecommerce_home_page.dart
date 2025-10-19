@@ -303,9 +303,18 @@ class _ProductCard extends StatelessWidget {
           children: [
             Expanded(
               child: Image.network(
-                product.imageUrl,
+                product.imageUrl ?? 'https://via.placeholder.com/150',
                 fit: BoxFit.cover,
                 width: double.infinity,
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: Colors.grey[200],
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                },
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[200],

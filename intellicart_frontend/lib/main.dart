@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
+import 'package:intellicart_frontend/bloc/auth/auth_bloc.dart';
+
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_home_page.dart';
 import 'package:intellicart_frontend/presentation/screens/core/login_page.dart';
@@ -11,8 +13,15 @@ import 'package:intellicart_frontend/presentation/screens/seller/seller_dashboar
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    BlocProvider(
-      create: (context) => AppModeBloc(repository: AppRepositoryImpl())..add(LoadAppMode()),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AppModeBloc(repository: AppRepositoryImpl())..add(LoadAppMode()),
+        ),
+        BlocProvider(
+          create: (context) => AuthBloc(),
+        ),
+      ],
       child: const MyApp(),
     ),
   );
@@ -68,14 +77,33 @@ class _AppInitializerState extends State<AppInitializer> {
       return const SplashScreen();
     }
 
-    // After initialization, use the AppModeBloc to decide which page to show
-    return BlocBuilder<AppModeBloc, AppModeState>(
-      builder: (context, state) {
-        if (state.mode == AppMode.seller) {
-          return const SellerDashboardPage();
+    // First check authentication state
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        if (authState is AuthStateAuthenticated) {
+          // User is authenticated, show main app based on app mode
+          return BlocBuilder<AppModeBloc, AppModeState>(
+            builder: (context, state) {
+              if (state.mode == AppMode.seller) {
+                return const SellerDashboardPage();
+              }
+              // Default to Buyer mode
+              return const EcommerceHomePage(); // Will load products internally
+            },
+          );
+        } else if (authState is AuthStateUnauthenticated || authState is AuthStateInitial) {
+          // User is not authenticated, show login page
+          return const LoginPage();
+        } else if (authState is AuthStateLoading) {
+          // Still checking auth status, show loading
+          return const SplashScreen();
+        } else if (authState is AuthStateError) {
+          // There was an error, show login page
+          return const LoginPage();
         }
-        // Default to Buyer mode
-        return const EcommerceHomePage(); // Will load products internally
+        
+        // Default to login page
+        return const LoginPage();
       },
     );
   }

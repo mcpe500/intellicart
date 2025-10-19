@@ -25,13 +25,21 @@ class Product {
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      price: json['price'] ?? '',
-      originalPrice: json['originalPrice'],
+      price: _parsePrice(json['price']),
+      originalPrice: _parsePrice(json['originalPrice']),
       imageUrl: json['imageUrl'] ?? '',
       reviews: (json['reviews'] as List<dynamic>?)
               ?.map((review) => Review.fromJson(review))
               .toList() ?? [],
     );
+  }
+
+  // Helper method to parse price as either string or number
+  static String _parsePrice(dynamic priceValue) {
+    if (priceValue == null) return '';
+    if (priceValue is String) return priceValue;
+    if (priceValue is num) return '\${priceValue.toStringAsFixed(2)}';
+    return priceValue.toString();
   }
 
   Map<String, dynamic> toJson() {

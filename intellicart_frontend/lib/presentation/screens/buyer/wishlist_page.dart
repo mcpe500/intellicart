@@ -98,10 +98,21 @@ class _WishlistPageState extends State<WishlistPage> {
                       leading: ClipRRect(
                         borderRadius: BorderRadius.circular(8.0),
                         child: Image.network(
-                          product.imageUrl,
+                          product.imageUrl ?? 'https://via.placeholder.com/60',
                           width: 60,
                           height: 60,
                           fit: BoxFit.cover,
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              width: 60,
+                              height: 60,
+                              color: Colors.grey[200],
+                              child: const Center(
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            );
+                          },
                           errorBuilder: (context, error, stackTrace) =>
                               const Icon(Icons.image_not_supported, size: 60),
                         ),

@@ -1,10 +1,14 @@
 // lib/presentation/screens/core/login_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart_frontend/data/datasources/api_service.dart';
-import 'package:intellicart_frontend/models/user.dart';
+// --- REMOVED UNUSED IMPORTS ---
+// import 'package:intellicart_frontend/data/datasources/api_service.dart';
+// import 'package:intellicart_frontend/models/user.dart';
+// import 'package:intellicart_frontend/main.dart'; // For AppInitializer
+
+// --- ADDED BLOC IMPORT ---
+import 'package:intellicart_frontend/bloc/auth/auth_bloc.dart';
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart_frontend/main.dart'; // For AppInitializer
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,10 +23,10 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   final _nameController = TextEditingController();
   bool _isLogin = true;
-  bool _isLoading = false;
-  String _errorMessage = '';
-
-  final ApiService _apiService = ApiService();
+  // --- REMOVED STATE VARS NOW HANDLED BY BLOC ---
+  // bool _isLoading = false;
+  // String _errorMessage = '';
+  // final ApiService _apiService = ApiService();
 
   @override
   void dispose() {
@@ -32,82 +36,23 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
+  // --- SIMPLIFIED SUBMIT TO ONLY DISPATCH EVENTS ---
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-      _errorMessage = '';
-    });
-
-    try {
-      User? user;
-      
-      // Try API first
-      await _apiService.ensureInitialized(); // Ensure API service is initialized
-      
-      if (_isLogin) {
-        // Login
-        user = await _apiService.login(
-          _emailController.text,
-          _passwordController.text,
-        );
-      } else {
-        // Register
-        user = await _apiService.register(
-          _emailController.text,
-          _passwordController.text,
-          _nameController.text,
-          'buyer', // Default to buyer role on registration
-        );
-      }
-
-      if (user != null) {
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_isLogin ? 'Login successful!' : 'Registration successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        
-        // Set mode based on user role
-        final mode = user.role == 'seller' ? AppMode.seller : AppMode.buyer;
-        context.read<AppModeBloc>().add(SetAppMode(mode));
-        
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const AppInitializer()),
-          (route) => false,
-        );
-      }
-    } on Exception catch (e) {
-      String errorMessage = e.toString();
-      if (errorMessage.contains('User not found') || errorMessage.contains('Invalid password')) {
-        errorMessage = 'Invalid email or password';
-      } else if (errorMessage.contains('User already exists')) {
-        errorMessage = 'User already exists';
-      } else if (errorMessage.contains('All fields are required')) {
-        errorMessage = 'All fields are required';
-      } else {
-        errorMessage = 'An API error occurred: ${e.toString()}';
-      }
-      
-      setState(() {
-        _errorMessage = errorMessage;
-      });
-      
-      // Show error snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_errorMessage),
-          backgroundColor: Colors.red,
-        ),
-      );
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    // The BLoC will handle setting loading state,
+    // calling the API, saving the token, and emitting the final state.
+    if (_isLogin) {
+      context.read<AuthBloc>().add(LoginRequested(
+            email: _emailController.text,
+            password: _passwordController.text,
+          ));
+    } else {
+      context.read<AuthBloc>().add(RegisterRequested(
+            email: _emailController.text,
+            password: _passwordController.text,
+            name: _nameController.text,
+          ));
     }
   }
 
@@ -121,10 +66,12 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
-          onPressed: () => Navigator.pop(context),
-        ),
+        // No back button on the root login page
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: primaryTextColor),
+        //   onPressed: () => Navigator.pop(context),
+        // ),
+        automaticallyImplyLeading: false,
         title: Text(
           _isLogin ? 'Welcome Back' : 'Create Account',
           style: const TextStyle(
@@ -134,134 +81,158 @@ class _LoginPageState extends State<LoginPage> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo or app branding
-              Icon(
-                Icons.shopping_bag,
-                size: 80,
-                color: accentColor,
+      // --- WRAPPED BODY IN BLOCCONSUMER ---
+      body: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          // 1. Listen for errors to show a SnackBar
+          if (state is AuthStateError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
               ),
-              const SizedBox(height: 32),
-              
-              if (!_isLogin) ...[
-                // Name field for registration
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Full Name',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
+            );
+          }
+          
+          // 2. Listen for success to set AppMode (this is still useful)
+          if (state is AuthStateAuthenticated) {
+             // We can check the user role from the API service if needed,
+             // but for now, we just rely on the AppInitializer
+             // to handle the navigation.
+             // We can also optimistically set the app mode here.
+             // For now, AppInitializer handles this navigation.
+          }
+        },
+        builder: (context, state) {
+          // 3. Determine loading state from the BLoC
+          final bool isLoading = state is AuthStateLoading;
+
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo or app branding
+                  Icon(
+                    Icons.shopping_bag,
+                    size: 80,
+                    color: accentColor,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-              ],
-              
-              // Email field
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'Email',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.email),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your email';
-                  }
-                  if (!value.contains('@')) {
-                    return 'Please enter a valid email';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Password field
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your password';
-                  }
-                  if (value.length < 6) {
-                    return 'Password must be at least 6 characters';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              
-              // Error message
-              if (_errorMessage.isNotEmpty)
-                Text(
-                  _errorMessage,
-                  style: const TextStyle(color: Colors.red),
-                ),
-              
-              const SizedBox(height: 16),
-              
-              // Login/Register button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  const SizedBox(height: 32),
+
+                  if (!_isLogin) ...[
+                    // Name field for registration
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Full Name',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your name';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Email field
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.email),
+                    ),
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Please enter a valid email';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Password field
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.lock),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your password';
+                      }
+                      if (value.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Removed error message text, SnackBar handles it
+
+                  const SizedBox(height: 16),
+
+                  // Login/Register button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      // 4. Use isLoading to disable button
+                      onPressed: isLoading ? null : _submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      // 5. Show loading indicator
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              _isLogin ? 'Login' : 'Register',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text(
-                          _isLogin ? 'Login' : 'Register',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                ),
+                  const SizedBox(height: 16),
+
+                  // Toggle between login and register
+                  TextButton(
+                    onPressed: isLoading ? null : () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                      });
+                    },
+                    child: Text(
+                      _isLogin
+                          ? 'New user? Register here'
+                          : 'Already have an account? Login',
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              
-              // Toggle between login and register
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _isLogin = !_isLogin;
-                    _errorMessage = '';
-                  });
-                },
-                child: Text(
-                  _isLogin 
-                      ? 'New user? Register here' 
-                      : 'Already have an account? Login',
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
