@@ -3,16 +3,23 @@
   "type": "module",
   "scripts": {
     "dev": "bun --watch src/server.ts",
-    "start": "bun src/server.ts"
+    "start": "bun src/server.ts",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
   },
   "dependencies": {
     "@hono/node-server": "^1.19.5",
     "@hono/swagger-ui": "^0.2.0",
     "@hono/zod-openapi": "^0.9.0",
+    "dotenv": "^17.2.3",
+    "firebase-admin": "^13.5.0",
     "hono": "^4.9.9",
-    "zod": "^3.22.0"
+    "zod": "^3.22.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
+    "@types/dotenv": "^8.2.3",
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.11.17",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"

@@ -1,4 +1,4 @@
-/**
+/** 
  * Intellicart API Main Application File
  * 
  * This file initializes the Hono application with OpenAPI integration,
@@ -11,12 +11,19 @@
  * 
  * @file Main application entry point
  * @author Intellicart Team
- * @version 1.0.0
+ * @version 3.0.0
  */
 
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { swaggerUI } from '@hono/swagger-ui';
 import { userRoutes } from './routes/userRoutes';
+import { authRoutes } from './routes/authRoutes';
+import { productRoutes } from './routes/productRoutes';
+import { orderRoutes } from './routes/orderRoutes';
+import { initializeDb } from './database/db_service';
+
+// Initialize the database service based on environment configuration
+initializeDb();
 
 /**
  * Create the main application instance using OpenAPIHono
@@ -25,15 +32,17 @@ import { userRoutes } from './routes/userRoutes';
 const app = new OpenAPIHono();
 
 /**
- * Register all user-related routes under the '/api' prefix
- * This creates endpoints such as:
- * - GET /api/users
- * - POST /api/users
- * - GET /api/users/:id
- * - PUT /api/users/:id
- * - DELETE /api/users/:id
+ * Register all API routes under specific prefixes for proper grouping
+ * This creates grouped endpoints for better organization:
+ * - Authentication: /api/auth/*
+ * - Users: /api/users/*
+ * - Products: /api/products/*
+ * - Orders: /api/orders/*
  */
-app.route('/api', userRoutes);
+app.route('/api/auth', authRoutes);
+app.route('/api/users', userRoutes);
+app.route('/api/products', productRoutes);
+app.route('/api/orders', orderRoutes);
 
 /**
  * Root endpoint for API health check and information
@@ -60,7 +69,7 @@ app.get('/health', (c) => {
 });
 
 /**
- * Generate OpenAPI documentation specification
+ * Generate OpenAPI documentation specification with tags for grouping
  * This endpoint serves the OpenAPI JSON document that Swagger UI consumes
  * The specification is automatically generated from Zod schemas in route definitions
  */
@@ -71,6 +80,24 @@ app.doc('/doc', {
     version: '1.0.0',
     description: 'Auto-generated API documentation with Zod + Hono',
   },
+  tags: [
+    {
+      name: 'Authentication',
+      description: 'Authentication related endpoints for user login and registration'
+    },
+    {
+      name: 'Users',
+      description: 'Operations related to user management'
+    },
+    {
+      name: 'Products',
+      description: 'Operations related to product management'
+    },
+    {
+      name: 'Orders',
+      description: 'Operations related to order management'
+    }
+  ]
 });
 
 /**

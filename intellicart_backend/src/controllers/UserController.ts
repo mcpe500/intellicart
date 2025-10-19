@@ -9,40 +9,22 @@
  * - Deleting users
  * 
  * All methods are static for easy access from route handlers.
- * The controller uses a mock in-memory database for demonstration purposes.
+ * The controller now uses the dual-mode database service (JSON or Firestore).
  * 
  * @class UserController
  * @description Business logic layer for user operations
  * @author Intellicart Team
- * @version 1.0.0
+ * @version 4.0.0
  */
 
 import { Context } from 'hono';
 import { z } from 'zod';
-
-/**
- * Mock in-memory database for users
- * In a real application, this would be replaced with a persistent database
- */
-let users: Array<{
-  id: number;
-  name: string;
-  email: string;
-  age?: number;
-  createdAt: string;
-}> = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    age: 30,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { db } from '../database/db_service';
+import { User, CreateUserInput, UpdateUserInput, DeleteUserResponse } from '../types/UserTypes';
 
 export class UserController {
   /**
-   * Retrieve all users from the mock database
+   * Retrieve all users from the database (not implemented for security reasons)
    * 
    * @static
    * @async
@@ -50,24 +32,14 @@ export class UserController {
    * @returns {Promise} JSON response containing array of all users
    * @route GET /api/users
    * 
-   * Example response:
-   * [
-   *   {
-   *     "id": 1,
-   *     "name": "John Doe",
-   *     "email": "john@example.com",
-   *     "age": 30,
-   *     "createdAt": "2023-01-01T00:00:00.000Z"
-   *   }
-   * ]
+   * This endpoint is not implemented for security/privacy reasons.
    */
   static async getAllUsers(c: Context) {
-    // Return all users in the mock database
-    return c.json(users);
+    return c.json({ error: 'Endpoint not available for privacy reasons' }, 404);
   }
 
   /**
-   * Retrieve a specific user by ID
+   * Retrieve a specific user by ID from the database
    * 
    * @static
    * @async
@@ -77,10 +49,10 @@ export class UserController {
    * 
    * Example response (success):
    * {
-   *   "id": 1,
+   *   "id": "1",
    *   "name": "John Doe",
    *   "email": "john@example.com",
-   *   "age": 30,
+   *   "role": "buyer",
    *   "createdAt": "2023-01-01T00:00:00.000Z"
    * }
    * 
@@ -90,23 +62,28 @@ export class UserController {
    * }
    */
   static async getUserById(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
+    // Extract user ID from request parameters
+    const id = c.req.param('id');
     
-    // Find user in mock database by ID
-    const user = users.find(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (!user) {
-      return c.json({ error: 'User not found' }, 404);
+    try {
+      // Find user in database by ID
+      const user: User | null = await db().getUserById(id);
+      
+      // Return 404 if user not found
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      // Return found user
+      return c.json(user);
+    } catch (error) {
+      console.error(`Error retrieving user with ID ${id}:`, error);
+      return c.json({ error: 'Failed to retrieve user' }, 500);
     }
-    
-    // Return found user
-    return c.json(user);
   }
 
   /**
-   * Create a new user in the mock database
+   * Create a new user in the database
    * 
    * @static
    * @async
@@ -118,44 +95,38 @@ export class UserController {
    * {
    *   "name": "Jane Smith",
    *   "email": "jane@example.com",
-   *   "age": 25
+   *   "password": "securepassword",
+   *   "role": "buyer"
    * }
    * 
    * Example response:
    * {
-   *   "id": 2,
+   *   "id": "user-1234567890",
    *   "name": "Jane Smith",
    *   "email": "jane@example.com",
-   *   "age": 25,
+   *   "role": "buyer",
    *   "createdAt": "2023-01-01T00:00:00.000Z"
    * }
    */
   static async createUser(c: Context) {
     // Extract validated request body from context
     // The body has already been validated against Zod schema in route definition
-    const body = c.req.valid('json') as {
-      name: string;
-      email: string;
-      age?: number;
-    };
+    const body = c.req.valid('json') as CreateUserInput;
     
-    // Generate new user object with auto-incremented ID and creation timestamp
-    const newUser = {
-      // Calculate new ID based on current highest ID in database
-      id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-      ...body, // Spread validated request body into new user object
-      createdAt: new Date().toISOString(), // Add creation timestamp
-    };
-    
-    // Add new user to mock database
-    users.push(newUser);
-    
-    // Return created user with 201 status (Created)
-    return c.json(newUser, 201);
+    try {
+      // Create new user in database
+      const newUser: User = await db().createUser(body);
+      
+      // Return created user with 201 status (Created)
+      return c.json(newUser, 201);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return c.json({ error: 'Failed to create user' }, 500);
+    }
   }
 
   /**
-   * Update an existing user in the mock database
+   * Update an existing user in the database
    * 
    * @static
    * @async
@@ -166,15 +137,15 @@ export class UserController {
    * Example request body:
    * {
    *   "name": "Jane Smith Updated",
-   *   "age": 26
+   *   "email": "jane.updated@example.com"
    * }
    * 
    * Example response (success):
    * {
-   *   "id": 2,
+   *   "id": "user-1234567890",
    *   "name": "Jane Smith Updated",
-   *   "email": "jane@example.com",
-   *   "age": 26,
+   *   "email": "jane.updated@example.com",
+   *   "role": "buyer",
    *   "createdAt": "2023-01-01T00:00:00.000Z"
    * }
    * 
@@ -184,33 +155,24 @@ export class UserController {
    * }
    */
   static async updateUser(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
+    // Extract user ID from request parameters
+    const id = c.req.param('id');
     
     // Extract validated request body from context
-    const body = c.req.valid('json') as {
-      name?: string;
-      email?: string;
-      age?: number;
-    };
+    const body = c.req.valid('json') as UpdateUserInput;
     
-    // Find index of user in mock database by ID
-    const index = users.findIndex(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (index === -1) {
-      return c.json({ error: 'User not found' }, 404);
+    try {
+      // For now, user updates are not supported through this endpoint
+      // Users can update their profiles through the auth endpoint
+      return c.json({ error: 'User updates not supported through this endpoint' }, 400);
+    } catch (error) {
+      console.error(`Error updating user with ID ${id}:`, error);
+      return c.json({ error: 'Failed to update user' }, 500);
     }
-    
-    // Update user object by merging existing data with validated request body
-    users[index] = { ...users[index], ...body };
-    
-    // Return updated user
-    return c.json(users[index]);
   }
 
   /**
-   * Delete a user from the mock database
+   * Delete a user from the database
    * 
    * @static
    * @async
@@ -222,10 +184,10 @@ export class UserController {
    * {
    *   "message": "User deleted successfully",
    *   "user": {
-   *     "id": 2,
+   *     "id": "user-1234567890",
    *     "name": "Jane Smith",
    *     "email": "jane@example.com",
-   *     "age": 25,
+   *     "role": "buyer",
    *     "createdAt": "2023-01-01T00:00:00.000Z"
    *   }
    * }
@@ -236,24 +198,15 @@ export class UserController {
    * }
    */
   static async deleteUser(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
+    // Extract user ID from request parameters
+    const id = c.req.param('id');
     
-    // Find index of user in mock database by ID
-    const index = users.findIndex(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (index === -1) {
-      return c.json({ error: 'User not found' }, 404);
+    try {
+      // For security reasons, deletion is not enabled via public API
+      return c.json({ error: 'User deletion not supported for security reasons' }, 400);
+    } catch (error) {
+      console.error(`Error deleting user with ID ${id}:`, error);
+      return c.json({ error: 'Failed to delete user' }, 500);
     }
-    
-    // Remove user from mock database and store the deleted user
-    const deletedUser = users.splice(index, 1)[0];
-    
-    // Return success message and deleted user object
-    return c.json({ 
-      message: 'User deleted successfully', 
-      user: deletedUser 
-    });
   }
 }
