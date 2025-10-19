@@ -31,19 +31,22 @@ export interface DbService {
 let dbInstance: DbService;
 
 export const initializeDb = () => {
-  const mode = process.env.DATABASE_MODE;
+  const mode = process.env.DATABASE_MODE || 'json';
   if (mode === 'firestore') {
     const FirestoreDbService = require('./firestore_service').default;
     dbInstance = new FirestoreDbService();
+    console.log('Database initialized: Firestore mode');
   } else {
     const JsonDbService = require('./json_service').default;
     dbInstance = new JsonDbService();
+    console.log('Database initialized: JSON mode');
   }
 };
 
 export const db = (): DbService => {
   if (!dbInstance) {
-    throw new Error('Database service not initialized. Call initializeDb() first.');
+    console.error('Database service not initialized. Initializing now...');
+    initializeDb();
   }
   return dbInstance;
 };

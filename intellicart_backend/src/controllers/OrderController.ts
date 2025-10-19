@@ -7,21 +7,20 @@ export class OrderController {
   static async getOrdersBySeller(c: Context) {
     const jwtPayload = c.get('jwtPayload');
     if (!jwtPayload) {
+      Logger.warn('Get orders by seller failed: No authentication');
       return c.json({ error: 'Authentication required' }, 401);
     }
 
     const sellerId = jwtPayload.id;
 
     try {
-      // Get query parameters for filtering and pagination
       const { status, page = 1, limit = 10 } = c.req.query();
       const pageNum = parseInt(page as string) || 1;
-      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
       
-      // Get all orders for the seller
+      Logger.debug('Fetching orders by seller:', { sellerId, status, page: pageNum, limit: limitNum });
       const allOrders = await db().getOrdersBySellerId(sellerId);
       
-      // Apply status filter if provided
       let filteredOrders = allOrders;
       if (status) {
         filteredOrders = filteredOrders.filter(order => 
@@ -29,13 +28,13 @@ export class OrderController {
         );
       }
       
-      // Apply pagination
       const total = filteredOrders.length;
       const startIndex = (pageNum - 1) * limitNum;
       const endIndex = startIndex + limitNum;
       const orders = filteredOrders.slice(startIndex, endIndex);
       
-      const result = {
+      Logger.info(`Fetched ${orders.length} orders for seller: ${sellerId}`);
+      return c.json({
         orders,
         pagination: {
           page: pageNum,
@@ -43,11 +42,9 @@ export class OrderController {
           total,
           totalPages: Math.ceil(total / limitNum)
         }
-      };
-      
-      return c.json(result);
+      });
     } catch (error) {
-      console.error('Error retrieving orders:', error);
+      Logger.error('Error retrieving orders:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to retrieve orders' }, 500);
     }
   }
@@ -55,21 +52,20 @@ export class OrderController {
   static async getOrdersByUser(c: Context) {
     const jwtPayload = c.get('jwtPayload');
     if (!jwtPayload) {
+      Logger.warn('Get orders by user failed: No authentication');
       return c.json({ error: 'Authentication required' }, 401);
     }
 
     const customerId = jwtPayload.id;
 
     try {
-      // Get query parameters for filtering and pagination
       const { status, page = 1, limit = 10 } = c.req.query();
       const pageNum = parseInt(page as string) || 1;
-      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
       
-      // Get all orders for the user
+      Logger.debug('Fetching orders by user:', { customerId, status, page: pageNum, limit: limitNum });
       const allOrders = await db().getOrdersByCustomerId(customerId);
       
-      // Apply status filter if provided
       let filteredOrders = allOrders;
       if (status) {
         filteredOrders = filteredOrders.filter(order => 
@@ -77,13 +73,13 @@ export class OrderController {
         );
       }
       
-      // Apply pagination
       const total = filteredOrders.length;
       const startIndex = (pageNum - 1) * limitNum;
       const endIndex = startIndex + limitNum;
       const orders = filteredOrders.slice(startIndex, endIndex);
       
-      const result = {
+      Logger.info(`Fetched ${orders.length} orders for user: ${customerId}`);
+      return c.json({
         orders,
         pagination: {
           page: pageNum,
@@ -91,11 +87,9 @@ export class OrderController {
           total,
           totalPages: Math.ceil(total / limitNum)
         }
-      };
-      
-      return c.json(result);
+      });
     } catch (error) {
-      console.error('Error retrieving user orders:', error);
+      Logger.error('Error retrieving user orders:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to retrieve user orders' }, 500);
     }
   }
@@ -103,6 +97,7 @@ export class OrderController {
   static async updateOrderStatus(c: Context) {
     const jwtPayload = c.get('jwtPayload');
     if (!jwtPayload) {
+      Logger.warn('Update order status failed: No authentication');
       return c.json({ error: 'Authentication required' }, 401);
     }
 
@@ -110,23 +105,27 @@ export class OrderController {
     const { status } = await c.req.json();
 
     try {
-      // Verify that the authenticated user is the seller for this order
+      Logger.debug('Update order status request:', { orderId, status, sellerId: jwtPayload.id });
+      
       const orders = await db().getOrdersBySellerId(jwtPayload.id);
       const order = orders.find(o => o.id === orderId);
 
       if (!order) {
+        Logger.warn(`Update order status failed: Order not found or unauthorized: ${orderId}`);
         return c.json({ error: 'Order not found or you are not authorized to update this order' }, 403);
       }
 
       const updatedOrder = await db().updateOrderStatus(orderId, status);
 
       if (!updatedOrder) {
+        Logger.warn(`Update order status failed: Order not found: ${orderId}`);
         return c.json({ error: 'Order not found' }, 404);
       }
 
+      Logger.info(`Order status updated: ${orderId} to ${status}`);
       return c.json(updatedOrder);
     } catch (error) {
-      console.error(`Error updating order status for order ${orderId}:`, error);
+      Logger.error(`Error updating order status for order ${orderId}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to update order status' }, 500);
     }
   }

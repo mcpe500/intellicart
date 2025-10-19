@@ -8,28 +8,22 @@ import { Logger } from '../utils/logger';
 export class AuthController {
   static async login(c: Context) {
     try {
-      const { email } = await c.req.json() as LoginCredentials;
+      const { email, password } = await c.req.json() as LoginCredentials;
+      
+      Logger.debug('Login request body:', { email });
       Logger.info(`Login attempt for user: ${email}`);
       
-      const { email: reqEmail, password } = await c.req.json() as LoginCredentials;
-      
-      if (!reqEmail || !password) {
-        Logger.warn(`Login failed: Missing email or password for IP: ${c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.raw.url}`);
+      if (!email || !password) {
+        Logger.warn(`Login failed: Missing email or password`);
         return c.json({ error: 'Email and password are required' }, 400);
       }
 
-      const user = await db().getUserByEmail(reqEmail);
+      const user = await db().getUserByEmail(email);
       
-      if (!user) { // In a real app, you'd hash passwords and compare
-        Logger.warn(`Login failed: Invalid credentials for email: ${reqEmail}`);
+      if (!user) {
+        Logger.warn(`Login failed: Invalid credentials for email: ${email}`);
         return c.json({ error: 'Invalid email or password' }, 401);
       }
-
-      // For now, we'll assume the password is valid if the user exists
-      // In a real implementation, you'd compare the hashed password
-      // if (user.password !== password) { // This line would need to be implemented with proper password hashing
-      //   return c.json({ error: 'Invalid email or password' }, 401);
-      // }
 
       // Create JWT token
       const secret = process.env.JWT_SECRET;
@@ -42,15 +36,14 @@ export class AuthController {
         id: user.id,
         email: user.email,
         role: user.role,
-      } as JWTUserPayload, secret); // Removed exp to avoid potential conflicts with middleware
+      } as JWTUserPayload, secret);
 
-      // Generate a refresh token (in a real implementation, this should be stored securely)
       const refreshToken = await sign({
         id: user.id,
         email: user.email,
         role: user.role,
         type: 'refresh'
-      } as JWTUserPayload, process.env.JWT_SECRET + '_refresh'); // In production, use a separate secret
+      } as JWTUserPayload, secret + '_refresh');
 
       const response: AuthResponse = {
         token,
@@ -64,7 +57,7 @@ export class AuthController {
         }
       };
 
-      Logger.info(`Login successful for user: ${reqEmail}, ID: ${user.id}`);
+      Logger.info(`Login successful for user: ${email}, ID: ${user.id}`);
       return c.json(response);
     } catch (error) {
       Logger.error('Login error:', { error: (error as Error).message, stack: (error as Error).stack });
@@ -74,8 +67,17 @@ export class AuthController {
 
   static async register(c: Context) {
     try {
-      const { name, email, password, role } = await c.req.json() as Partial<User> & { password: string };
+      let body;
+      try {
+        body = await c.req.json();
+        Logger.debug('Raw registration body:', body);
+      } catch (parseError) {
+        Logger.error('JSON parse error:', { error: (parseError as Error).message });
+        return c.json({ error: 'Invalid JSON' }, 400);
+      }
       
+      const { name, email, password, role } = body as Partial<User> & { password: string };
+      Logger.debug('Registration request body:', { name, email, role });
       Logger.info(`Registration attempt for user: ${email}`);
       
       if (!name || !email || !password) {
@@ -109,15 +111,14 @@ export class AuthController {
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
-      } as JWTUserPayload, secret); // Removed exp to avoid potential conflicts with middleware
+      } as JWTUserPayload, secret);
 
-      // Generate a refresh token (in a real implementation, this should be stored securely)
       const refreshToken = await sign({
         id: newUser.id,
         email: newUser.email,
         role: newUser.role,
         type: 'refresh'
-      } as JWTUserPayload, process.env.JWT_SECRET + '_refresh'); // In production, use a separate secret
+      } as JWTUserPayload, secret + '_refresh');
 
       const response: AuthResponse = {
         token,
@@ -134,8 +135,12 @@ export class AuthController {
       Logger.info(`Registration successful for user: ${email}, ID: ${newUser.id}`);
       return c.json(response, 201);
     } catch (error) {
-      Logger.error('Registration error:', { error: (error as Error).message, stack: (error as Error).stack });
-      return c.json({ error: 'Internal server error' }, 500);
+      Logger.error('Registration error:', { 
+        error: (error as Error).message, 
+        stack: (error as Error).stack,
+        name: (error as Error).name
+      });
+      return c.json({ error: 'Internal server error', details: (error as Error).message }, 500);
     }
   }
 
@@ -144,12 +149,14 @@ export class AuthController {
       const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
       
       if (!jwtPayload) {
+        Logger.warn('Get profile failed: No JWT payload');
         return c.json({ error: 'Authentication required' }, 401);
       }
       
       const user = await db().getUserById(jwtPayload.id);
       
       if (!user) {
+        Logger.warn(`Get profile failed: User not found: ${jwtPayload.id}`);
         return c.json({ error: 'User not found' }, 404);
       }
 
@@ -161,7 +168,7 @@ export class AuthController {
         createdAt: user.createdAt
       });
     } catch (error) {
-      console.error('Get profile error:', error);
+      Logger.error('Get profile error:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Internal server error' }, 500);
     }
   }
@@ -185,23 +192,22 @@ export class AuthController {
         const decodedPayload = await verify(refreshToken, secret + '_refresh') as JWTUserPayload;
         
         if (!decodedPayload || decodedPayload.type !== 'refresh') {
+          Logger.warn('Refresh token failed: Invalid token type');
           return c.json({ error: 'Invalid refresh token' }, 400);
         }
 
-        // Check if user still exists
         const user = await db().getUserById(decodedPayload.id);
         if (!user) {
+          Logger.warn(`Refresh token failed: User not found: ${decodedPayload.id}`);
           return c.json({ error: 'User not found' }, 404);
         }
 
-        // Generate new access token
         const newToken = await sign({
           id: user.id,
           email: user.email,
           role: user.role,
         } as JWTUserPayload, secret);
 
-        // Generate new refresh token
         const newRefreshToken = await sign({
           id: user.id,
           email: user.email,
@@ -214,13 +220,14 @@ export class AuthController {
           refreshToken: newRefreshToken
         };
 
+        Logger.info(`Token refreshed for user: ${user.id}`);
         return c.json(response);
       } catch (verifyError) {
-        console.error('Token verification error:', verifyError);
+        Logger.error('Token verification error:', { error: (verifyError as Error).message });
         return c.json({ error: 'Invalid refresh token' }, 400);
       }
     } catch (error) {
-      console.error('Refresh token error:', error);
+      Logger.error('Refresh token error:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Internal server error' }, 500);
     }
   }

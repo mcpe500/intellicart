@@ -11,13 +11,7 @@ export class ProductController {
       const pageNum = parseInt(page as string) || 1;
       const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
       
-      Logger.info(`Fetching products`, { 
-        page: pageNum, 
-        limit: limitNum, 
-        search, 
-        category,
-        ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.raw.url
-      });
+      Logger.debug('Fetching products', { page: pageNum, limit: limitNum, search, category });
       
       // Get all products from database
       const allProducts = await db().getAllProducts();
@@ -67,17 +61,17 @@ export class ProductController {
     try {
       const sellerId = c.req.param('sellerId');
       
-      // Get query parameters for pagination
       const { page = 1, limit = 10 } = c.req.query();
       const pageNum = parseInt(page as string) || 1;
-      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100);
       
-      // Get products for the specific seller from database using pagination method
+      Logger.debug('Fetching seller products:', { sellerId, page: pageNum, limit: limitNum });
       const result = await db().getProductsBySellerIdWithPagination(sellerId, pageNum, limitNum);
       
+      Logger.info(`Fetched ${result.products.length} products for seller: ${sellerId}`);
       return c.json(result);
     } catch (error) {
-      console.error('Error retrieving seller products:', error);
+      Logger.error('Error retrieving seller products:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to retrieve seller products' }, 500);
     }
   }
@@ -89,12 +83,13 @@ export class ProductController {
       const product = await db().getProductById(id);
       
       if (!product) {
+        Logger.warn(`Get product failed: Product not found: ${id}`);
         return c.json({ error: 'Product not found' }, 404);
       }
       
       return c.json(product);
     } catch (error) {
-      console.error(`Error retrieving product with ID ${id}:`, error);
+      Logger.error(`Error retrieving product with ID ${id}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to retrieve product' }, 500);
     }
   }
@@ -102,6 +97,7 @@ export class ProductController {
   static async createProduct(c: Context) {
     const jwtPayload = c.get('jwtPayload');
     if (!jwtPayload) {
+      Logger.warn('Create product failed: No authentication');
       return c.json({ error: 'Authentication required' }, 401);
     }
 
@@ -109,12 +105,14 @@ export class ProductController {
 
     try {
       const body = await c.req.json() as CreateProductInput;
+      Logger.debug('Create product request:', { sellerId, productName: body.name });
       
       const newProduct = await db().createProduct(body, sellerId);
+      Logger.info(`Product created: ${newProduct.id} by seller: ${sellerId}`);
       
       return c.json(newProduct, 201);
     } catch (error) {
-      console.error('Error creating product:', error);
+      Logger.error('Error creating product:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to create product' }, 500);
     }
   }
@@ -124,15 +122,19 @@ export class ProductController {
     
     try {
       const body = await c.req.json() as UpdateProductInput;
+      Logger.debug('Update product request:', { productId: id });
+      
       const updatedProduct = await db().updateProduct(id, body);
       
       if (!updatedProduct) {
+        Logger.warn(`Update product failed: Product not found: ${id}`);
         return c.json({ error: 'Product not found' }, 404);
       }
       
+      Logger.info(`Product updated: ${id}`);
       return c.json(updatedProduct);
     } catch (error) {
-      console.error(`Error updating product with ID ${id}:`, error);
+      Logger.error(`Error updating product with ID ${id}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to update product' }, 500);
     }
   }
@@ -144,12 +146,14 @@ export class ProductController {
       const success = await db().deleteProduct(id);
       
       if (!success) {
+        Logger.warn(`Delete product failed: Product not found: ${id}`);
         return c.json({ error: 'Product not found' }, 404);
       }
       
+      Logger.info(`Product deleted: ${id}`);
       return c.json({ message: 'Product deleted successfully' });
     } catch (error) {
-      console.error(`Error deleting product with ID ${id}:`, error);
+      Logger.error(`Error deleting product with ID ${id}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to delete product' }, 500);
     }
   }
@@ -159,6 +163,7 @@ export class ProductController {
     const jwtPayload = c.get('jwtPayload');
     
     if (!jwtPayload) {
+      Logger.warn('Add review failed: No authentication');
       return c.json({ error: 'Authentication required' }, 401);
     }
 
@@ -166,21 +171,24 @@ export class ProductController {
 
     try {
       const body = await c.req.json() as CreateReviewInput;
+      Logger.debug('Add review request:', { productId, userId, rating: body.rating });
       
-      // Validate rating is between 1 and 5
       if (body.rating < 1 || body.rating > 5) {
+        Logger.warn(`Add review failed: Invalid rating: ${body.rating}`);
         return c.json({ error: 'Rating must be between 1 and 5' }, 400);
       }
       
       const review = await db().addProductReview(productId, body, userId);
       
       if (!review) {
+        Logger.warn(`Add review failed: Product not found: ${productId}`);
         return c.json({ error: 'Product not found' }, 404);
       }
       
+      Logger.info(`Review added to product: ${productId} by user: ${userId}`);
       return c.json(review, 201);
     } catch (error) {
-      console.error(`Error adding review to product with ID ${productId}:`, error);
+      Logger.error(`Error adding review to product with ID ${productId}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to add review' }, 500);
     }
   }

@@ -2,9 +2,15 @@ import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { AuthController } from '../controllers/AuthController';
 import { LoginSchema, RegisterSchema, AuthResponseSchema, ErrorSchema, RefreshTokenSchema, RefreshResponseSchema } from '../schemas/AuthSchemas';
 import { authMiddleware } from '../middleware/auth';
+import { Logger } from '../utils/logger';
 import { z } from 'zod';
 
 const authRoutes = new OpenAPIHono();
+
+authRoutes.onError((err, c) => {
+  Logger.error('Auth route error:', { error: err.message, stack: err.stack });
+  return c.json({ error: 'Validation failed', details: err.message }, 400);
+});
 
 // Login Route
 const loginRoute = createRoute({
@@ -93,6 +99,7 @@ const registerRoute = createRoute({
 });
 
 authRoutes.openapi(registerRoute, AuthController.register);
+
 
 // Get Current User Route (auth/me equivalent)
 const getCurrentUserRoute = createRoute({

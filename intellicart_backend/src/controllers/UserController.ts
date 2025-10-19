@@ -18,9 +18,9 @@
  */
 
 import { Context } from 'hono';
-import { z } from 'zod';
 import { db } from '../database/db_service';
-import { User, CreateUserInput, UpdateUserInput, DeleteUserResponse } from '../types/UserTypes';
+import { User, CreateUserInput, UpdateUserInput } from '../types/UserTypes';
+import { Logger } from '../utils/logger';
 
 export class UserController {
   /**
@@ -62,22 +62,19 @@ export class UserController {
    * }
    */
   static async getUserById(c: Context) {
-    // Extract user ID from request parameters
     const id = c.req.param('id');
     
     try {
-      // Find user in database by ID
       const user: User | null = await db().getUserById(id);
       
-      // Return 404 if user not found
       if (!user) {
+        Logger.warn(`Get user failed: User not found: ${id}`);
         return c.json({ error: 'User not found' }, 404);
       }
       
-      // Return found user
       return c.json(user);
     } catch (error) {
-      console.error(`Error retrieving user with ID ${id}:`, error);
+      Logger.error(`Error retrieving user with ID ${id}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to retrieve user' }, 500);
     }
   }
@@ -109,17 +106,16 @@ export class UserController {
    * }
    */
   static async createUser(c: Context) {
-    // Extract request body from context
-    const body = await c.req.json() as CreateUserInput;
-    
     try {
-      // Create new user in database
-      const newUser: User = await db().createUser(body);
+      const body = await c.req.json() as CreateUserInput;
+      Logger.debug('Create user request:', { email: body.email, role: body.role });
       
-      // Return created user with 201 status (Created)
+      const newUser: User = await db().createUser(body);
+      Logger.info(`User created: ${newUser.id}`);
+      
       return c.json(newUser, 201);
     } catch (error) {
-      console.error('Error creating user:', error);
+      Logger.error('Error creating user:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to create user' }, 500);
     }
   }
@@ -154,18 +150,13 @@ export class UserController {
    * }
    */
   static async updateUser(c: Context) {
-    // Extract user ID from request parameters
     const id = c.req.param('id');
     
-    // Extract request body from context
-    const body = await c.req.json() as UpdateUserInput;
-    
     try {
-      // For now, user updates are not supported through this endpoint
-      // Users can update their profiles through the auth endpoint
+      Logger.warn(`Update user attempt for ID ${id}: Not supported`);
       return c.json({ error: 'User updates not supported through this endpoint' }, 400);
     } catch (error) {
-      console.error(`Error updating user with ID ${id}:`, error);
+      Logger.error(`Error updating user with ID ${id}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to update user' }, 500);
     }
   }
@@ -197,14 +188,13 @@ export class UserController {
    * }
    */
   static async deleteUser(c: Context) {
-    // Extract user ID from request parameters
     const id = c.req.param('id');
     
     try {
-      // For security reasons, deletion is not enabled via public API
+      Logger.warn(`Delete user attempt for ID ${id}: Not supported`);
       return c.json({ error: 'User deletion not supported for security reasons' }, 400);
     } catch (error) {
-      console.error(`Error deleting user with ID ${id}:`, error);
+      Logger.error(`Error deleting user with ID ${id}:`, { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to delete user' }, 500);
     }
   }

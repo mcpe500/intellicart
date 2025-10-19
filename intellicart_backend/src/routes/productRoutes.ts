@@ -16,7 +16,7 @@ const productRoutes = new OpenAPIHono();
 // Get all products with pagination
 const getAllProductsRoute = createRoute({
   method: 'get',
-  path: '/products',
+  path: '/',
   tags: ['Products'],
   request: {
     query: z.object({
@@ -106,7 +106,7 @@ productRoutes.openapi(getSellerProductsRoute, ProductController.getSellerProduct
 // Get product by ID
 const getProductByIdRoute = createRoute({
   method: 'get',
-  path: '/products/{id}',
+  path: '/{id}',
   tags: ['Products'],
   request: {
     params: ProductIdParamSchema,
@@ -136,7 +136,7 @@ productRoutes.openapi(getProductByIdRoute, ProductController.getProductById);
 // Create product (requires authentication)
 const createProductRoute = createRoute({
   method: 'post',
-  path: '/products',
+  path: '/',
   tags: ['Products'],
   middleware: [authMiddleware],
   security: [{ BearerAuth: [] }],
@@ -182,7 +182,7 @@ productRoutes.openapi(createProductRoute, ProductController.createProduct);
 // Update product
 const updateProductRoute = createRoute({
   method: 'put',
-  path: '/products/{id}',
+  path: '/{id}',
   tags: ['Products'],
   request: {
     params: ProductIdParamSchema,
@@ -219,7 +219,7 @@ productRoutes.openapi(updateProductRoute, ProductController.updateProduct);
 // Delete product
 const deleteProductRoute = createRoute({
   method: 'delete',
-  path: '/products/{id}',
+  path: '/{id}',
   tags: ['Products'],
   request: {
     params: ProductIdParamSchema,
@@ -251,7 +251,7 @@ productRoutes.openapi(deleteProductRoute, ProductController.deleteProduct);
 // Add review to product
 const addReviewRoute = createRoute({
   method: 'post',
-  path: '/products/{id}/reviews',
+  path: '/{id}/reviews',
   tags: ['Products'],
   middleware: [authMiddleware],
   security: [{ BearerAuth: [] }],
