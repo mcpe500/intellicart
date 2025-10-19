@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/data/models/cart_item.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
 
 class CartItemCard extends StatelessWidget {
   final CartItem item;
-  final Function(int) onQuantityChanged;
-  final VoidCallback onRemove;
 
   const CartItemCard({
     super.key,
     required this.item,
-    required this.onQuantityChanged,
-    required this.onRemove,
   });
 
   @override
@@ -28,9 +26,9 @@ class CartItemCard extends StatelessWidget {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: item.imageUrl != null
+              child: item.productImageUrl.isNotEmpty
                   ? Image.network(
-                      item.imageUrl!,
+                      item.productImageUrl,
                       fit: BoxFit.cover,
                       loadingBuilder: (context, child, loadingProgress) {
                         if (loadingProgress == null) return child;
@@ -68,7 +66,7 @@ class CartItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '\$${item.price.toStringAsFixed(2)}',
+                    item.productPrice,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -79,7 +77,11 @@ class CartItemCard extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.remove),
                         onPressed: item.quantity > 1
-                            ? () => onQuantityChanged(item.quantity - 1)
+                            ? () {
+                                context.read<CartBloc>().add(
+                                  UpdateQuantity(item.productId, item.quantity - 1)
+                                );
+                              }
                             : null,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -93,14 +95,22 @@ class CartItemCard extends StatelessWidget {
                       ),
                       IconButton(
                         icon: const Icon(Icons.add),
-                        onPressed: () => onQuantityChanged(item.quantity + 1),
+                        onPressed: () {
+                          context.read<CartBloc>().add(
+                            UpdateQuantity(item.productId, item.quantity + 1)
+                          );
+                        },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: onRemove,
+                        onPressed: () {
+                          context.read<CartBloc>().add(
+                            RemoveFromCart(item.id!)
+                          );
+                        },
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),

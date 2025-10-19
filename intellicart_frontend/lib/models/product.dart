@@ -38,7 +38,10 @@ class Product {
   static String _parsePrice(dynamic priceValue) {
     if (priceValue == null) return '';
     if (priceValue is String) return priceValue;
-    if (priceValue is num) return '\${priceValue.toStringAsFixed(2)}';
+    if (priceValue is num) {
+      // Format as price with $ and 2 decimal places
+      return '\$${priceValue.toStringAsFixed(2)}';
+    }
     return priceValue.toString();
   }
 

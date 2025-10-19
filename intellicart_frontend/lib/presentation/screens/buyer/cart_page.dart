@@ -1,70 +1,24 @@
-// lib/screens/cart_page.dart
+// lib/presentation/screens/buyer/cart_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
+import 'package:intellicart_frontend/data/models/cart_item.dart';
 
-class CartPage extends StatefulWidget {
+class CartPage extends StatelessWidget {
   const CartPage({super.key});
-
-  @override
-  State<CartPage> createState() => _CartPageState();
-}
-
-class _CartPageState extends State<CartPage> {
-  // Sample cart items - in a real app, this would come from a state management solution
-  final List<CartItem> _cartItems = [
-    CartItem(
-      product: Product(
-        id: '1',
-        name: 'Stylish Headphones',
-        description: 'For immersive audio',
-        price: '\$49.99',
-        originalPrice: '\$60.00',
-        imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMDDt1s-XFmFZSH0ueZa_h2OY0-wSr0PwaY4s6z7CWYwY15RQ84AFwOUPae2BDOXI73lUD5rch6jWyiRaX4V84CzDJNkS3ZrCKWSrXRRGo1kJXmnoyVW2LqNBZ62Uf7k5j3ekVHTTDd6a5cxMqwDbZ1UGyXbMrEAX8U-B1hVJpAuVefrbzAd3ewrAojReuO9pG2MmbKxoYD4oiedLQvR5H7RKR-8vKdVE0NJSNpysXDQ4BgY0CwHSmFB99DMdnU6fIGsftaer72icT',
-        reviews: [],
-      ),
-      quantity: 1,
-    ),
-    CartItem(
-      product: Product(
-        id: '2',
-        name: 'Wireless Earbuds',
-        description: 'Compact and convenient',
-        price: '\$79.99',
-        imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAU7U_kS6_gA60CXLu3bQedKs7gieDR-Od4nf01tYU1wiMTn7rnT9gQjZJrXCWSbd3qSnnAb4ohNgEe6Rqkme_SFVx3pdpdg7dDl2RXverxSCbNfl06zi79wznmywgEy2tjT0vzBqLgdBrNAeOzxMZTVrYva74Y2ClHL8Nm9HUM4xqsf_MkIdsQAJntvJyEyYwBki7Vsq1huMtI8DDohIKbLItAlgtMAfQNC14jLnulQjuc74GOglQOVmneWnEV6ieRiEQrTXOZM_Sr',
-        reviews: [],
-      ),
-      quantity: 2,
-    ),
-  ];
-
-  double get _subtotal {
-    return _cartItems.fold(0.0, (sum, item) {
-      final price = double.parse(item.product.price.replaceAll('\$', ''));
-      return sum + (price * item.quantity);
-    });
-  }
-
-  double get _tax => _subtotal * 0.1; // 10% tax
-  double get _deliveryFee => 5.99;
-  double get _total => _subtotal + _tax + _deliveryFee;
 
   @override
   Widget build(BuildContext context) {
     const Color primaryTextColor = Color(0xFF181411);
+    const Color accentColor = Color(0xFFD97706);
     
-    
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
+        automaticallyImplyLeading: false, // Remove the back button
         title: const Text(
           'Shopping Cart',
           style: TextStyle(
@@ -74,28 +28,45 @@ class _CartPageState extends State<CartPage> {
         ),
         centerTitle: true,
       ),
-      body: _cartItems.isEmpty
-          ? _buildEmptyCart()
-          : Column(
-              children: [
-                // Cart Items
-                Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
-                    itemCount: _cartItems.length,
-                    itemBuilder: (context, index) {
-                      return _buildCartItem(_cartItems[index]);
-                    },
-                  ),
+      body: BlocBuilder<CartBloc, CartState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if (state.error != null) {
+            return Center(
+              child: Text('Error: ${state.error}'),
+            );
+          }
+          
+          if (state.cartItems.isEmpty) {
+            return _buildEmptyCart(context);
+          }
+          
+          return Column(
+            children: [
+              // Cart Items
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16.0),
+                  itemCount: state.cartItems.length,
+                  itemBuilder: (context, index) {
+                    final cartItem = state.cartItems[index];
+                    return _buildCartItem(cartItem, context);
+                  },
                 ),
-                // Order Summary
-                _buildOrderSummary(),
-              ],
-            ),
+              ),
+              // Order Summary
+              _buildOrderSummary(state.cartItems, context),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildEmptyCart() {
+  Widget _buildEmptyCart(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -126,7 +97,7 @@ class _CartPageState extends State<CartPage> {
           ElevatedButton(
             onPressed: () {
               // Navigate back to home or search
-              Navigator.pop(context);
+              Navigator.of(context).pop();
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFD97706),
@@ -149,7 +120,7 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildCartItem(CartItem cartItem) {
+  Widget _buildCartItem(CartItem cartItem, BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -171,7 +142,7 @@ class _CartPageState extends State<CartPage> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                cartItem.product.imageUrl ?? 'https://via.placeholder.com/80',
+                cartItem.productImageUrl,
                 width: 80,
                 height: 80,
                 fit: BoxFit.cover,
@@ -205,7 +176,7 @@ class _CartPageState extends State<CartPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    cartItem.product.name,
+                    cartItem.productName,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -214,7 +185,7 @@ class _CartPageState extends State<CartPage> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    cartItem.product.description,
+                    cartItem.productDescription,
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.grey[600],
@@ -222,7 +193,7 @@ class _CartPageState extends State<CartPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    cartItem.product.price,
+                    cartItem.productPrice,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -237,13 +208,15 @@ class _CartPageState extends State<CartPage> {
               children: [
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      if (cartItem.quantity > 1) {
-                        cartItem.quantity--;
-                      } else {
-                        _cartItems.remove(cartItem);
-                      }
-                    });
+                    if (cartItem.quantity > 1) {
+                      context.read<CartBloc>().add(
+                        UpdateQuantity(cartItem.productId, cartItem.quantity - 1)
+                      );
+                    } else {
+                      context.read<CartBloc>().add(
+                        RemoveFromCart(cartItem.id!)
+                      );
+                    }
                   },
                   icon: const Icon(Icons.remove_circle_outline),
                   color: Colors.grey[600],
@@ -257,9 +230,9 @@ class _CartPageState extends State<CartPage> {
                 ),
                 IconButton(
                   onPressed: () {
-                    setState(() {
-                      cartItem.quantity++;
-                    });
+                    context.read<CartBloc>().add(
+                      UpdateQuantity(cartItem.productId, cartItem.quantity + 1)
+                    );
                   },
                   icon: const Icon(Icons.add_circle_outline),
                   color: const Color(0xFFD97706),
@@ -272,7 +245,17 @@ class _CartPageState extends State<CartPage> {
     );
   }
 
-  Widget _buildOrderSummary() {
+  Widget _buildOrderSummary(List<CartItem> cartItems, BuildContext context) {
+    double subtotal = cartItems.fold(0.0, (sum, item) {
+      final priceString = item.productPrice.replaceAll('\$', '');
+      final price = double.tryParse(priceString) ?? 0.0;
+      return sum + (price * item.quantity);
+    });
+    
+    double tax = subtotal * 0.1; // 10% tax
+    double deliveryFee = 5.99;
+    double total = subtotal + tax + deliveryFee;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -297,11 +280,11 @@ class _CartPageState extends State<CartPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Subtotal (${_cartItems.length} items)',
+                'Subtotal (${cartItems.length} items)',
                 style: TextStyle(color: Colors.grey[600]),
               ),
               Text(
-                '\$${_subtotal.toStringAsFixed(2)}',
+                '\$${subtotal.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF181411),
@@ -318,7 +301,7 @@ class _CartPageState extends State<CartPage> {
                 style: TextStyle(color: Colors.grey[600]),
               ),
               Text(
-                '\$${_tax.toStringAsFixed(2)}',
+                '\$${tax.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF181411),
@@ -335,7 +318,7 @@ class _CartPageState extends State<CartPage> {
                 style: TextStyle(color: Colors.grey[600]),
               ),
               Text(
-                '\$${_deliveryFee.toStringAsFixed(2)}',
+                '\$${deliveryFee.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontWeight: FontWeight.w500,
                   color: Color(0xFF181411),
@@ -356,7 +339,7 @@ class _CartPageState extends State<CartPage> {
                 ),
               ),
               Text(
-                '\$${_total.toStringAsFixed(2)}',
+                '\$${total.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -399,14 +382,4 @@ class _CartPageState extends State<CartPage> {
       ),
     );
   }
-}
-
-class CartItem {
-  final Product product;
-  int quantity;
-
-  CartItem({
-    required this.product,
-    this.quantity = 1,
-  });
 }

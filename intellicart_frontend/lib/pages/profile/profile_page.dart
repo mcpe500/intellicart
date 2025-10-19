@@ -12,6 +12,7 @@ class ProfilePage extends StatelessWidget {
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Profile',
+        showBackButton: false,
       ),
       body: SafeArea(
         child: Padding(

@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
 import 'package:intellicart_frontend/bloc/auth/auth_bloc.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
+import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
+import 'package:intellicart_frontend/data/repositories/cart_repository.dart';
+import 'package:intellicart_frontend/data/repositories/wishlist_repository.dart';
 
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_home_page.dart';
@@ -20,6 +24,16 @@ void main() async {
         ),
         BlocProvider(
           create: (context) => AuthBloc(),
+        ),
+        BlocProvider(
+          create: (context) => CartBloc(
+            cartRepository: CartRepositoryImpl()
+          ),
+        ),
+        BlocProvider(
+          create: (context) => WishlistBloc(
+            wishlistRepository: WishlistRepositoryImpl()
+          ),
         ),
       ],
       child: const MyApp(),

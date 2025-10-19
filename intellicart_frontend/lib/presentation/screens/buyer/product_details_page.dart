@@ -1,6 +1,11 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
+import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
+import 'package:intellicart_frontend/data/models/cart_item.dart';
+import 'package:intellicart_frontend/data/models/wishlist_item.dart';
 
 import 'package:intellicart_frontend/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
 
@@ -73,43 +78,37 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
     return Scaffold(
       backgroundColor: pageBgColor,
-      // The body is wrapped in a Stack to allow for the sticky bottom bar
+      appBar: AppBar(
+        backgroundColor: pageBgColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: lightTextColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Product Details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: primaryTextColor,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: lightTextColor),
+            onPressed: () {},
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           // Main scrollable content
           SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 160), // Add bottom padding to account for bottom bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Custom App Bar section (using a Padding and Row instead of a real AppBar)
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top,
-                      left: 4.0,
-                      right: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: lightTextColor),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Text(
-                        'Product Details',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.share, color: lightTextColor),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-
                 // Image Carousel
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -286,8 +285,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => AddReviewPage(
-                                    // We'll use the product name as a stand-in for ID
-                                    productId: widget.product.name,
+                                    productId: widget.product.id,
                                   ),
                                 ),
                               );
@@ -334,82 +332,147 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     ],
                   ),
                 ),
-
-                // Spacer to prevent content from being hidden by the bottom bar
-                const SizedBox(height: 120),
               ],
             ),
           ),
 
-          // Sticky Bottom "Add to Cart" Bar
+          // Fixed Bottom "Add to Cart" Bar with Wishlist button
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0,
-                  MediaQuery.of(context).padding.bottom + 12.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
               decoration: BoxDecoration(
                 color: pageBgColor,
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha((255 * 0.05).round()),
-                    blurRadius: 10,
+                    color: Colors.black.withAlpha((255 * 0.1).round()),
+                    blurRadius: 8,
+                    offset: const Offset(0, -4),
                   )
                 ],
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove, color: accentColor),
-                          onPressed: _decrementQuantity,
+                  // Quantity controls row
+                  Row(
+                    children: [
+                      OutlinedButton(
+                        onPressed: _decrementQuantity,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(6),
+                          side: BorderSide(color: accentColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        Text(
+                        child: const Icon(Icons.remove, size: 16),
+                      ),
+                      Container(
+                        width: 40,
+                        alignment: Alignment.center,
+                        child: Text(
                           '$_quantity',
                           style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: primaryTextColor),
+                              color: Color(0xFF181411)),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.add, color: accentColor),
-                          onPressed: _incrementQuantity,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16.0),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        print(
-                            'Added ${widget.product.name} (Qty: $_quantity) to cart.');
-                        // Here you would typically call a state management provider
-                        // or bloc to actually add the item to the cart.
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        elevation: 2,
                       ),
-                      child: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      OutlinedButton(
+                        onPressed: _incrementQuantity,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(6),
+                          side: BorderSide(color: accentColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
+                        child: const Icon(Icons.add, size: 16),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Add product to persistent cart
+                            final cartItem = CartItem(
+                              productId: widget.product.id,
+                              productName: widget.product.name,
+                              productDescription: widget.product.description,
+                              productPrice: widget.product.price,
+                              productImageUrl: widget.product.imageUrl ?? '',
+                              quantity: _quantity,
+                            );
+                            
+                            context.read<CartBloc>().add(AddToCart(cartItem));
+                            
+                            // Show success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Added ${widget.product.name} (Qty: $_quantity) to cart!'),
+                                backgroundColor: accentColor,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: const Text(
+                            'Add to Cart',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Wishlist button below
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // Add product to wishlist
+                      final wishlistItem = WishlistItem(
+                        productId: widget.product.id,
+                        productName: widget.product.name,
+                        productDescription: widget.product.description,
+                        productPrice: widget.product.price,
+                        productImageUrl: widget.product.imageUrl ?? '',
+                      );
+                      
+                      context.read<WishlistBloc>().add(AddToWishlist(wishlistItem));
+                      
+                      // Show success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Added ${widget.product.name} to wishlist!'),
+                          backgroundColor: accentColor,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.favorite_border, color: Color(0xFFD97706), size: 16),
+                    label: const Text(
+                      'Add to Wishlist',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFD97706),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFD97706)),
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
                       ),
                     ),
                   ),

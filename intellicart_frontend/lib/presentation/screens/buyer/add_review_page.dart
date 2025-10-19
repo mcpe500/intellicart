@@ -63,7 +63,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
     );
 
     return BlocProvider(
-      create: (context) => ReviewBloc(),
+      create: (context) => ReviewBloc.create(),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(

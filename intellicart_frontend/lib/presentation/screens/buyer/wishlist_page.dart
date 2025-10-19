@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
-// FIX: Changed to a direct package import for better path resolution.
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
+import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
+import 'package:intellicart_frontend/data/models/cart_item.dart';
+import 'package:intellicart_frontend/data/models/wishlist_item.dart';
 
 class WishlistPage extends StatefulWidget {
   const WishlistPage({super.key});
@@ -10,39 +14,6 @@ class WishlistPage extends StatefulWidget {
 }
 
 class _WishlistPageState extends State<WishlistPage> {
-  // Dummy data for wishlist items
-  // FIX: Updated the Product objects to match the constructor in the Product model.
-  // - Removed 'id' and 'category' as they are not defined in the Product class.
-  // - Changed the 'price' to a String to match the model's data type.
-  final List<Product> wishlist = [
-    Product(
-      id: '1',
-      name: 'Classic Leather Jacket',
-      description: 'A timeless leather jacket for all seasons.',
-      price: '\$129.99',
-      imageUrl: 'https://placehold.co/400x400/000000/FFFFFF?text=Jacket',
-      reviews: [],
-    ),
-    Product(
-      id: '2',
-      name: 'Wireless Bluetooth Headphones',
-      description: 'High-fidelity sound with noise cancellation.',
-      price: '\$89.99',
-      imageUrl: 'https://placehold.co/400x400/5E5E5E/FFFFFF?text=Headphones',
-      reviews: [],
-    ),
-     Product(
-        id: '3',
-        name: 'Stylish Headphones',
-        description: 'For immersive audio',
-        price: '\$49.99',
-        originalPrice: '\$60.00',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuDMDDt1s-XFmFZSH0ueZa_h2OY0-wSr0PwaY4s6z7CWYwY15RQ84AFwOUPae2BDOXI73lUD5rch6jWyiRaX4V84CzDJNkS3ZrCKWSrXRRGo1kJXmnoyVW2LqNBZ62Uf7k5j3ekVHTTDd6a5cxMqwDbZ1UGyXbMrEAX8U-B1hVJpAuVefrbzAd3ewrAojReuO9pG2MmbKxoYD4oiedLQvR5H7RKR-8vKdVE0NJSNpysXDQ4BgY0CwHSmFB99DMdnU6fIGsftaer72icT',
-        reviews: [],
-      ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     const Color primaryTextColor = Color(0xFF181411);
@@ -61,15 +32,21 @@ class _WishlistPageState extends State<WishlistPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
       ),
-      body: wishlist.isEmpty
-          ? Center(
+      body: BlocBuilder<WishlistBloc, WishlistState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.error != null) {
+            return Center(
+              child: Text('Error: ${state.error}'),
+            );
+          }
+
+          if (state.wishlistItems.isEmpty) {
+            return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -81,86 +58,110 @@ class _WishlistPageState extends State<WishlistPage> {
                   ),
                 ],
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: wishlist.length,
-              itemBuilder: (context, index) {
-                final product = wishlist[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: ListTile(
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: Image.network(
-                          product.imageUrl ?? 'https://via.placeholder.com/60',
-                          width: 60,
-                          height: 60,
-                          fit: BoxFit.cover,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              width: 60,
-                              height: 60,
-                              color: Colors.grey[200],
-                              child: const Center(
-                                child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(16.0),
+            itemCount: state.wishlistItems.length,
+            itemBuilder: (context, index) {
+              final item = state.wishlistItems[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: ListTile(
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: Image.network(
+                        item.productImageUrl,
+                        width: 60,
+                        height: 60,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            width: 60,
+                            height: 60,
+                            color: Colors.grey[200],
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.image_not_supported, size: 60),
+                      ),
+                    ),
+                    title: Text(
+                      item.productName,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text(
+                      item.productPrice,
+                      style: const TextStyle(
+                          color: Color(0xFFD97706),
+                          fontWeight: FontWeight.w600),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.shopping_cart_outlined,
+                              color: Color(0xFF181411)),
+                          tooltip: 'Add to Cart',
+                          onPressed: () {
+                            // Add to persistent cart
+                            final cartItem = CartItem(
+                              productId: item.productId,
+                              productName: item.productName,
+                              productDescription: item.productDescription,
+                              productPrice: item.productPrice,
+                              productImageUrl: item.productImageUrl,
+                              quantity: 1,
+                            );
+                            
+                            context.read<CartBloc>().add(AddToCart(cartItem));
+                            
+                            // Show success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Added ${item.productName} to cart!'),
+                                backgroundColor: accentColor,
                               ),
                             );
                           },
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.image_not_supported, size: 60),
                         ),
-                      ),
-                      title: Text(
-                        product.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        product.price,
-                        style: const TextStyle(
-                            color: accentColor,
-                            fontWeight: FontWeight.w600),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                           IconButton(
-                            icon: const Icon(Icons.shopping_cart_outlined,
-                                color: primaryTextColor),
-                            tooltip: 'Add to Cart',
-                            onPressed: () {
-                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Added to cart!'),
-                                  backgroundColor: accentColor,
-                                ),
-                              );
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                color: Colors.redAccent),
-                            tooltip: 'Remove from Wishlist',
-                            onPressed: () {
-                              setState(() {
-                                wishlist.removeAt(index);
-                              });
-                            },
-                          ),
-                        ],
-                      ),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline,
+                              color: Colors.redAccent),
+                          tooltip: 'Remove from Wishlist',
+                          onPressed: () {
+                            context.read<WishlistBloc>().add(
+                              RemoveFromWishlist(item.productId)
+                            );
+                            
+                            // Show success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Removed ${item.productName} from wishlist!'),
+                                backgroundColor: accentColor,
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
-

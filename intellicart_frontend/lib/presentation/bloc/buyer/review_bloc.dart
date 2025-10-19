@@ -2,6 +2,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intellicart_frontend/models/review.dart';
+import 'package:intellicart_frontend/data/datasources/api_service.dart';
 
 // --- EVENTS ---
 abstract class ReviewEvent extends Equatable {
@@ -54,9 +55,16 @@ class ReviewSubmitFailure extends ReviewState {
 
 // --- BLOC ---
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
-  ReviewBloc() : super(ReviewInitial()) {
+  final ApiService _apiService;
+
+  ReviewBloc({ApiService? apiService}) : 
+    _apiService = apiService ?? ApiService(),
+    super(ReviewInitial()) {
     on<SubmitReview>(_onSubmitReview);
   }
+
+  // Allow default construction without parameters for use in BlocProvider
+  factory ReviewBloc.create() => ReviewBloc();
 
   Future<void> _onSubmitReview(
     SubmitReview event,
@@ -64,21 +72,16 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   ) async {
     emit(ReviewSubmitting());
     try {
-      // Simulate network/database call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // In a real app, you would save this to SQLite or Firebase
-      // and get the saved review back.
-      final newReview = Review(
-        title: event.title,
-        reviewText: event.reviewText,
-        rating: event.rating,
-        timeAgo: 'Just now',
+      // Submit review to the online API
+      final newReview = await _apiService.submitReview(
+        event.productId,
+        event.title,
+        event.reviewText,
+        event.rating,
       );
 
-      print('Review Submitted: ${newReview.title}');
       emit(ReviewSubmitSuccess(newReview));
-    } catch (e) {
+    } on Exception catch (e) {
       emit(ReviewSubmitFailure(e.toString()));
     }
   }

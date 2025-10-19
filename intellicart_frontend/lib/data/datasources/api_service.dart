@@ -479,4 +479,66 @@ class ApiService {
       throw ApiException.fromDioException(e);
     }
   }
+
+  // --- REVIEW METHODS ---
+  Future<List<Review>> getProductReviews(String productId) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get('/reviews/product/$productId');
+
+      switch (response.statusCode) {
+        case 200:
+          final reviewsData = response.data['reviews'] as List;
+          return reviewsData.map((json) => Review.fromJson(json)).toList();
+        case 400:
+          throw ApiException(400, "Invalid query parameters", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 404:
+          // No reviews found for this product
+          return [];
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch product reviews with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<Review> submitReview(String productId, String title, String reviewText, int rating) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/reviews',
+        data: {
+          'productId': productId,
+          'title': title,
+          'reviewText': reviewText,
+          'rating': rating,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 201:
+          final reviewData = response.data['review'];
+          return Review.fromJson(reviewData);
+        case 400:
+          throw ApiException(400, "Invalid review data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Not authorized to submit review", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 422:
+          throw ApiException(422, "Review validation failed", 
+              serverMessage: response.data['message'] ?? "Validation error");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to submit review with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
 }

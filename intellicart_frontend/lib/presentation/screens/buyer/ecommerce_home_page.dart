@@ -1,7 +1,12 @@
 // lib/screens/ecommerce_home_page.dart (UPDATED)
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/models/product.dart';
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
+import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
+import 'package:intellicart_frontend/data/models/cart_item.dart';
+import 'package:intellicart_frontend/data/models/wishlist_item.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/ecommerce_search_page.dart';
 import 'package:intellicart_frontend/presentation/screens/buyer/product_details_page.dart';
 import 'package:intellicart_frontend/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
@@ -273,35 +278,33 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailsPage(product: product),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withAlpha((255 * 0.1).round()),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
-        );
-      },
-      borderRadius: BorderRadius.circular(8.0),
-      child: Container(
-        // ... (The rest of the _ProductCard code is unchanged)
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withAlpha((255 * 0.1).round()),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ProductDetailsPage(product: product),
+                  ),
+                );
+              },
               child: Image.network(
                 product.imageUrl ?? 'https://via.placeholder.com/150',
                 fit: BoxFit.cover,
@@ -325,37 +328,118 @@ class _ProductCard extends StatelessWidget {
                 },
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4.0),
-                  Text(
-                    product.description,
-                    style: const TextStyle(fontSize: 12.0, color: Colors.grey),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    product.price,
-                    style: TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: warmOrange700),
-                  ),
-                ],
-              ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  product.name,
+                  style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4.0),
+                Text(
+                  product.description,
+                  style: const TextStyle(fontSize: 12.0, color: Colors.grey),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8.0),
+                Text(
+                  product.price,
+                  style: TextStyle(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.bold,
+                      color: warmOrange700),
+                ),
+                const SizedBox(height: 8.0),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Add product to persistent cart
+                          final cartItem = CartItem(
+                            productId: product.id,
+                            productName: product.name,
+                            productDescription: product.description,
+                            productPrice: product.price,
+                            productImageUrl: product.imageUrl ?? '',
+                            quantity: 1, // Default quantity
+                          );
+                          
+                          context.read<CartBloc>().add(AddToCart(cartItem));
+                          
+                          // Show success message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Added ${product.name} to cart!'),
+                              backgroundColor: warmOrange700,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: warmOrange700,
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        child: const Text(
+                          'Add to Cart',
+                          style: TextStyle(fontSize: 12, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 32,
+                      height: 32,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Add product to wishlist
+                          final wishlistItem = WishlistItem(
+                            productId: product.id,
+                            productName: product.name,
+                            productDescription: product.description,
+                            productPrice: product.price,
+                            productImageUrl: product.imageUrl ?? '',
+                          );
+                          
+                          context.read<WishlistBloc>().add(AddToWishlist(wishlistItem));
+                          
+                          // Show success message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Added ${product.name} to wishlist!'),
+                              backgroundColor: warmOrange700,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: warmOrange700,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                            side: BorderSide(color: warmOrange700),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.favorite_border,
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -1,21 +1,19 @@
-// lib/data/models/cart_item.dart
-class CartItem {
+// lib/data/models/wishlist_item.dart
+class WishlistItem {
   final int? id; // ID for database storage
   final String productId;
   final String productName;
   final String productDescription;
   final String productPrice;
   final String productImageUrl;
-  final int quantity;
 
-  CartItem({
+  WishlistItem({
     this.id,
     required this.productId,
     required this.productName,
     required this.productDescription,
     required this.productPrice,
     required this.productImageUrl,
-    required this.quantity,
   });
 
   Map<String, dynamic> toMap() {
@@ -26,19 +24,17 @@ class CartItem {
       'productDescription': productDescription,
       'productPrice': productPrice,
       'productImageUrl': productImageUrl,
-      'quantity': quantity,
     };
   }
 
-  factory CartItem.fromMap(Map<String, dynamic> map) {
-    return CartItem(
+  factory WishlistItem.fromMap(Map<String, dynamic> map) {
+    return WishlistItem(
       id: map['id'],
       productId: map['productId'] ?? '',
       productName: map['productName'] ?? '',
       productDescription: map['productDescription'] ?? '',
       productPrice: map['productPrice'] ?? '',
       productImageUrl: map['productImageUrl'] ?? '',
-      quantity: map['quantity']?.toInt() ?? 1,
     );
   }
 }
