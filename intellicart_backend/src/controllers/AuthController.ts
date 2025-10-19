@@ -3,19 +3,25 @@ import { sign, verify } from 'hono/jwt';
 import { db } from '../database/db_service';
 import { LoginCredentials, AuthResponse, JWTUserPayload, RefreshTokenRequest, RefreshTokenResponse } from '../types/AuthTypes';
 import { User } from '../types/UserTypes';
+import { Logger } from '../utils/logger';
 
 export class AuthController {
   static async login(c: Context) {
     try {
-      const { email, password } = await c.req.json() as LoginCredentials;
+      const { email } = await c.req.json() as LoginCredentials;
+      Logger.info(`Login attempt for user: ${email}`);
       
-      if (!email || !password) {
+      const { email: reqEmail, password } = await c.req.json() as LoginCredentials;
+      
+      if (!reqEmail || !password) {
+        Logger.warn(`Login failed: Missing email or password for IP: ${c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.raw.url}`);
         return c.json({ error: 'Email and password are required' }, 400);
       }
 
-      const user = await db().getUserByEmail(email);
+      const user = await db().getUserByEmail(reqEmail);
       
       if (!user) { // In a real app, you'd hash passwords and compare
+        Logger.warn(`Login failed: Invalid credentials for email: ${reqEmail}`);
         return c.json({ error: 'Invalid email or password' }, 401);
       }
 
@@ -28,6 +34,7 @@ export class AuthController {
       // Create JWT token
       const secret = process.env.JWT_SECRET;
       if (!secret) {
+        Logger.error('JWT_SECRET not set in environment variables');
         throw new Error('JWT_SECRET not set in environment variables');
       }
 
@@ -57,9 +64,10 @@ export class AuthController {
         }
       };
 
+      Logger.info(`Login successful for user: ${reqEmail}, ID: ${user.id}`);
       return c.json(response);
     } catch (error) {
-      console.error('Login error:', error);
+      Logger.error('Login error:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Internal server error' }, 500);
     }
   }
@@ -68,13 +76,17 @@ export class AuthController {
     try {
       const { name, email, password, role } = await c.req.json() as Partial<User> & { password: string };
       
+      Logger.info(`Registration attempt for user: ${email}`);
+      
       if (!name || !email || !password) {
+        Logger.warn(`Registration failed: Missing required fields for email: ${email}`);
         return c.json({ error: 'Name, email, and password are required' }, 400);
       }
 
       // Check if user already exists
       const existingUser = await db().getUserByEmail(email);
       if (existingUser) {
+        Logger.warn(`Registration failed: Email already exists: ${email}`);
         return c.json({ error: 'User with this email already exists' }, 409);
       }
 
@@ -89,6 +101,7 @@ export class AuthController {
       // Create JWT token
       const secret = process.env.JWT_SECRET;
       if (!secret) {
+        Logger.error('JWT_SECRET not set in environment variables');
         throw new Error('JWT_SECRET not set in environment variables');
       }
 
@@ -118,9 +131,10 @@ export class AuthController {
         }
       };
 
+      Logger.info(`Registration successful for user: ${email}, ID: ${newUser.id}`);
       return c.json(response, 201);
     } catch (error) {
-      console.error('Registration error:', error);
+      Logger.error('Registration error:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Internal server error' }, 500);
     }
   }

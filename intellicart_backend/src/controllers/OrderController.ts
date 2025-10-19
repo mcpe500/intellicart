@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { db } from '../database/db_service';
 import { Order } from '../types/OrderTypes';
+import { Logger } from '../utils/logger';
 
 export class OrderController {
   static async getOrdersBySeller(c: Context) {

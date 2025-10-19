@@ -17,6 +17,7 @@ const getOrdersBySellerRoute = createRoute({
   path: '/orders',
   tags: ['Orders'],
   middleware: [authMiddleware],
+  security: [{ BearerAuth: [] }],
   request: {
     query: z.object({
       status: z.string().optional(),
@@ -60,6 +61,7 @@ const getOrdersByUserRoute = createRoute({
   path: '/user',
   tags: ['Orders'],
   middleware: [authMiddleware],
+  security: [{ BearerAuth: [] }],
   request: {
     query: z.object({
       status: z.string().optional(),
@@ -103,6 +105,7 @@ const updateOrderStatusRoute = createRoute({
   path: '/orders/{id}',
   tags: ['Orders'],
   middleware: [authMiddleware],
+  security: [{ BearerAuth: [] }],
   request: {
     params: OrderIdParamSchema,
     body: {

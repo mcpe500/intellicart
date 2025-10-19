@@ -21,6 +21,8 @@ import { authRoutes } from './routes/authRoutes';
 import { productRoutes } from './routes/productRoutes';
 import { orderRoutes } from './routes/orderRoutes';
 import { initializeDb } from './database/db_service';
+import { requestLogger } from './utils/logger';
+import { cors } from './middleware/cors';
 
 // Initialize the database service based on environment configuration
 initializeDb();
@@ -30,6 +32,10 @@ initializeDb();
  * This allows automatic OpenAPI documentation generation from Zod schemas
  */
 const app = new OpenAPIHono();
+
+// Add CORS and request logging middleware
+app.use('*', cors);
+app.use('*', requestLogger);
 
 /**
  * Register all API routes under specific prefixes for proper grouping

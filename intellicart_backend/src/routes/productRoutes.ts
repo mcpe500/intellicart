@@ -139,6 +139,7 @@ const createProductRoute = createRoute({
   path: '/products',
   tags: ['Products'],
   middleware: [authMiddleware],
+  security: [{ BearerAuth: [] }],
   request: {
     body: {
       content: {
@@ -253,6 +254,7 @@ const addReviewRoute = createRoute({
   path: '/products/{id}/reviews',
   tags: ['Products'],
   middleware: [authMiddleware],
+  security: [{ BearerAuth: [] }],
   request: {
     params: ProductIdParamSchema,
     body: {

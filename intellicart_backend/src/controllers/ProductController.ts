@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { db } from '../database/db_service';
 import { Product, CreateProductInput, UpdateProductInput, CreateReviewInput } from '../types/ProductTypes';
+import { Logger } from '../utils/logger';
 
 export class ProductController {
   static async getAllProducts(c: Context) {
@@ -9,6 +10,14 @@ export class ProductController {
       const { page = 1, limit = 10, search, category } = c.req.query();
       const pageNum = parseInt(page as string) || 1;
       const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      
+      Logger.info(`Fetching products`, { 
+        page: pageNum, 
+        limit: limitNum, 
+        search, 
+        category,
+        ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.raw.url
+      });
       
       // Get all products from database
       const allProducts = await db().getAllProducts();
@@ -46,9 +55,10 @@ export class ProductController {
         }
       };
       
+      Logger.info(`Successfully fetched ${products.length} products out of total ${total}`);
       return c.json(result);
     } catch (error) {
-      console.error('Error retrieving all products:', error);
+      Logger.error('Error retrieving all products:', { error: (error as Error).message, stack: (error as Error).stack });
       return c.json({ error: 'Failed to retrieve products' }, 500);
     }
   }
