@@ -1,6 +1,6 @@
 import { User, CreateUserInput, UpdateUserInput } from '../types/UserTypes';
 import { Product, CreateProductInput, UpdateProductInput, Review, CreateReviewInput } from '../types/ProductTypes';
-import { Order, UpdateOrderInput } from '../types/OrderTypes';
+import { Order, UpdateOrderInput, CreateOrderInput } from '../types/OrderTypes';
 
 // Abstract Database Service Interface
 export interface DbService {
@@ -13,13 +13,17 @@ export interface DbService {
   getAllProducts(): Promise<Product[]>;
   getProductById(id: string): Promise<Product | null>;
   getProductsBySellerId(sellerId: string): Promise<Product[]>;
+  getProductsBySellerIdWithPagination(sellerId: string, page?: number, limit?: number): Promise<{ products: Product[], pagination: any }>;
   createProduct(productData: CreateProductInput, sellerId: string): Promise<Product>;
   updateProduct(id: string, productData: UpdateProductInput): Promise<Product | null>;
   deleteProduct(id: string): Promise<boolean>;
   addProductReview(productId: string, reviewData: CreateReviewInput, userId: string): Promise<Review | null>;
+  calculateAverageRating(productId: string): Promise<number>;
 
   // Order Methods
-  getOrdersBySellerId(sellerId: string): Promise<Order[]>;
+  createOrder(orderData: CreateOrderInput): Promise<Order>;
+  getOrdersBySellerId(sellerId: string, status?: string): Promise<Order[]>;
+  getOrdersByCustomerId(customerId: string, status?: string): Promise<Order[]>;
   updateOrderStatus(orderId: string, status: string): Promise<Order | null>;
 }
 

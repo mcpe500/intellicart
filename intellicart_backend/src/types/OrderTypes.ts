@@ -1,21 +1,25 @@
 export interface Order {
   id: string;
-  buyerId: string;
+  buyerId?: string;
+  customerId: string;
+  customerName: string;
   sellerId: string;
-  items: OrderItem[];
   total: number;
   status: string;
   orderDate: string;
+  items: OrderItem[];
 }
 
 export interface OrderItem {
   productId: string;
+  productName: string;
   quantity: number;
   price: number;
 }
 
 export interface CreateOrderInput {
-  buyerId: string;
+  buyerId?: string;
+  customerId: string;
   items: OrderItem[];
   total: number;
 }

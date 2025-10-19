@@ -13,17 +13,41 @@ import { z } from 'zod';
 
 const productRoutes = new OpenAPIHono();
 
-// Get all products
+// Get all products with pagination
 const getAllProductsRoute = createRoute({
   method: 'get',
   path: '/products',
   tags: ['Products'],
+  request: {
+    query: z.object({
+      page: z.string().regex(/^\d+$/).transform(Number).optional().default('1'),
+      limit: z.string().regex(/^\d+$/).transform(Number).optional().default('10'),
+      search: z.string().optional(),
+      category: z.string().optional(),
+    })
+  },
   responses: {
     200: {
-      description: 'Returns all products in the system',
+      description: 'Returns all products in the system with pagination',
       content: {
         'application/json': {
-          schema: ProductSchema.array(),
+          schema: z.object({
+            products: ProductSchema.array(),
+            pagination: z.object({
+              page: z.number(),
+              limit: z.number(),
+              total: z.number(),
+              totalPages: z.number()
+            })
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
         },
       },
     },
@@ -31,6 +55,53 @@ const getAllProductsRoute = createRoute({
 });
 
 productRoutes.openapi(getAllProductsRoute, ProductController.getAllProducts);
+
+// Get seller products with pagination
+const getSellerProductsRoute = createRoute({
+  method: 'get',
+  path: '/seller/{sellerId}',
+  tags: ['Products'],
+  request: {
+    params: z.object({
+      sellerId: z.string().openapi({
+        example: 'user-1234567890',
+        description: 'Unique identifier of the seller'
+      })
+    }),
+    query: z.object({
+      page: z.string().regex(/^\d+$/).transform(Number).optional().default('1'),
+      limit: z.string().regex(/^\d+$/).transform(Number).optional().default('10'),
+    })
+  },
+  responses: {
+    200: {
+      description: 'Returns products for a specific seller with pagination',
+      content: {
+        'application/json': {
+          schema: z.object({
+            products: ProductSchema.array(),
+            pagination: z.object({
+              page: z.number(),
+              limit: z.number(),
+              total: z.number(),
+              totalPages: z.number()
+            })
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Seller not found or has no products',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  },
+});
+
+productRoutes.openapi(getSellerProductsRoute, ProductController.getSellerProducts);
 
 // Get product by ID
 const getProductByIdRoute = createRoute({
@@ -200,8 +271,10 @@ const addReviewRoute = createRoute({
           schema: z.object({
             id: z.string(),
             userId: z.string(),
+            title: z.string().optional(),
+            reviewText: z.string().optional(),
             rating: z.number(),
-            comment: z.string().optional(),
+            userName: z.string().optional(),
             createdAt: z.string(),
           }),
         },

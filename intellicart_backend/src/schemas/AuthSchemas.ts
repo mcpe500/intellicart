@@ -35,6 +35,10 @@ export const AuthResponseSchema = z.object({
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
     description: 'JWT token for authentication'
   }),
+  refreshToken: z.string().optional().openapi({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'Refresh token for obtaining new access tokens (optional)'
+  }),
   user: z.object({
     id: z.string().openapi({
       example: 'user-1234567890',
@@ -51,6 +55,10 @@ export const AuthResponseSchema = z.object({
     role: z.string().openapi({
       example: 'buyer',
       description: 'User\'s role (buyer or seller)'
+    }),
+    createdAt: z.string().optional().openapi({
+      example: '2023-01-01T00:00:00.000Z',
+      description: 'User creation timestamp (optional)'
     })
   })
 });
@@ -74,5 +82,23 @@ export const JWTUserPayloadSchema = z.object({
   role: z.string().openapi({
     example: 'buyer',
     description: 'User\'s role (buyer or seller)'
+  })
+});
+
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string().openapi({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'Refresh token used to obtain a new access token'
+  })
+});
+
+export const RefreshResponseSchema = z.object({
+  token: z.string().openapi({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'New JWT token for authentication'
+  }),
+  refreshToken: z.string().optional().openapi({
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+    description: 'New refresh token (optional)'
   })
 });

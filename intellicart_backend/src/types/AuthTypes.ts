@@ -31,4 +31,5 @@ export interface JWTUserPayload {
   id: string;
   email: string;
   role: string;
+  [key: string]: any; // Index signature to be compatible with Hono JWT
 }

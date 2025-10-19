@@ -5,11 +5,70 @@ import { Product, CreateProductInput, UpdateProductInput, CreateReviewInput } fr
 export class ProductController {
   static async getAllProducts(c: Context) {
     try {
-      const products = await db().getAllProducts();
-      return c.json(products);
+      // Get query parameters for pagination and filtering
+      const { page = 1, limit = 10, search, category } = c.req.query();
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      
+      // Get all products from database
+      const allProducts = await db().getAllProducts();
+      
+      // Apply search and category filters if provided
+      let filteredProducts = allProducts;
+      
+      if (search) {
+        const searchTerm = (search as string).toLowerCase();
+        filteredProducts = filteredProducts.filter(product => 
+          product.name.toLowerCase().includes(searchTerm) || 
+          product.description.toLowerCase().includes(searchTerm)
+        );
+      }
+      
+      if (category) {
+        filteredProducts = filteredProducts.filter(product => 
+          product.categoryId === category
+        );
+      }
+      
+      // Pagination
+      const total = filteredProducts.length;
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const products = filteredProducts.slice(startIndex, endIndex);
+      
+      const result = {
+        products,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum)
+        }
+      };
+      
+      return c.json(result);
     } catch (error) {
       console.error('Error retrieving all products:', error);
       return c.json({ error: 'Failed to retrieve products' }, 500);
+    }
+  }
+
+  static async getSellerProducts(c: Context) {
+    try {
+      const sellerId = c.req.param('sellerId');
+      
+      // Get query parameters for pagination
+      const { page = 1, limit = 10 } = c.req.query();
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      
+      // Get products for the specific seller from database using pagination method
+      const result = await db().getProductsBySellerIdWithPagination(sellerId, pageNum, limitNum);
+      
+      return c.json(result);
+    } catch (error) {
+      console.error('Error retrieving seller products:', error);
+      return c.json({ error: 'Failed to retrieve seller products' }, 500);
     }
   }
 

@@ -21,6 +21,11 @@ export const ProductSchema = z.object({
     description: 'Product price'
   }),
   
+  originalPrice: z.number().min(0, { message: 'Original price must be a positive number' }).optional().openapi({ 
+    example: 129.99,
+    description: 'Original/MSRP price (optional)'
+  }),
+  
   imageUrl: z.string().url({ message: 'Must be a valid URL' }).openapi({ 
     example: 'https://example.com/product-image.jpg',
     description: 'URL to product image'
@@ -31,22 +36,45 @@ export const ProductSchema = z.object({
     description: 'ID of the seller'
   }),
   
+  categoryId: z.string().optional().openapi({ 
+    example: 'electronics',
+    description: 'Category ID (optional)'
+  }),
+  
+  createdAt: z.string().datetime().openapi({ 
+    example: new Date().toISOString(),
+    description: 'Timestamp when the product was created'
+  }),
+  
+  updatedAt: z.string().datetime().openapi({ 
+    example: new Date().toISOString(),
+    description: 'Timestamp when the product was last updated'
+  }),
+  
   reviews: z.array(z.object({
     id: z.string().openapi({ 
       example: 'rev-1234567890',
       description: 'Unique identifier for the review'
     }),
-    userId: z.string().openapi({ 
-      example: 'user-1234567890',
-      description: 'ID of the user who wrote the review'
+    title: z.string().optional().openapi({ 
+      example: 'Excellent Product!',
+      description: 'Review title (optional)'
+    }),
+    reviewText: z.string().optional().openapi({ 
+      example: 'Great quality and functionality.',
+      description: 'Review text content (optional)'
     }),
     rating: z.number().min(1).max(5).openapi({ 
       example: 5,
       description: 'Rating from 1 to 5'
     }),
-    comment: z.string().optional().openapi({ 
-      example: 'Great product!',
-      description: 'Review comment (optional)'
+    userId: z.string().openapi({ 
+      example: 'user-1234567890',
+      description: 'ID of the user who wrote the review'
+    }),
+    userName: z.string().optional().openapi({ 
+      example: 'John Doe',
+      description: 'Name of the user who wrote the review (optional)'
     }),
     createdAt: z.string().datetime().openapi({ 
       example: new Date().toISOString(),
@@ -54,6 +82,11 @@ export const ProductSchema = z.object({
     })
   })).openapi({
     description: 'Array of product reviews'
+  }),
+  
+  averageRating: z.number().min(0).max(5).openapi({ 
+    example: 4.5,
+    description: 'Average rating based on all reviews'
   })
 });
 
@@ -73,9 +106,19 @@ export const CreateProductSchema = z.object({
     description: 'Product price (required, minimum 0)'
   }),
   
+  originalPrice: z.number().min(0, { message: 'Original price must be a positive number' }).optional().openapi({ 
+    example: 129.99,
+    description: 'Original/MSRP price (optional)'
+  }),
+  
   imageUrl: z.string().url({ message: 'Must be a valid URL' }).openapi({ 
     example: 'https://example.com/product-image.jpg',
     description: 'URL to product image (required, must be valid URL)'
+  }),
+  
+  categoryId: z.string().optional().openapi({ 
+    example: 'electronics',
+    description: 'Category ID (optional)'
   })
 });
 
@@ -95,9 +138,19 @@ export const UpdateProductSchema = z.object({
     description: 'Product price (optional, minimum 0 if provided)'
   }),
   
+  originalPrice: z.number().min(0, { message: 'Original price must be a positive number' }).optional().openapi({ 
+    example: 129.99,
+    description: 'Original/MSRP price (optional)'
+  }),
+  
   imageUrl: z.string().url({ message: 'Must be a valid URL' }).optional().openapi({ 
     example: 'https://example.com/product-image.jpg',
     description: 'URL to product image (optional, must be valid URL if provided)'
+  }),
+  
+  categoryId: z.string().optional().openapi({ 
+    example: 'electronics',
+    description: 'Category ID (optional)'
   })
 });
 
@@ -107,9 +160,14 @@ export const CreateReviewSchema = z.object({
     description: 'Rating from 1 to 5 (required)'
   }),
   
-  comment: z.string().max(500, { message: 'Comment must be 500 characters or less' }).optional().openapi({
-    example: 'Great product!',
-    description: 'Review comment (optional, max 500 characters)'
+  title: z.string().optional().openapi({
+    example: 'Excellent Product!',
+    description: 'Review title (optional)'
+  }),
+  
+  reviewText: z.string().max(1000, { message: 'Review text must be 1000 characters or less' }).optional().openapi({
+    example: 'Great quality and functionality.',
+    description: 'Review text content (optional, max 1000 characters)'
   })
 });
 
@@ -125,4 +183,47 @@ export const ErrorSchema = z.object({
     example: 'Product not found',
     description: 'Error message explaining why the request failed'
   })
+});
+
+export const QueryParamsSchema = z.object({
+  page: z.string().regex(/^\d+$/).transform(Number).optional().default('1').openapi({
+    example: 1,
+    description: 'Page number for pagination (default: 1)'
+  }),
+  limit: z.string().regex(/^\d+$/).transform(Number).optional().default('10').openapi({
+    example: 10,
+    description: 'Number of items per page (default: 10, max: 100)'
+  }),
+  search: z.string().optional().openapi({
+    example: 'wireless headphones',
+    description: 'Search term to filter products'
+  }),
+  category: z.string().optional().openapi({
+    example: 'electronics',
+    description: 'Category to filter products'
+  })
+});
+
+export const PaginationSchema = z.object({
+  page: z.number().openapi({
+    example: 1,
+    description: 'Current page number'
+  }),
+  limit: z.number().openapi({
+    example: 10,
+    description: 'Number of items per page'
+  }),
+  total: z.number().openapi({
+    example: 100,
+    description: 'Total number of items'
+  }),
+  totalPages: z.number().openapi({
+    example: 10,
+    description: 'Total number of pages'
+  })
+});
+
+export const ProductListResponseSchema = z.object({
+  products: ProductSchema.array(),
+  pagination: PaginationSchema
 });

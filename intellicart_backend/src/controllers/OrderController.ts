@@ -12,11 +12,90 @@ export class OrderController {
     const sellerId = jwtPayload.id;
 
     try {
-      const orders = await db().getOrdersBySellerId(sellerId);
-      return c.json(orders);
+      // Get query parameters for filtering and pagination
+      const { status, page = 1, limit = 10 } = c.req.query();
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      
+      // Get all orders for the seller
+      const allOrders = await db().getOrdersBySellerId(sellerId);
+      
+      // Apply status filter if provided
+      let filteredOrders = allOrders;
+      if (status) {
+        filteredOrders = filteredOrders.filter(order => 
+          order.status.toLowerCase() === (status as string).toLowerCase()
+        );
+      }
+      
+      // Apply pagination
+      const total = filteredOrders.length;
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const orders = filteredOrders.slice(startIndex, endIndex);
+      
+      const result = {
+        orders,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum)
+        }
+      };
+      
+      return c.json(result);
     } catch (error) {
       console.error('Error retrieving orders:', error);
       return c.json({ error: 'Failed to retrieve orders' }, 500);
+    }
+  }
+
+  static async getOrdersByUser(c: Context) {
+    const jwtPayload = c.get('jwtPayload');
+    if (!jwtPayload) {
+      return c.json({ error: 'Authentication required' }, 401);
+    }
+
+    const customerId = jwtPayload.id;
+
+    try {
+      // Get query parameters for filtering and pagination
+      const { status, page = 1, limit = 10 } = c.req.query();
+      const pageNum = parseInt(page as string) || 1;
+      const limitNum = Math.min(parseInt(limit as string) || 10, 100); // Cap at 100 per page
+      
+      // Get all orders for the user
+      const allOrders = await db().getOrdersByCustomerId(customerId);
+      
+      // Apply status filter if provided
+      let filteredOrders = allOrders;
+      if (status) {
+        filteredOrders = filteredOrders.filter(order => 
+          order.status.toLowerCase() === (status as string).toLowerCase()
+        );
+      }
+      
+      // Apply pagination
+      const total = filteredOrders.length;
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const orders = filteredOrders.slice(startIndex, endIndex);
+      
+      const result = {
+        orders,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total,
+          totalPages: Math.ceil(total / limitNum)
+        }
+      };
+      
+      return c.json(result);
+    } catch (error) {
+      console.error('Error retrieving user orders:', error);
+      return c.json({ error: 'Failed to retrieve user orders' }, 500);
     }
   }
 

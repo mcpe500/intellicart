@@ -17,12 +17,27 @@ const getOrdersBySellerRoute = createRoute({
   path: '/orders',
   tags: ['Orders'],
   middleware: [authMiddleware],
+  request: {
+    query: z.object({
+      status: z.string().optional(),
+      page: z.string().regex(/^\d+$/).transform(Number).optional().default('1'),
+      limit: z.string().regex(/^\d+$/).transform(Number).optional().default('10'),
+    })
+  },
   responses: {
     200: {
       description: 'Returns orders for the authenticated seller',
       content: {
         'application/json': {
-          schema: OrderSchema.array(),
+          schema: z.object({
+            orders: OrderSchema.array(),
+            pagination: z.object({
+              page: z.number(),
+              limit: z.number(),
+              total: z.number(),
+              totalPages: z.number()
+            })
+          }),
         },
       },
     },
@@ -38,6 +53,49 @@ const getOrdersBySellerRoute = createRoute({
 });
 
 orderRoutes.openapi(getOrdersBySellerRoute, OrderController.getOrdersBySeller);
+
+// Get orders by user (requires authentication)
+const getOrdersByUserRoute = createRoute({
+  method: 'get',
+  path: '/user',
+  tags: ['Orders'],
+  middleware: [authMiddleware],
+  request: {
+    query: z.object({
+      status: z.string().optional(),
+      page: z.string().regex(/^\d+$/).transform(Number).optional().default('1'),
+      limit: z.string().regex(/^\d+$/).transform(Number).optional().default('10'),
+    })
+  },
+  responses: {
+    200: {
+      description: 'Returns orders for the authenticated user',
+      content: {
+        'application/json': {
+          schema: z.object({
+            orders: OrderSchema.array(),
+            pagination: z.object({
+              page: z.number(),
+              limit: z.number(),
+              total: z.number(),
+              totalPages: z.number()
+            })
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Unauthorized: Invalid or missing token',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  },
+});
+
+orderRoutes.openapi(getOrdersByUserRoute, OrderController.getOrdersByUser);
 
 // Update order status (requires authentication)
 const updateOrderStatusRoute = createRoute({

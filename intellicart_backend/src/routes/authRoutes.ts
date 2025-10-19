@@ -1,6 +1,6 @@
 import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { AuthController } from '../controllers/AuthController';
-import { LoginSchema, RegisterSchema, AuthResponseSchema, ErrorSchema } from '../schemas/AuthSchemas';
+import { LoginSchema, RegisterSchema, AuthResponseSchema, ErrorSchema, RefreshTokenSchema, RefreshResponseSchema } from '../schemas/AuthSchemas';
 import { authMiddleware } from '../middleware/auth';
 import { z } from 'zod';
 
@@ -94,7 +94,41 @@ const registerRoute = createRoute({
 
 authRoutes.openapi(registerRoute, AuthController.register);
 
-// Profile Route
+// Get Current User Route (auth/me equivalent)
+const getCurrentUserRoute = createRoute({
+  method: 'get',
+  path: '/me',
+  tags: ['Authentication'],
+  middleware: [authMiddleware],
+  responses: {
+    200: {
+      description: 'Returns the authenticated user\'s profile',
+      content: {
+        'application/json': {
+          schema: z.object({
+            id: z.string(),
+            name: z.string(),
+            email: z.string(),
+            role: z.string(),
+            createdAt: z.string().optional()
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Unauthorized: Invalid or missing token',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  },
+});
+
+authRoutes.openapi(getCurrentUserRoute, AuthController.getProfile);
+
+// Profile Route - kept for backward compatibility
 const profileRoute = createRoute({
   method: 'get',
   path: '/profile',
@@ -110,7 +144,7 @@ const profileRoute = createRoute({
             name: z.string(),
             email: z.string(),
             role: z.string(),
-            createdAt: z.string()
+            createdAt: z.string().optional()
           }),
         },
       },
@@ -127,5 +161,49 @@ const profileRoute = createRoute({
 });
 
 authRoutes.openapi(profileRoute, AuthController.getProfile);
+
+// Refresh Token Route
+const refreshTokenRoute = createRoute({
+  method: 'post',
+  path: '/refresh',
+  tags: ['Authentication'],
+  request: {
+    body: {
+      content: {
+        'application/json': {
+          schema: RefreshTokenSchema,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Token refreshed successfully',
+      content: {
+        'application/json': {
+          schema: RefreshResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid refresh token',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+    501: {
+      description: 'Refresh tokens not yet implemented',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  },
+});
+
+authRoutes.openapi(refreshTokenRoute, AuthController.refreshToken);
 
 export { authRoutes };

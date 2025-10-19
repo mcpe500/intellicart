@@ -109,9 +109,8 @@ export class UserController {
    * }
    */
   static async createUser(c: Context) {
-    // Extract validated request body from context
-    // The body has already been validated against Zod schema in route definition
-    const body = c.req.valid('json') as CreateUserInput;
+    // Extract request body from context
+    const body = await c.req.json() as CreateUserInput;
     
     try {
       // Create new user in database
@@ -158,8 +157,8 @@ export class UserController {
     // Extract user ID from request parameters
     const id = c.req.param('id');
     
-    // Extract validated request body from context
-    const body = c.req.valid('json') as UpdateUserInput;
+    // Extract request body from context
+    const body = await c.req.json() as UpdateUserInput;
     
     try {
       // For now, user updates are not supported through this endpoint
