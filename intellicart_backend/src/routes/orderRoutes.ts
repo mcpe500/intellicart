@@ -99,6 +99,64 @@ const getOrdersByUserRoute = createRoute({
 
 orderRoutes.openapi(getOrdersByUserRoute, OrderController.getOrdersByUser);
 
+// Get orders by specific user ID (requires authentication)
+const getOrdersByUserIdRoute = createRoute({
+  method: 'get',
+  path: '/user/{userId}',
+  tags: ['Orders'],
+  middleware: [authMiddleware],
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({
+      userId: z.string().min(1).openapi({
+        example: 'user-1234567890',
+        description: 'Unique identifier of the user'
+      })
+    }),
+    query: z.object({
+      status: z.string().optional(),
+      page: z.string().regex(/^\d+$/).transform(Number).optional().default('1'),
+      limit: z.string().regex(/^\d+$/).transform(Number).optional().default('10'),
+    })
+  },
+  responses: {
+    200: {
+      description: 'Returns orders for the specified user',
+      content: {
+        'application/json': {
+          schema: z.object({
+            orders: OrderSchema.array(),
+            pagination: z.object({
+              page: z.number(),
+              limit: z.number(),
+              total: z.number(),
+              totalPages: z.number()
+            })
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Unauthorized: Invalid or missing token',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+    403: {
+      description: 'Forbidden: You are not authorized to access these orders',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+  },
+});
+
+orderRoutes.openapi(getOrdersByUserIdRoute, OrderController.getOrdersByUserId);
+
 // Update order status (requires authentication)
 const updateOrderStatusRoute = createRoute({
   method: 'put',

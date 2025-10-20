@@ -21,6 +21,9 @@ import { authRoutes } from './routes/authRoutes';
 import { productRoutes } from './routes/productRoutes';
 import { orderRoutes } from './routes/orderRoutes';
 import { reviewRoutes } from './routes/reviewRoutes';
+import { addressRoutes } from './routes/addressRoutes';
+import { paymentMethodRoutes } from './routes/paymentMethodRoutes';
+import { deliveryRoutes } from './routes/deliveryRoutes';
 import { initializeDb } from './database/db_service';
 import { requestLogger } from './utils/logger';
 import { cors } from './middleware/cors';
@@ -51,6 +54,9 @@ app.route('/api/users', userRoutes);
 app.route('/api/products', productRoutes);
 app.route('/api/orders', orderRoutes);
 app.route('/api/reviews', reviewRoutes);
+app.route('/api/addresses', addressRoutes);
+app.route('/api/payment-methods', paymentMethodRoutes);
+app.route('/api/deliveries', deliveryRoutes);
 
 /**
  * Root endpoint for API health check and information
@@ -108,6 +114,18 @@ app.doc('/doc', {
     {
       name: 'Reviews',
       description: 'Operations related to product reviews'
+    },
+    {
+      name: 'Addresses',
+      description: 'Operations related to user addresses'
+    },
+    {
+      name: 'Payment Methods',
+      description: 'Operations related to user payment methods'
+    },
+    {
+      name: 'Deliveries',
+      description: 'Operations related to order deliveries and tracking'
     }
   ]
 });
