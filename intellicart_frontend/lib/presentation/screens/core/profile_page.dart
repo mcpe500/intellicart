@@ -10,6 +10,7 @@ import 'package:intellicart_frontend/models/user.dart';
 import 'package:intellicart_frontend/bloc/auth/auth_bloc.dart';
 import 'package:intellicart_frontend/data/repositories/auth_repository.dart';
 import 'package:intellicart_frontend/utils/service_locator.dart';
+import 'package:intellicart_frontend/presentation/screens/core/personal_information_page.dart'; // Add import for personal info page
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -56,7 +57,7 @@ class _ProfilePageState extends State<ProfilePage> {
     
     // First, make sure the token is loaded in the shared service
     final token = await serviceLocator.authRepository.getAuthToken();
-    if (token != null && token.isNotEmpty && apiService.token == null) {
+    if (token != null && token.isNotEmpty) {
       apiService.setToken(token);
     }
     
@@ -260,6 +261,14 @@ class _ProfilePageState extends State<ProfilePage> {
                           iconBgColor: iconBgColor,
                           primaryTextColor: primaryTextColor,
                           accentColor: accentColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const PersonalInformationPage(),
+                              ),
+                            );
+                          },
                         ),
                         _buildProfileOption(
                           icon: Icons.shopping_cart_outlined,

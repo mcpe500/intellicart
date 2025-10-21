@@ -56,6 +56,24 @@ class FirestoreDbService implements DbService {
     return userWithoutPassword;
   }
 
+  async updateUser(id: string, userData: Partial<User>): Promise<User | null> {
+    const userRef = this.db.collection('users').doc(id);
+    const doc = await userRef.get();
+    
+    if (!doc.exists) return null;
+    
+    // Update only the fields provided in userData
+    await userRef.update(userData);
+    
+    // Fetch and return updated document
+    const updatedDoc = await userRef.get();
+    const updatedData = updatedDoc.data() as User;
+    
+    // Remove password from the returned user object
+    const { password, ...userWithoutPassword } = updatedData;
+    return userWithoutPassword;
+  }
+
   // --- Product Methods ---
   async getAllProducts(): Promise<Product[]> {
     const snapshot = await this.db.collection('products').get();

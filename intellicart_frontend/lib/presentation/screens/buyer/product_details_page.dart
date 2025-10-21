@@ -53,7 +53,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       
       // First, make sure the token is loaded in the shared service
       final token = await serviceLocator.authRepository.getAuthToken();
-      if (token != null && token.isNotEmpty && apiService.token == null) {
+      if (token != null && token.isNotEmpty) {
         apiService.setToken(token);
       }
       

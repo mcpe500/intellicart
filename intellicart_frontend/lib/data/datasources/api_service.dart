@@ -589,4 +589,179 @@ class ApiService {
       throw ApiException.fromDioException(e);
     }
   }
+
+  // --- USER UPDATE METHODS ---
+  Future<User> updateUser(String userId, {String? name, String? phoneNumber}) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.put(
+        '/users/$userId',
+        data: {
+          if (name != null) 'name': name,
+          if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          final userData = response.data['user'];
+          return User.fromJson(userData);
+        case 400:
+          throw ApiException(400, "Invalid user data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to update user", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          throw ApiException(404, "User not found", 
+              serverMessage: response.data['message'] ?? "Not found");
+        case 422:
+          throw ApiException(422, "User validation failed", 
+              serverMessage: response.data['message'] ?? "Validation error");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to update user with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> requestEmailChange(String reason, String phoneNumber) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/change-email-request',
+        data: {
+          'reason': reason,
+          'phoneNumber': phoneNumber,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Request successful
+          return;
+        case 400:
+          throw ApiException(400, "Invalid request data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Not authorized to change email", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many requests. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to request email change with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> verifyPhoneNumber(String phoneNumber, String otpCode) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/verify-phone',
+        data: {
+          'phoneNumber': phoneNumber,
+          'otp': otpCode,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Verification successful
+          return;
+        case 400:
+          throw ApiException(400, "Invalid verification data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Invalid OTP code", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many attempts. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to verify phone with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> requestPhoneChange(String reason, String newPhoneNumber) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/change-phone-request',
+        data: {
+          'reason': reason,
+          'newPhoneNumber': newPhoneNumber,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Request successful
+          return;
+        case 400:
+          throw ApiException(400, "Invalid request data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Not authorized to change phone", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many requests. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to request phone change with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> updatePhoneAfterVerification(String newPhoneNumber, String otpCode) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/update-phone',
+        data: {
+          'newPhoneNumber': newPhoneNumber,
+          'otp': otpCode,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Phone number updated successfully
+          return;
+        case 400:
+          throw ApiException(400, "Invalid verification data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Invalid OTP code or unauthorized", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many attempts. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to update phone with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
 }

@@ -20,10 +20,13 @@ import {
   UserSchema, 
   CreateUserSchema, 
   UpdateUserSchema, 
+  UpdateUserRequestSchema,
+  UpdateUserResponseSchema,
   ErrorSchema, 
   DeleteUserResponseSchema, 
   UserIdParamSchema 
 } from '../schemas/UserSchemas';
+import { authMiddleware } from '../middleware/auth';
 
 /**
  * Create a new OpenAPIHono instance for user routes
@@ -83,7 +86,7 @@ userRoutes.openapi(getAllUsersRoute, UserController.getAllUsers);
  * 
  * Request:
  * - Method: GET
- * - Path: /users/{id}
+ * - Path: /{id}
  * - Parameters: id (string, required)
  * - Query: None
  * - Body: None
@@ -99,7 +102,7 @@ userRoutes.openapi(getAllUsersRoute, UserController.getAllUsers);
  */
 const getUserByIdRoute = createRoute({
   method: 'get',
-  path: '/users/{id}',
+  path: '/{id}',
   tags: ['Users'],
   // Validate request parameters
   request: {
@@ -213,7 +216,7 @@ userRoutes.openapi(createUserRoute, UserController.createUser);
  */
 const updateUserRoute = createRoute({
   method: 'put',
-  path: '/users/{id}',
+  path: '/{id}',
   tags: ['Users'],
   // Validate request parameters and body
   request: {
@@ -221,8 +224,8 @@ const updateUserRoute = createRoute({
     body: {
       content: {
         'application/json': {
-          // Request body schema
-          schema: UpdateUserSchema,
+          // Request body schema (using new update schema)
+          schema: UpdateUserRequestSchema,
         },
       },
     },
@@ -234,15 +237,31 @@ const updateUserRoute = createRoute({
       content: {
         'application/json': {
           // Response body schema
-          schema: UserSchema,
+          schema: UpdateUserResponseSchema,
         },
       },
     },
     400: {
-      description: 'User updates not supported through this endpoint',
+      description: 'Invalid user data provided',
       content: {
         'application/json': {
           // Error response schema
+          schema: ErrorSchema,
+        },
+      },
+    },
+    401: {
+      description: 'User not authorized to update this account',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+    403: {
+      description: 'User not authorized to update this account',
+      content: {
+        'application/json': {
           schema: ErrorSchema,
         },
       },
@@ -256,8 +275,19 @@ const updateUserRoute = createRoute({
         },
       },
     },
+    422: {
+      description: 'User validation failed',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
   },
 });
+
+// Apply auth middleware to the update user route
+userRoutes.use('/users/:id', authMiddleware);
 
 // Register the route with its corresponding controller method
 userRoutes.openapi(updateUserRoute, UserController.updateUser);
@@ -268,7 +298,7 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
  * 
  * Request:
  * - Method: DELETE
- * - Path: /users/{id}
+ * - Path: /{id}
  * - Parameters: id (string, required)
  * - Query: None
  * - Body: None
@@ -284,7 +314,7 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
  */
 const deleteUserRoute = createRoute({
   method: 'delete',
-  path: '/users/{id}',
+  path: '/{id}',
   tags: ['Users'],
   // Validate request parameters
   request: {

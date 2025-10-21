@@ -8,6 +8,7 @@ export interface DbService {
   getUserById(id: string): Promise<User | null>;
   getUserByEmail(email: string): Promise<User | null>;
   createUser(userData: CreateUserInput): Promise<User>;
+  updateUser(id: string, userData: Partial<User>): Promise<User | null>;
 
   // Product Methods
   getAllProducts(): Promise<Product[]>;

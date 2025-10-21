@@ -10,16 +10,18 @@ class User extends Equatable {
   final String email;
   final String name;
   final String role; // 'buyer' or 'seller'
+  final String? phoneNumber; // Phone number is optional
 
   const User({
     required this.id,
     required this.email,
     required this.name,
     required this.role,
+    this.phoneNumber,
   });
 
   @override
-  List<Object> get props => [id, email, name, role];
+  List<Object> get props => [id, email, name, role, phoneNumber ?? ''];
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 

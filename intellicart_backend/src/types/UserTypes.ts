@@ -15,6 +15,9 @@ export interface User {
   /** User's role: buyer or seller */
   role: string;
   
+  /** User's phone number (optional) */
+  phoneNumber?: string;
+  
   /** Creation timestamp */
   createdAt: string;
 }
@@ -48,6 +51,9 @@ export interface UpdateUserInput {
   
   /** User's role (optional, for updates) */
   role?: string;
+  
+  /** User's phone number (optional, for updates) */
+  phoneNumber?: string;
 }
 
 /** 

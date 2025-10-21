@@ -27,6 +27,8 @@ import { reviewRoutes } from './routes/reviewRoutes';
 import { addressRoutes } from './routes/addressRoutes';
 import { paymentMethodRoutes } from './routes/paymentMethodRoutes';
 import { deliveryRoutes } from './routes/deliveryRoutes';
+import { userManagementRoutes } from './routes/userManagementRoutes';
+import { authManagementRoutes } from './routes/authManagementRoutes';
 import { initializeDb } from './database/db_service';
 import { requestLogger } from './utils/logger';
 import { cors } from './middleware/cors';
@@ -63,6 +65,7 @@ app.route('/api/reviews', reviewRoutes);
 app.route('/api/addresses', addressRoutes);
 app.route('/api/payment-methods', paymentMethodRoutes);
 app.route('/api/deliveries', deliveryRoutes);
+app.route('/api/auth', authManagementRoutes);   // Additional auth management routes
 
 /**
  * Root endpoint for API health check and information
