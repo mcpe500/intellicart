@@ -7,6 +7,7 @@ import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
 import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
 import 'package:intellicart_frontend/data/repositories/cart_repository.dart';
 import 'package:intellicart_frontend/data/repositories/wishlist_repository.dart';
+import 'package:intellicart_frontend/utils/service_locator.dart';
 
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
@@ -17,14 +18,15 @@ import 'package:intellicart_frontend/presentation/screens/seller/seller_dashboar
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   runApp(
     MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => AppModeBloc(repository: AppRepositoryImpl())..add(LoadAppMode()),
+          create: (context) => AppModeBloc(repository: AppRepositoryImpl(apiService: serviceLocator.apiService))..add(LoadAppMode()),
         ),
         BlocProvider(
-          create: (context) => AuthBloc(),
+          create: (context) => AuthBloc(apiService: serviceLocator.apiService),
         ),
         BlocProvider(
           create: (context) => CartBloc(
@@ -35,6 +37,10 @@ void main() async {
           create: (context) => WishlistBloc(
             wishlistRepository: WishlistRepositoryImpl()
           ),
+        ),
+        // Add ReviewBloc with the shared ApiService
+        BlocProvider(
+          create: (context) => ReviewBloc(apiService: serviceLocator.apiService),
         ),
 
       ],

@@ -4,6 +4,7 @@ import 'package:intellicart_frontend/data/repositories/auth_repository.dart';
 // --- ADD THESE IMPORTS ---
 import 'package:intellicart_frontend/data/datasources/api_service.dart';
 import 'package:intellicart_frontend/models/user.dart';
+import 'package:intellicart_frontend/utils/service_locator.dart';
 // -------------------------
 
 // Define AuthState classes here instead of as part files
@@ -108,7 +109,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (token != null) {
           // 3. Save the session persistently
           await _authRepository.saveAuthentication(token, user.id);
-          // 4. Emit success
+          // 4. Update the service locator with the token (in case screens access it)
+          serviceLocator.setToken(token);
+          // 5. Emit success
           emit(const AuthStateAuthenticated());
         } else {
           emit(const AuthStateError("Login successful but no token received."));
@@ -129,7 +132,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       // 1. Clear the in-memory token
       _apiService.clearToken();
-      // 2. Clear the persistent token
+      // 2. Clear the service locator token
+      serviceLocator.clearToken();
+      // 3. Clear the persistent token
       await _authRepository.clearAuthentication();
       emit(const AuthStateUnauthenticated());
     } catch (e) {
@@ -154,7 +159,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       if (token != null) {
         // 3. Save the session persistently
         await _authRepository.saveAuthentication(token, user.id);
-        // 4. Emit success
+        // 4. Update the service locator with the token (in case screens access it)
+        serviceLocator.setToken(token);
+        // 5. Emit success
         emit(const AuthStateAuthenticated());
       } else {
         emit(const AuthStateError("Registration successful but no token received."));
@@ -176,6 +183,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         if (token != null) {
           // 2. Set the in-memory token for ApiService
           _apiService.setToken(token);
+          // 3. Update the service locator with the token
+          serviceLocator.setToken(token);
           emit(const AuthStateAuthenticated());
         } else {
           // Data is inconsistent, clear it

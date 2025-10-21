@@ -10,7 +10,9 @@ import 'package:flutter/foundation.dart'; // For platform detection
 
 class AppRepositoryImpl implements AppRepository {
   static const String _appModeKey = 'app_mode';
-  final ApiService _apiService = ApiService();
+  final ApiService _apiService;
+  
+  AppRepositoryImpl({ApiService? apiService}) : _apiService = apiService ?? ApiService();
   
   @override
   Future<void> setAppMode(String mode) async {

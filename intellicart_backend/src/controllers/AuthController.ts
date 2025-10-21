@@ -9,17 +9,17 @@ export class AuthController {
   static async login(c: Context) {
     try {
       const { email, password } = await c.req.json() as LoginCredentials;
-      
+
       Logger.debug('Login request body:', { email });
       Logger.info(`Login attempt for user: ${email}`);
-      
+
       if (!email || !password) {
         Logger.warn(`Login failed: Missing email or password`);
         return c.json({ error: 'Email and password are required' }, 400);
       }
 
       const user = await db().getUserByEmail(email);
-      
+
       if (!user) {
         Logger.warn(`Login failed: Invalid credentials for email: ${email}`);
         return c.json({ error: 'Invalid email or password' }, 401);
@@ -75,11 +75,11 @@ export class AuthController {
         Logger.error('JSON parse error:', { error: (parseError as Error).message });
         return c.json({ error: 'Invalid JSON' }, 400);
       }
-      
+
       const { name, email, password, role } = body as Partial<User> & { password: string };
       Logger.debug('Registration request body:', { name, email, role });
       Logger.info(`Registration attempt for user: ${email}`);
-      
+
       if (!name || !email || !password) {
         Logger.warn(`Registration failed: Missing required fields for email: ${email}`);
         return c.json({ error: 'Name, email, and password are required' }, 400);
@@ -135,8 +135,8 @@ export class AuthController {
       Logger.info(`Registration successful for user: ${email}, ID: ${newUser.id}`);
       return c.json(response, 201);
     } catch (error) {
-      Logger.error('Registration error:', { 
-        error: (error as Error).message, 
+      Logger.error('Registration error:', {
+        error: (error as Error).message,
         stack: (error as Error).stack,
         name: (error as Error).name
       });
@@ -146,15 +146,16 @@ export class AuthController {
 
   static async getProfile(c: Context) {
     try {
+      console.log("c.get('jwtPayload')")
+      console.log(c.get('jwtPayload'));
       const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
-      
       if (!jwtPayload) {
         Logger.warn('Get profile failed: No JWT payload');
         return c.json({ error: 'Authentication required' }, 401);
       }
-      
+
       const user = await db().getUserById(jwtPayload.id);
-      
+
       if (!user) {
         Logger.warn(`Get profile failed: User not found: ${jwtPayload.id}`);
         return c.json({ error: 'User not found' }, 404);
@@ -176,7 +177,7 @@ export class AuthController {
   static async refreshToken(c: Context) {
     try {
       const { refreshToken } = await c.req.json() as RefreshTokenRequest;
-      
+
       if (!refreshToken) {
         return c.json({ error: 'Refresh token is required' }, 400);
       }
@@ -190,7 +191,7 @@ export class AuthController {
 
         // Verify using the refresh token secret
         const decodedPayload = await verify(refreshToken, secret + '_refresh') as JWTUserPayload;
-        
+
         if (!decodedPayload || decodedPayload.type !== 'refresh') {
           Logger.warn('Refresh token failed: Invalid token type');
           return c.json({ error: 'Invalid refresh token' }, 400);

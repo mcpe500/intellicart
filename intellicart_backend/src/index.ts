@@ -16,6 +16,9 @@
 
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { swaggerUI } from '@hono/swagger-ui';
+import { readFile } from 'fs/promises';
+import { join } from 'path';
+import { stringify } from 'yaml';
 import { userRoutes } from './routes/userRoutes';
 import { authRoutes } from './routes/authRoutes';
 import { productRoutes } from './routes/productRoutes';
@@ -27,6 +30,9 @@ import { deliveryRoutes } from './routes/deliveryRoutes';
 import { initializeDb } from './database/db_service';
 import { requestLogger } from './utils/logger';
 import { cors } from './middleware/cors';
+
+// Import type extensions
+import './types/HonoContextTypes';
 
 // Initialize the database service based on environment configuration
 initializeDb();
@@ -136,5 +142,83 @@ app.doc('/doc', {
  * The UI is populated with automatically generated documentation from Zod schemas
  */
 app.get('/ui', swaggerUI({ url: '/doc' }));
+
+/**
+ * Serve the OpenAPI specification as YAML
+ * This endpoint provides the API specification in YAML format
+ */
+app.get('/swagger.yaml', async (c) => {
+  try {
+    // Try to read the static swagger.yaml file if it exists
+    const yamlPath = join(process.cwd(), 'swagger.yaml');
+    const yamlContent = await readFile(yamlPath, 'utf-8');
+    
+    c.header('Content-Type', 'application/yaml');
+    return c.body(yamlContent);
+  } catch (error) {
+    // If static file doesn't exist, generate spec dynamically and return as YAML
+    const openApiDoc = app.getOpenAPIDocument();
+    
+    // Create a clean copy without functions for YAML serialization
+    const cleanOpenApiDoc = JSON.parse(JSON.stringify(openApiDoc, (key, value) => {
+      // Skip functions and undefined values
+      if (typeof value === 'function' || value === undefined) {
+        return undefined;
+      }
+      return value;
+    }));
+    
+    // Create the complete OpenAPI specification with metadata
+    const completeOpenApiSpec = {
+      openapi: '3.1.0',
+      info: {
+        title: 'Intellicart API',
+        version: '1.0.0',
+        description: 'Auto-generated API documentation with Zod + Hono',
+      },
+      tags: [
+        {
+          name: 'Authentication',
+          description: 'Authentication related endpoints for user login and registration'
+        },
+        {
+          name: 'Users',
+          description: 'Operations related to user management'
+        },
+        {
+          name: 'Products',
+          description: 'Operations related to product management'
+        },
+        {
+          name: 'Orders',
+          description: 'Operations related to order management'
+        },
+        {
+          name: 'Reviews',
+          description: 'Operations related to product reviews'
+        },
+        {
+          name: 'Addresses',
+          description: 'Operations related to user addresses'
+        },
+        {
+          name: 'Payment Methods',
+          description: 'Operations related to user payment methods'
+        },
+        {
+          name: 'Deliveries',
+          description: 'Operations related to order deliveries and tracking'
+        }
+      ],
+      ...cleanOpenApiDoc, // This adds paths, components, etc.
+    };
+    
+    // Convert to proper YAML format
+    const yamlString = stringify(completeOpenApiSpec, { indent: 2 });
+
+    c.header('Content-Type', 'application/yaml');
+    return c.body(yamlString);
+  }
+});
 
 export default app;

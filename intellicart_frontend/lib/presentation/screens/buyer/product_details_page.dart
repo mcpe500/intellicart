@@ -9,6 +9,7 @@ import 'package:intellicart_frontend/data/models/cart_item.dart';
 import 'package:intellicart_frontend/data/models/wishlist_item.dart';
 import 'package:intellicart_frontend/data/datasources/api_service.dart';
 import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
+import 'package:intellicart_frontend/utils/service_locator.dart';
 
 import 'package:intellicart_frontend/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
 
@@ -47,7 +48,18 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   // Function to load product reviews
   Future<void> _loadProductReviews() async {
     try {
-      final apiService = ApiService();
+      // Use the shared ApiService instance from the service locator
+      final apiService = serviceLocator.apiService;
+      
+      // First, make sure the token is loaded in the shared service
+      final token = await serviceLocator.authRepository.getAuthToken();
+      if (token != null && token.isNotEmpty && apiService.token == null) {
+        apiService.setToken(token);
+      }
+      
+      // Ensure the service is ready before making the request
+      await apiService.ensureInitialized();
+      
       final reviews = await apiService.getProductReviews(widget.product.id);
       if (mounted) {
         setState(() {
@@ -317,11 +329,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => BlocProvider(
-                                    create: (context) => ReviewBloc(),
-                                    child: AddReviewPage(
-                                      productId: widget.product.id,
-                                    ),
+                                  builder: (context) => AddReviewPage(
+                                    productId: widget.product.id,
                                   ),
                                 ),
                               );

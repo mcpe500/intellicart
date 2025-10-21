@@ -504,6 +504,30 @@ class ApiService {
     }
   }
 
+  // --- NEW METHOD: Get current authenticated user ---
+  Future<User?> getCurrentUser() async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get('/auth/me');
+
+      switch (response.statusCode) {
+        case 200:
+          final userData = response.data;
+          return User.fromJson(userData);
+        case 401:
+          // Unauthorized - token might be expired
+          clearToken();
+          return null;
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch current user with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
   // --- REVIEW METHODS ---
   Future<List<Review>> getProductReviews(String productId) async {
     await ensureInitialized();

@@ -28,6 +28,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   void _submitReview() {
     if (_formKey.currentState!.validate() && _currentRating > 0) {
+      // Use the existing ReviewBloc from the parent context
       context.read<ReviewBloc>().add(
             SubmitReview(
               productId: widget.productId,
@@ -62,9 +63,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
       ),
     );
 
-    return BlocProvider(
-      create: (context) => ReviewBloc.create(),
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -193,7 +192,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ),
           ),
         ),
-      ),
+      
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:intellicart_frontend/models/review.dart';
 import 'package:intellicart_frontend/data/datasources/api_service.dart';
 import 'package:intellicart_frontend/data/exceptions/api_exception.dart';
+import 'package:intellicart_frontend/utils/service_locator.dart';
 
 // --- EVENTS ---
 abstract class ReviewEvent extends Equatable {

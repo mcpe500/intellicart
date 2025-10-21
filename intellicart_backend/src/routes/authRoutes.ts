@@ -106,7 +106,6 @@ const getCurrentUserRoute = createRoute({
   method: 'get',
   path: '/me',
   tags: ['Authentication'],
-  middleware: [authMiddleware],
   responses: {
     200: {
       description: 'Returns the authenticated user\'s profile',
@@ -133,6 +132,8 @@ const getCurrentUserRoute = createRoute({
   },
 });
 
+// Apply auth middleware to /me route specifically
+authRoutes.use('/me', authMiddleware);
 authRoutes.openapi(getCurrentUserRoute, AuthController.getProfile);
 
 // Profile Route - kept for backward compatibility
@@ -140,7 +141,6 @@ const profileRoute = createRoute({
   method: 'get',
   path: '/profile',
   tags: ['Authentication'],
-  middleware: [authMiddleware],
   responses: {
     200: {
       description: 'Returns the authenticated user\'s profile',
@@ -167,6 +167,8 @@ const profileRoute = createRoute({
   },
 });
 
+// Apply auth middleware to /profile route specifically
+authRoutes.use('/profile', authMiddleware);
 authRoutes.openapi(profileRoute, AuthController.getProfile);
 
 // Refresh Token Route

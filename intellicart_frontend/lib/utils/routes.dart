@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intellicart_frontend/pages/home/home_page.dart';
 import 'package:intellicart_frontend/pages/products/products_page.dart';
 import 'package:intellicart_frontend/pages/cart/cart_page.dart';
-import 'package:intellicart_frontend/pages/profile/profile_page.dart';
+import 'package:intellicart_frontend/presentation/screens/core/profile_page.dart';
 import 'package:intellicart_frontend/pages/settings/settings_page.dart';
 
 class AppRouter {
