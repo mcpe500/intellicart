@@ -1,7 +1,11 @@
 // lib/data/datasources/sqlite_helper.dart
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+<<<<<<< HEAD
 import 'package:intellicart/models/product.dart';
+=======
+import 'package:intellicart_frontend/models/product.dart';
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -20,8 +24,14 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'intellicart.db');
     return await openDatabase(
       path,
+<<<<<<< HEAD
       version: 1,
       onCreate: _onCreate,
+=======
+      version: 2,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
     );
   }
 
@@ -48,6 +58,100 @@ class DatabaseHelper {
     ''');
     // Initialize with Buyer mode
     await db.insert('app_state', {'id': 1, 'appMode': 'buyer'});
+<<<<<<< HEAD
+=======
+    
+    // Create shopping cart table
+    await db.execute('''
+      CREATE TABLE shopping_cart (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        productId TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        price TEXT,
+        imageUrl TEXT,
+        quantity INTEGER DEFAULT 1,
+        UNIQUE(productId)
+      )
+    ''');
+    
+    // Create user preferences table
+    await db.execute('''
+      CREATE TABLE user_preferences (
+        id INTEGER PRIMARY KEY,
+        language TEXT DEFAULT 'en',
+        theme TEXT DEFAULT 'light',
+        notifications_enabled INTEGER DEFAULT 1
+      )
+    ''');
+    // Initialize user preferences
+    await db.insert('user_preferences', {
+      'id': 1, 
+      'language': 'en',
+      'theme': 'light',
+      'notifications_enabled': 1
+    });
+    
+    // Create recently viewed products table
+    await db.execute('''
+      CREATE TABLE recently_viewed (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        productId TEXT NOT NULL,
+        name TEXT NOT NULL,
+        description TEXT,
+        price TEXT,
+        imageUrl TEXT,
+        viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    ''');
+  }
+  
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add shopping cart table
+      await db.execute('''
+        CREATE TABLE shopping_cart (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          productId TEXT NOT NULL,
+          name TEXT NOT NULL,
+          description TEXT,
+          price TEXT,
+          imageUrl TEXT,
+          quantity INTEGER DEFAULT 1,
+          UNIQUE(productId)
+        )
+      ''');
+      
+      // Add user preferences table
+      await db.execute('''
+        CREATE TABLE user_preferences (
+          id INTEGER PRIMARY KEY,
+          language TEXT DEFAULT 'en',
+          theme TEXT DEFAULT 'light',
+          notifications_enabled INTEGER DEFAULT 1
+        )
+      ''');
+      await db.insert('user_preferences', {
+        'id': 1, 
+        'language': 'en',
+        'theme': 'light',
+        'notifications_enabled': 1
+      });
+      
+      // Add recently viewed products table
+      await db.execute('''
+        CREATE TABLE recently_viewed (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          productId TEXT NOT NULL,
+          name TEXT NOT NULL,
+          description TEXT,
+          price TEXT,
+          imageUrl TEXT,
+          viewed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      ''');
+    }
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   }
 
   // --- App Mode Methods ---
@@ -98,6 +202,10 @@ class DatabaseHelper {
 
     return List.generate(maps.length, (i) {
       return Product(
+<<<<<<< HEAD
+=======
+        id: maps[i]['id'].toString(), // Use the database ID
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
         name: maps[i]['name'],
         description: maps[i]['description'],
         price: maps[i]['price'],
@@ -107,4 +215,182 @@ class DatabaseHelper {
       );
     });
   }
+<<<<<<< HEAD
 }
+=======
+
+  // --- Shopping Cart Methods ---
+  Future<void> addToCart(Product product, {int quantity = 1}) async {
+    final db = await database;
+    await db.insert(
+      'shopping_cart',
+      {
+        'productId': product.id ?? product.name, // Use name as fallback if id is null
+        'name': product.name,
+        'description': product.description,
+        'price': product.price,
+        'imageUrl': product.imageUrl,
+        'quantity': quantity,
+      },
+      conflictAlgorithm: ConflictAlgorithm.replace, // Update if product already in cart
+    );
+  }
+
+  Future<void> updateCartItemQuantity(String productId, int quantity) async {
+    final db = await database;
+    await db.update(
+      'shopping_cart',
+      {'quantity': quantity},
+      where: 'productId = ?',
+      whereArgs: [productId],
+    );
+  }
+
+  Future<void> removeFromCart(String productId) async {
+    final db = await database;
+    await db.delete(
+      'shopping_cart',
+      where: 'productId = ?',
+      whereArgs: [productId],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getCartItems() async {
+    final db = await database;
+    return await db.query('shopping_cart');
+  }
+
+  Future<void> clearCart() async {
+    final db = await database;
+    await db.delete('shopping_cart');
+  }
+
+  Future<int> getCartItemCount() async {
+    final db = await database;
+    final result = await db.rawQuery('SELECT COUNT(*) FROM shopping_cart');
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  // --- User Preferences Methods ---
+  Future<void> setLanguage(String language) async {
+    final db = await database;
+    await db.update(
+      'user_preferences',
+      {'language': language},
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+  }
+
+  Future<String> getLanguage() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'user_preferences',
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first['language'] as String;
+    }
+    return 'en'; // Default to English
+  }
+
+  Future<void> setTheme(String theme) async {
+    final db = await database;
+    await db.update(
+      'user_preferences',
+      {'theme': theme},
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+  }
+
+  Future<String> getTheme() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'user_preferences',
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first['theme'] as String;
+    }
+    return 'light'; // Default to light theme
+  }
+
+  Future<void> setNotificationsEnabled(bool enabled) async {
+    final db = await database;
+    await db.update(
+      'user_preferences',
+      {'notifications_enabled': enabled ? 1 : 0},
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+  }
+
+  Future<bool> getNotificationsEnabled() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'user_preferences',
+      where: 'id = ?',
+      whereArgs: [1],
+    );
+    if (maps.isNotEmpty) {
+      return maps.first['notifications_enabled'] == 1;
+    }
+    return true; // Default to enabled
+  }
+
+  // --- Recently Viewed Products Methods ---
+  Future<void> addRecentlyViewed(Product product) async {
+    final db = await database;
+    
+    // First, try to delete any existing entry for this product to update the timestamp
+    await db.delete(
+      'recently_viewed',
+      where: 'productId = ?',
+      whereArgs: [product.id ?? product.name],
+    );
+    
+    // Add the product to recently viewed
+    await db.insert(
+      'recently_viewed',
+      {
+        'productId': product.id ?? product.name, // Use name as fallback if id is null
+        'name': product.name,
+        'description': product.description,
+        'price': product.price,
+        'imageUrl': product.imageUrl,
+      },
+    );
+    
+    // Limit to last 20 viewed items
+    final results = await db.rawQuery(
+      'SELECT id FROM recently_viewed ORDER BY viewed_at DESC LIMIT -1 OFFSET 20'
+    );
+    if (results.isNotEmpty) {
+      final ids = results.map((m) => m['id'] as int).toList();
+      await db.delete(
+        'recently_viewed',
+        where: 'id IN (${ids.map((_) => '?').join(',')})',
+        whereArgs: ids,
+      );
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getRecentlyViewed() async {
+    final db = await database;
+    // Get the 10 most recently viewed products
+    return await db.query(
+      'recently_viewed', 
+      orderBy: 'viewed_at DESC',
+      limit: 10,
+    );
+  }
+
+  Future<void> clearRecentlyViewed() async {
+    final db = await database;
+    await db.delete('recently_viewed');
+  }
+}
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

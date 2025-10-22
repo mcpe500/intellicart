@@ -1,11 +1,19 @@
 // lib/screens/seller/seller_dashboard_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+<<<<<<< HEAD
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/screens/buyer/ecommerce_home_page.dart';
 import 'package:intellicart/presentation/screens/seller/seller_order_management_page.dart';
 import 'package:intellicart/presentation/screens/seller/seller_product_list_page.dart';
 import 'package:intellicart/main.dart'; // Import main to access AppInitializer or MyApp
+=======
+import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
+
+import 'package:intellicart_frontend/presentation/screens/seller/seller_order_management_page.dart';
+import 'package:intellicart_frontend/presentation/screens/seller/seller_product_list_page.dart';
+import 'package:intellicart_frontend/main.dart'; // Import main to access AppInitializer or MyApp
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
 class SellerDashboardPage extends StatelessWidget {
   const SellerDashboardPage({super.key});
@@ -137,4 +145,8 @@ class SellerDashboardPage extends StatelessWidget {
       ),
     );
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

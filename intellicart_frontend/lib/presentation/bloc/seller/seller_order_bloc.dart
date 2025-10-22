@@ -1,8 +1,13 @@
 // lib/presentation/bloc/seller_order_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+<<<<<<< HEAD
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/product.dart';
+=======
+import 'package:intellicart_frontend/models/order.dart';
+import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
 // --- EVENTS ---
 abstract class SellerOrderEvent extends Equatable {
@@ -41,6 +46,7 @@ class SellerOrderError extends SellerOrderState {}
 
 // --- BLOC ---
 class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
+<<<<<<< HEAD
   // Mock order list
   final List<Order> _orders = [
     Order(
@@ -65,6 +71,9 @@ class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
       orderDate: DateTime.now().subtract(const Duration(days: 1)),
     ),
   ];
+=======
+  final AppRepositoryImpl _repository = AppRepositoryImpl();
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
   SellerOrderBloc() : super(SellerOrderLoading()) {
     on<LoadSellerOrders>(_onLoadOrders);
@@ -76,14 +85,24 @@ class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
     Emitter<SellerOrderState> emit,
   ) async {
     emit(SellerOrderLoading());
+<<<<<<< HEAD
     await Future.delayed(const Duration(milliseconds: 500));
     emit(SellerOrderLoaded(List.from(_orders)));
+=======
+    try {
+      final orders = await _repository.getSellerOrders();
+      emit(SellerOrderLoaded(orders));
+    } catch (e) {
+      emit(SellerOrderError());
+    }
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   }
 
   Future<void> _onUpdateStatus(
     UpdateOrderStatus event,
     Emitter<SellerOrderState> emit,
   ) async {
+<<<<<<< HEAD
     int index = _orders.indexWhere((o) => o.id == event.orderId);
     if (index != -1) {
       _orders[index] = Order(
@@ -98,3 +117,15 @@ class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
     emit(SellerOrderLoaded(List.from(_orders)));
   }
 }
+=======
+    try {
+      await _repository.updateOrderStatus(event.orderId, event.newStatus);
+      // Reload orders after status update
+      final orders = await _repository.getSellerOrders();
+      emit(SellerOrderLoaded(orders));
+    } catch (e) {
+      emit(SellerOrderError());
+    }
+  }
+}
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

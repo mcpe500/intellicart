@@ -1,8 +1,13 @@
 // lib/screens/add_review_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+<<<<<<< HEAD
 import 'package:intellicart/presentation/bloc/buyer/review_bloc.dart';
 import 'package:intellicart/presentation/widgets/shared/star_rating_input.dart';
+=======
+import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
+import 'package:intellicart_frontend/presentation/widgets/shared/star_rating_input.dart';
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
 class AddReviewPage extends StatefulWidget {
   final String productId; // Pass the product ID to associate the review
@@ -28,6 +33,10 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   void _submitReview() {
     if (_formKey.currentState!.validate() && _currentRating > 0) {
+<<<<<<< HEAD
+=======
+      // Use the existing ReviewBloc from the parent context
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
       context.read<ReviewBloc>().add(
             SubmitReview(
               productId: widget.productId,
@@ -62,9 +71,13 @@ class _AddReviewPageState extends State<AddReviewPage> {
       ),
     );
 
+<<<<<<< HEAD
     return BlocProvider(
       create: (context) => ReviewBloc(),
       child: Scaffold(
+=======
+    return Scaffold(
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
         backgroundColor: Colors.white,
         appBar: AppBar(
           backgroundColor: Colors.white,
@@ -193,7 +206,14 @@ class _AddReviewPageState extends State<AddReviewPage> {
             ),
           ),
         ),
+<<<<<<< HEAD
       ),
     );
   }
 }
+=======
+      
+    );
+  }
+}
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

@@ -1,7 +1,14 @@
 // lib/presentation/bloc/review_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+<<<<<<< HEAD
 import 'package:intellicart/models/review.dart';
+=======
+import 'package:intellicart_frontend/models/review.dart';
+import 'package:intellicart_frontend/data/datasources/api_service.dart';
+import 'package:intellicart_frontend/data/exceptions/api_exception.dart';
+import 'package:intellicart_frontend/utils/service_locator.dart';
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
 // --- EVENTS ---
 abstract class ReviewEvent extends Equatable {
@@ -54,16 +61,31 @@ class ReviewSubmitFailure extends ReviewState {
 
 // --- BLOC ---
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
+<<<<<<< HEAD
   ReviewBloc() : super(ReviewInitial()) {
     on<SubmitReview>(_onSubmitReview);
   }
 
+=======
+  final ApiService _apiService;
+
+  ReviewBloc({ApiService? apiService}) : 
+    _apiService = apiService ?? ApiService(),
+    super(ReviewInitial()) {
+    on<SubmitReview>(_onSubmitReview);
+  }
+
+  // Allow default construction without parameters for use in BlocProvider
+  factory ReviewBloc.create() => ReviewBloc();
+
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   Future<void> _onSubmitReview(
     SubmitReview event,
     Emitter<ReviewState> emit,
   ) async {
     emit(ReviewSubmitting());
     try {
+<<<<<<< HEAD
       // Simulate network/database call
       await Future.delayed(const Duration(seconds: 2));
 
@@ -78,8 +100,25 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
 
       print('Review Submitted: ${newReview.title}');
       emit(ReviewSubmitSuccess(newReview));
+=======
+      // Submit review to the online API
+      final newReview = await _apiService.submitReview(
+        event.productId,
+        event.title,
+        event.reviewText,
+        event.rating,
+      );
+
+      emit(ReviewSubmitSuccess(newReview));
+    } on ApiException catch (e) {
+      emit(ReviewSubmitFailure(e.message));
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
     } catch (e) {
       emit(ReviewSubmitFailure(e.toString()));
     }
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

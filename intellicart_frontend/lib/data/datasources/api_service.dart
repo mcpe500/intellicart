@@ -1,4 +1,5 @@
 // lib/data/datasources/api_service.dart
+<<<<<<< HEAD
 import 'package:intellicart/data/datasources/mock_backend.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/user.dart';
@@ -68,5 +69,771 @@ class ApiService {
     // In a real app, this would make an HTTP request to a backend API
     // Here, it just calls the mock backend
     return await _mockBackend.getUserById(userId);
+=======
+import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intellicart_frontend/data/exceptions/api_exception.dart';
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/models/user.dart';
+import 'package:intellicart_frontend/models/order.dart';
+import 'package:intellicart_frontend/models/review.dart';
+
+class ApiService {
+  late Dio _dio;
+  String _baseUrl = '';
+  String? _token;
+  bool _isInitialized = false;
+
+  // --- ADD THIS GETTER ---
+  String? get token => _token;
+  
+  // Helper method to safely extract string from response data
+  String? _getStringFromResponse(Map<String, dynamic>? data, String key) {
+    if (data == null) return null;
+    final value = data[key];
+    return value is String ? value : null;
+  }
+  // -------------------------
+
+  ApiService() {
+    _initializeDio();
+  }
+
+  void _initializeDio() async {
+    try {
+      await dotenv.load(fileName: ".env");
+      _baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://api.intellicart.com/v1';
+      
+      _dio = Dio(
+        BaseOptions(
+          baseUrl: _baseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      // Add interceptors for token management and comprehensive error handling
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            if (_token != null) {
+              options.headers['Authorization'] = 'Bearer $_token';
+            }
+            return handler.next(options);
+          },
+          onResponse: (response, handler) {
+            // Handle different success status codes appropriately
+            switch (response.statusCode) {
+              case 200:
+                // Standard success response
+                break;
+              case 201:
+                // Resource created
+                break;
+              case 204:
+                // No content (e.g., successful delete)
+                break;
+              default:
+                // For any other success code, continue normally
+                break;
+            }
+            return handler.next(response);
+          },
+          onError: (DioException error, ErrorInterceptorHandler handler) async {
+            switch (error.response?.statusCode) {
+              case 401:
+                // Unauthorized - token might be expired
+                // In a real app, you might try to refresh the token here
+                clearToken();
+                // Or redirect to login
+                break;
+              case 403:
+                // Forbidden - user doesn't have permission
+                break;
+              case 404:
+                // Resource not found
+                break;
+              case 429:
+                // Too many requests - implement rate limiting
+                // You could add a retry delay here
+                break;
+              case 500:
+              case 502:
+              case 503:
+              case 504:
+                // Server errors - might want to queue request for later
+                break;
+            }
+            return handler.next(error);
+          },
+        ),
+      );
+      _isInitialized = true;
+    } catch (e) {
+      // Set a default configuration if .env loading fails
+      _baseUrl = 'https://api.intellicart.com/v1';
+      
+      _dio = Dio(
+        BaseOptions(
+          baseUrl: _baseUrl,
+          connectTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+        ),
+      );
+
+      // Add interceptors for token management and comprehensive error handling
+      _dio.interceptors.add(
+        InterceptorsWrapper(
+          onRequest: (options, handler) {
+            if (_token != null) {
+              options.headers['Authorization'] = 'Bearer $_token';
+            }
+            return handler.next(options);
+          },
+          onResponse: (response, handler) {
+            return handler.next(response);
+          },
+          onError: (DioException error, ErrorInterceptorHandler handler) async {
+            return handler.next(error);
+          },
+        ),
+      );
+      _isInitialized = true;
+    }
+  }
+
+  Future<void> ensureInitialized() async {
+    while (!_isInitialized) {
+      await Future.delayed(const Duration(milliseconds: 100));
+    }
+  }
+
+  void setToken(String token) {
+    _token = token;
+  }
+
+  void clearToken() {
+    _token = null;
+  }
+
+  // --- AUTHENTICATION METHODS ---
+  Future<User?> login(String email, String password) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/login',
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
+
+      // Handle different status codes appropriately
+      switch (response.statusCode) {
+        case 200:
+          final userData = response.data['user'];
+          final tokenData = response.data['token'];
+          // Ensure token is a string before assignment
+          _token = tokenData is String ? tokenData : null;
+          
+          return User.fromJson(userData);
+        case 400:
+          final message = response.data['message'];
+          throw ApiException(400, "Invalid email or password format", 
+              serverMessage: message is String ? message : "Bad request");
+        case 401:
+          final message = response.data['message'];
+          throw ApiException(401, "Invalid credentials", 
+              serverMessage: message is String ? message : "Unauthorized");
+        case 429:
+          final message = response.data['message'];
+          throw ApiException(429, "Too many login attempts. Please try again later", 
+              serverMessage: message is String ? message : "Rate limited");
+        default:
+          final message = response.data?['message'];
+          throw ApiException(response.statusCode ?? 0, 
+              "Login failed with status ${response.statusCode}", 
+              serverMessage: message is String ? message : "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<User> register(String email, String password, String name, String role) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/register',
+        data: {
+          'email': email,
+          'password': password,
+          'name': name,
+          'role': role,
+        },
+      );
+
+      // Handle different status codes appropriately
+      switch (response.statusCode) {
+        case 201:
+          final userData = response.data['user'];
+          final tokenData = response.data['token'];
+          // Ensure token is a string before assignment
+          _token = tokenData is String ? tokenData : null;
+          
+          return User.fromJson(userData);
+        case 400:
+          final message = response.data['message'];
+          throw ApiException(400, "Invalid registration data", 
+              serverMessage: message is String ? message : "Bad request");
+        case 409:
+          final message = response.data['message'];
+          throw ApiException(409, "Email already exists", 
+              serverMessage: message is String ? message : "Conflict");
+        default:
+          final message = response.data?['message'];
+          throw ApiException(response.statusCode ?? 0, 
+              "Registration failed with status ${response.statusCode}", 
+              serverMessage: message is String ? message : "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  // --- PRODUCT METHODS ---
+  Future<List<Product>> getProducts({int? page, int? limit, String? search, String? category}) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get(
+        '/products',
+        queryParameters: {
+          if (page != null) 'page': page,
+          if (limit != null) 'limit': limit,
+          if (search != null) 'search': search,
+          if (category != null) 'category': category,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          final productsData = response.data['products'] as List;
+          return productsData.map((json) => Product.fromJson(json)).toList();
+        case 400:
+          final message = _getStringFromResponse(response.data, 'message');
+          throw ApiException(400, "Invalid query parameters", 
+              serverMessage: message ?? "Bad request");
+        case 404:
+          // Return empty list if no products found
+          return [];
+        default:
+          final message = _getStringFromResponse(response.data, 'message');
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch products with status ${response.statusCode}", 
+              serverMessage: message ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<Product> addProduct(Product product) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/products',
+        data: product.toJson(),
+      );
+
+      switch (response.statusCode) {
+        case 201:
+          final productData = response.data['product'];
+          return Product.fromJson(productData);
+        case 400:
+          final message = _getStringFromResponse(response.data, 'message');
+          throw ApiException(400, "Invalid product data", 
+              serverMessage: message ?? "Bad request");
+        case 401:
+        case 403:
+          final message = _getStringFromResponse(response.data, 'message');
+          throw ApiException(response.statusCode!, "Not authorized to add products", 
+              serverMessage: message ?? "Unauthorized");
+        case 422:
+          final message = _getStringFromResponse(response.data, 'message');
+          throw ApiException(422, "Product validation failed", 
+              serverMessage: message ?? "Validation error");
+        default:
+          final message = _getStringFromResponse(response.data, 'message');
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to add product with status ${response.statusCode}", 
+              serverMessage: message ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<Product> updateProduct(Product product) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.put(
+        '/products/${product.id}',
+        data: product.toJson(),
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          final productData = response.data['product'];
+          return Product.fromJson(productData);
+        case 400:
+          throw ApiException(400, "Invalid product data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to update this product", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          throw ApiException(404, "Product not found", 
+              serverMessage: response.data['message'] ?? "Not found");
+        case 422:
+          throw ApiException(422, "Product validation failed", 
+              serverMessage: response.data['message'] ?? "Validation error");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to update product with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> deleteProduct(Product product) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.delete('/products/${product.id}');
+
+      switch (response.statusCode) {
+        case 204:
+          // Successfully deleted
+          return;
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to delete this product", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          throw ApiException(404, "Product not found", 
+              serverMessage: response.data['message'] ?? "Not found");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to delete product with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<List<Product>> getSellerProducts(String sellerId, {int? page, int? limit}) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get(
+        '/products/seller/$sellerId',
+        queryParameters: {
+          if (page != null) 'page': page,
+          if (limit != null) 'limit': limit,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          final productsData = response.data['products'] as List;
+          return productsData.map((json) => Product.fromJson(json)).toList();
+        case 400:
+          throw ApiException(400, "Invalid query parameters", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to view seller products", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          // Return empty list if no products found for seller
+          return [];
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch seller products with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  // --- ORDER METHODS ---
+  Future<List<Order>> getSellerOrders({String? status, int? page, int? limit}) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get(
+        '/orders/seller',
+        queryParameters: {
+          if (status != null) 'status': status,
+          if (page != null) 'page': page,
+          if (limit != null) 'limit': limit,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          final ordersData = response.data['orders'] as List;
+          return ordersData.map((json) => Order.fromJson(json)).toList();
+        case 400:
+          throw ApiException(400, "Invalid query parameters", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to view orders", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          // Return empty list if no orders found
+          return [];
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch seller orders with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> updateOrderStatus(String orderId, String status) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.put(
+        '/orders/$orderId/status',
+        data: {'status': status},
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Successfully updated
+          return;
+        case 400:
+          throw ApiException(400, "Invalid status value", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to update order status", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          throw ApiException(404, "Order not found", 
+              serverMessage: response.data['message'] ?? "Not found");
+        case 422:
+          throw ApiException(422, "Invalid status transition", 
+              serverMessage: response.data['message'] ?? "Unprocessable entity");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to update order status with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<User?> getUserById(String userId) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get('/users/$userId');
+
+      switch (response.statusCode) {
+        case 200:
+          final userData = response.data['user'];
+          return User.fromJson(userData);
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to view user", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          // User not found
+          return null;
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch user with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  // --- NEW METHOD: Get current authenticated user ---
+  Future<User?> getCurrentUser() async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get('/auth/me');
+
+      switch (response.statusCode) {
+        case 200:
+          final userData = response.data;
+          return User.fromJson(userData);
+        case 401:
+          // Unauthorized - token might be expired
+          clearToken();
+          return null;
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch current user with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  // --- REVIEW METHODS ---
+  Future<List<Review>> getProductReviews(String productId) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.get('/reviews/product/$productId');
+
+      switch (response.statusCode) {
+        case 200:
+          final reviewsData = response.data['reviews'] as List;
+          return reviewsData.map((json) => Review.fromJson(json)).toList();
+        case 400:
+          throw ApiException(400, "Invalid query parameters", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 404:
+          // No reviews found for this product
+          return [];
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to fetch product reviews with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<Review> submitReview(String productId, String title, String reviewText, int rating) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/reviews',
+        data: {
+          'productId': productId,
+          'title': title,
+          'reviewText': reviewText,
+          'rating': rating,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 201:
+          final reviewData = response.data['review'];
+          return Review.fromJson(reviewData);
+        case 400:
+          throw ApiException(400, "Invalid review data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Not authorized to submit review", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 422:
+          throw ApiException(422, "Review validation failed", 
+              serverMessage: response.data['message'] ?? "Validation error");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to submit review with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  // --- USER UPDATE METHODS ---
+  Future<User> updateUser(String userId, {String? name, String? phoneNumber}) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.put(
+        '/users/$userId',
+        data: {
+          if (name != null) 'name': name,
+          if (phoneNumber != null) 'phoneNumber': phoneNumber,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          final userData = response.data['user'];
+          return User.fromJson(userData);
+        case 400:
+          throw ApiException(400, "Invalid user data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+        case 403:
+          throw ApiException(response.statusCode!, "Not authorized to update user", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 404:
+          throw ApiException(404, "User not found", 
+              serverMessage: response.data['message'] ?? "Not found");
+        case 422:
+          throw ApiException(422, "User validation failed", 
+              serverMessage: response.data['message'] ?? "Validation error");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to update user with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> requestEmailChange(String reason, String phoneNumber) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/change-email-request',
+        data: {
+          'reason': reason,
+          'phoneNumber': phoneNumber,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Request successful
+          return;
+        case 400:
+          throw ApiException(400, "Invalid request data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Not authorized to change email", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many requests. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to request email change with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> verifyPhoneNumber(String phoneNumber, String otpCode) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/verify-phone',
+        data: {
+          'phoneNumber': phoneNumber,
+          'otp': otpCode,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Verification successful
+          return;
+        case 400:
+          throw ApiException(400, "Invalid verification data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Invalid OTP code", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many attempts. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to verify phone with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> requestPhoneChange(String reason, String newPhoneNumber) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/change-phone-request',
+        data: {
+          'reason': reason,
+          'newPhoneNumber': newPhoneNumber,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Request successful
+          return;
+        case 400:
+          throw ApiException(400, "Invalid request data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Not authorized to change phone", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many requests. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to request phone change with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+  }
+
+  Future<void> updatePhoneAfterVerification(String newPhoneNumber, String otpCode) async {
+    await ensureInitialized();
+    try {
+      final response = await _dio.post(
+        '/auth/update-phone',
+        data: {
+          'newPhoneNumber': newPhoneNumber,
+          'otp': otpCode,
+        },
+      );
+
+      switch (response.statusCode) {
+        case 200:
+          // Phone number updated successfully
+          return;
+        case 400:
+          throw ApiException(400, "Invalid verification data", 
+              serverMessage: response.data['message'] ?? "Bad request");
+        case 401:
+          throw ApiException(401, "Invalid OTP code or unauthorized", 
+              serverMessage: response.data['message'] ?? "Unauthorized");
+        case 429:
+          throw ApiException(429, "Too many attempts. Please try again later", 
+              serverMessage: response.data['message'] ?? "Rate limited");
+        default:
+          throw ApiException(response.statusCode ?? 0, 
+              "Failed to update phone with status ${response.statusCode}", 
+              serverMessage: response.data?['message'] ?? "Unknown error");
+      }
+    } on DioException catch (e) {
+      throw ApiException.fromDioException(e);
+    }
+>>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   }
 }

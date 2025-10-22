@@ -12,34 +12,225 @@
 .swiftpm/
 migrate_working_dir/
 
-# IntelliJ related
+# Flutter/Dart/Pub
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+coverage/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+
+# Files for build artifacts
+*.so
+*.dylib
+*.dll
+
+# Android
+.android/
+*.jks
+*.keystore
+/local.properties
+/android/app/build/
+/android/app/intermediates/
+/android/app/src/main/assets/
+/android/app/src/main/jniLibs/
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# iOS
+ios/Flutter/Flutter.podspec
+ios/Runner/Runner-Bridging-Header.h
+ios/Pods/
+ios/build/
+*.mobileprovision
+*.xcconfig
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+
+# Linux
+*~
+.DS_Store
+.directory
+.Trash-*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vs/
+
+# Text editors
+*.tmp
+*.bak
+*.old
+*~
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.testing
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.bun-debug.log*
+.bun-error.log*
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+.next/
+.nuxt/
+.vuepress/dist
+.craft
+dist
+dist-ssr
+jspm_packages/
+
+# Backend specific
+intellij_backend/node_modules/
+intellicart_backend/.dart_tool/
+intellicart_backend/.flutter-plugins
+intellicart_backend/.flutter-plugins-dependencies
+intellicart_backend/.packages
+intellicart_backend/build/
+intellicart_backend/coverage/
+
+# Backend build artifacts
+intellicart_backend/*.so
+intellicart_backend/*.dylib
+intellicart_backend/*.dll
+
+# Bun related
+intellicart_backend/node_modules/
+intellicart_backend/.bun.lock
+intellicart_backend/bun.lockb
+*.tsbuildinfo
+
+# Backend specific files
+intellicart_backend/.env
+intellicart_backend/.env.local
+intellicart_backend/.env.production
+intellicart_backend/.env.development
+
+# Backend logs
+intellicart_backend/logs/
+intellicart_backend/*.log
+
+# Backend coverage
+intellicart_backend/coverage/
+intellicart_backend/.nyc_output
+intellicart_backend/nyc_output
+
+# Frontend specific
+intellicart_frontend/.dart_tool/
+intellicart_frontend/.flutter-plugins
+intellicart_frontend/.flutter-plugins-dependencies
+intellicart_frontend/.packages
+intellicart_frontend/build/
+intellicart_frontend/coverage/
+intellicart_frontend/**/doc/api/
+
+# Frontend build artifacts
+intellicart_frontend/*.so
+intellicart_frontend/*.dylib
+intellicart_frontend/*.dll
+
+# Environment and sensitive files
+intellicart_frontend/.env
+intellicart_frontend/.env.local
+intellicart_frontend/.env.production
+intellicart_frontend/.env.development
+intellicart_frontend/.env.test
+
+# Frontend logs
+intellicart_frontend/*.log
+
+# Frontend cache
+intellicart_frontend/.pub-cache/
+intellicart_frontend/.pub/
+intellicart_frontend/ios/.symlinks
+intellicart_frontend/android/.gradle
+intellicart_frontend/android/gradlew
+intellicart_frontend/android/gradlew.bat
+intellicart_frontend/android/local.properties
+
+# Frontend iOS
+intellicart_frontend/ios/Pods/
+intellicart_frontend/ios/build/
+intellicart_frontend/ios/Flutter/.last_build_id
+intellicart_frontend/ios/.symlinks/
+
+# Frontend Android
+intellicart_frontend/android/app/build/
+intellicart_frontend/android/app/intermediates/
+intellicart_frontend/android/app/src/main/java/io/flutter/plugins/.Stamp/
+
+# Local configuration files (sdk path etc)
+intellicart_frontend/local.properties
+intellicart_frontend/gradle.properties
+intellicart_frontend/android/key.properties
 *.iml
 *.ipr
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
+# VS Code
+.vscode/
 
-# Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
-/coverage/
+# Testing
+*.coverage
+coverage/
+coverage/lcov-report/
+
+# CI/CD
+.github/workflows/
 
 # Symbolication related
 app.*.symbols
 
 # Obfuscation related
 app.*.map.json
-
-# Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
