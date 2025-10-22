@@ -54,7 +54,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(200);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(Array.isArray(body)).toBe(true);
         expect(body.length).toBeGreaterThan(0); // Should have initial products
     });
@@ -68,7 +68,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(200);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.id).toBe(productId);
         expect(body).toHaveProperty('name');
         expect(body).toHaveProperty('price');
@@ -80,7 +80,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(404);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.error).toBe('Product not found');
     });
 
@@ -104,7 +104,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(201);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.id).toBeString();
         expect(body.name).toBe(newProduct.name);
         expect(body.description).toBe(newProduct.description);
@@ -147,7 +147,7 @@ describe('E2E - Products API', () => {
             })
         });
         
-        const createdProduct = await createdProductRes.json();
+        const createdProduct: any = await createdProductRes.json();
         expect(createdProductRes.status).toBe(201);
 
         // Now update the product
@@ -169,7 +169,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(200);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.id).toBe(createdProduct.id);
         expect(body.name).toBe(updatedData.name);
         expect(body.description).toBe(updatedData.description);
@@ -192,7 +192,7 @@ describe('E2E - Products API', () => {
             })
         });
         
-        const createdProduct = await createdProductRes.json();
+        const createdProduct: any = await createdProductRes.json();
         expect(createdProductRes.status).toBe(201);
 
         // Now delete the product
@@ -206,7 +206,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(200);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.message).toBe('Product deleted successfully');
         
         // Verify the product no longer exists
@@ -236,7 +236,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(201);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.id).toBeString();
         expect(body.userId).toBe(buyerId);
         expect(body.rating).toBe(reviewData.rating);
@@ -245,7 +245,7 @@ describe('E2E - Products API', () => {
 
         // Verify the review was added to the product
         const getProductRes = await app.request(`http://localhost/api/products/${productId}`);
-        const getProductBody = await getProductRes.json();
+        const getProductBody: any = await getProductRes.json();
         expect(getProductRes.status).toBe(200);
         expect(getProductBody.reviews).toBeArray();
         expect(getProductBody.reviews).toContainEqual(body);
@@ -273,7 +273,7 @@ describe('E2E - Products API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(400);
         
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.error).toBe('Rating must be between 1 and 5');
     });
 });

@@ -32,7 +32,7 @@ export class Logger {
     const verbosityLevel = this.verbosity.toUpperCase();
 
     // Define the order of log levels
-    const levelOrder = {
+    const levelOrder: { [key: string]: number } = {
       'ERROR': 0,
       'WARN': 1,
       'INFO': 2,
@@ -40,8 +40,8 @@ export class Logger {
     };
 
     // If verbosity is set to a level, log that level and all above it
-    const verbosityIndex = levelOrder[verbosityLevel] ?? levelOrder['INFO']; // Default to INFO
-    const messageIndex = levelOrder[level] ?? levelOrder['INFO'];
+    const verbosityIndex = levelOrder[verbosityLevel as keyof typeof levelOrder] ?? levelOrder['INFO']; // Default to INFO
+    const messageIndex = levelOrder[level as keyof typeof levelOrder] ?? levelOrder['INFO'];
 
     return messageIndex <= verbosityIndex; // Lower index = higher priority
   }
@@ -86,7 +86,7 @@ export const requestLogger = async (c: Context, next: Function) => {
   }
 
   if (verbosity === 'DEBUG') {
-    const logMeta = {
+    const logMeta: { [key: string]: any } = {
       method,
       url,
       ip,

@@ -8,7 +8,13 @@ import app from '../src/index';
 async function generateOpenApiYaml() {
   try {
     // Get the OpenAPI document from the Hono app (this contains just the paths and components)
-    const openApiDoc = app.getOpenAPIDocument();
+    const openApiDoc = app.getOpenAPIDocument({
+      openapi: '3.1.0',
+      info: {
+        title: 'Intellicart API',
+        version: '1.0.0',
+      },
+    });
     
     // Create a clean copy without functions for YAML serialization
     const cleanOpenApiDoc = JSON.parse(JSON.stringify(openApiDoc, (key, value) => {

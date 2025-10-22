@@ -7,6 +7,7 @@ abstract class CartRepository {
   Future<List<CartItem>> getCartItems();
   Future<void> updateQuantity(String productId, int quantity);
   Future<void> removeFromCart(int id);
+  Future<void> removeFromCartByProductId(String productId);
   Future<void> clearCart();
   Future<bool> cartItemExists(String productId);
   Future<void> updateOrAddCartItem(CartItem cartItem);
@@ -31,8 +32,13 @@ class CartRepositoryImpl implements CartRepository {
   }
 
   @override
-  Future<void> removeFromCart(int id) async {
+ Future<void> removeFromCart(int id) async {
     await _dbHelper.deleteCartItem(id);
+  }
+  
+  @override
+  Future<void> removeFromCartByProductId(String productId) async {
+    await _dbHelper.deleteCartItemByProductId(productId);
   }
 
   @override

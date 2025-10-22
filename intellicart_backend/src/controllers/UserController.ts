@@ -209,4 +209,79 @@ export class UserController {
       return c.json({ error: 'Internal server error' }, 500);
     }
   }
+
+  static async getAllUsers(c: Context) {
+    try {
+      const users = await db().getAllUsers();
+      
+      return c.json(users, 200);
+    } catch (error) {
+      Logger.error('Get all users error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async getUserById(c: Context) {
+    try {
+      const { id } = c.req.param();
+      
+      const user = await db().getUserById(id);
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      return c.json(user, 200);
+    } catch (error) {
+      Logger.error('Get user by ID error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async createUser(c: Context) {
+    try {
+      const userData = await c.req.json();
+      
+      // In a real implementation, you'd validate the user data and hash the password
+      const newUser = await db().createUser(userData);
+      
+      // Return user without sensitive data
+      const { password, ...safeUser } = newUser as any;
+      
+      return c.json(safeUser, 201);
+    } catch (error) {
+      Logger.error('Create user error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async deleteUser(c: Context) {
+    try {
+      const { id } = c.req.param();
+      
+      const user = await db().getUserById(id);
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      // Get user before deleting so we can return it in the response
+      const userToReturn = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        createdAt: user.createdAt,
+        phoneNumber: user.phoneNumber
+      };
+      
+      await db().deleteUser(id);
+      
+      return c.json({ 
+        message: 'User deleted successfully',
+        user: userToReturn
+      }, 200);
+    } catch (error) {
+      Logger.error('Delete user error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
 }

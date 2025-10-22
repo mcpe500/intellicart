@@ -53,6 +53,25 @@ class JsonDbService implements DbService {
     return userWithoutPassword;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    const db = await this.readDb();
+    // Return all users without their passwords
+    return db.users.map(({ password, ...userWithoutPassword }) => userWithoutPassword);
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const db = await this.readDb();
+    const initialLength = db.users.length;
+    // Remove the user with the given id
+    db.users = db.users.filter(u => u.id !== id);
+    
+    if (db.users.length < initialLength) {
+      await this.writeDb(db);
+      return true;
+    }
+    return false;
+  }
+
   async updateUser(id: string, userData: Partial<User>): Promise<User | null> {
     const db = await this.readDb();
     const userIndex = db.users.findIndex(u => u.id === id);

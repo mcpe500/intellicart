@@ -1,11 +1,9 @@
 // lib/data/datasources/sqlite_helper.dart
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-<<<<<<< HEAD
-import 'package:intellicart/models/product.dart';
-=======
+
 import 'package:intellicart_frontend/models/product.dart';
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -24,14 +22,11 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'intellicart.db');
     return await openDatabase(
       path,
-<<<<<<< HEAD
-      version: 1,
-      onCreate: _onCreate,
-=======
+
       version: 2,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
     );
   }
 
@@ -58,8 +53,8 @@ class DatabaseHelper {
     ''');
     // Initialize with Buyer mode
     await db.insert('app_state', {'id': 1, 'appMode': 'buyer'});
-<<<<<<< HEAD
-=======
+
+
     
     // Create shopping cart table
     await db.execute('''
@@ -151,7 +146,7 @@ class DatabaseHelper {
         )
       ''');
     }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
   }
 
   // --- App Mode Methods ---
@@ -202,10 +197,10 @@ class DatabaseHelper {
 
     return List.generate(maps.length, (i) {
       return Product(
-<<<<<<< HEAD
-=======
+
+
         id: maps[i]['id'].toString(), // Use the database ID
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
         name: maps[i]['name'],
         description: maps[i]['description'],
         price: maps[i]['price'],
@@ -215,9 +210,8 @@ class DatabaseHelper {
       );
     });
   }
-<<<<<<< HEAD
-}
-=======
+
+
 
   // --- Shopping Cart Methods ---
   Future<void> addToCart(Product product, {int quantity = 1}) async {
@@ -393,4 +387,3 @@ class DatabaseHelper {
     await db.delete('recently_viewed');
   }
 }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

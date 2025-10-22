@@ -200,8 +200,6 @@ userRoutes.openapi(createUserRoute, UserController.createUser);
 
 /**
  * Route: PUT /api/users/:id
-<<<<<<< HEAD
- * Description: Update an existing user by ID (full update)
  * Description: Update an existing user by ID (full update) - Not supported for security reasons
  * 
  * Request:
@@ -239,9 +237,6 @@ const updateUserRoute = createRoute({
       content: {
         'application/json': {
           // Response body schema
-<<<<<<< HEAD
-          schema: UserSchema,
-=======
           schema: UpdateUserResponseSchema,
         },
       },
@@ -268,7 +263,6 @@ const updateUserRoute = createRoute({
       content: {
         'application/json': {
           schema: ErrorSchema,
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
         },
       },
     },
@@ -300,34 +294,19 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
 
 /**
  * Route: DELETE /api/users/:id
-<<<<<<< HEAD
- * Description: Delete an existing user by ID
- * 
- * Request:
- * - Method: DELETE
- * - Path: /users/{id}
- * - Parameters: id (number, required)
-=======
  * Description: Delete an existing user by ID - Not supported for security reasons
  * 
  * Request:
  * - Method: DELETE
  * - Path: /{id}
  * - Parameters: id (string, required)
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
  * - Query: None
  * - Body: None
  * 
  * Response:
-<<<<<<< HEAD
- * - Status: 200 OK (user deleted successfully)
- * - Content-Type: application/json
- * - Body: Success message and deleted user object
-=======
  * - Status: 400 Bad Request (not supported for security reasons)
  * - Content-Type: application/json
  * - Body: Error object
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
  * 
  * - Status: 404 Not Found (user not found)
  * - Content-Type: application/json
@@ -335,22 +314,6 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
  */
 const deleteUserRoute = createRoute({
   method: 'delete',
-<<<<<<< HEAD
-  path: '/users/{id}',
-  // Validate request parameters
-  request: {
-    params: z.object({
-      // ID parameter: string that matches numeric pattern, transformed to number
-      id: z
-        .string()
-        .regex(/^\d+$/, { message: 'ID must be a positive number' })
-        .transform(Number)
-        .openapi({ 
-          example: 1,
-          description: 'Unique identifier of the user to delete'
-        }),
-    }),
-=======
   path: '/{id}',
   tags: ['Users'],
   // Validate request parameters

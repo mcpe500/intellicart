@@ -1,21 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-<<<<<<< HEAD
-import 'package:intellicart/data/datasources/api_service.dart';
-import 'package:intellicart/data/repositories/app_repository_impl.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/presentation/screens/buyer/ecommerce_home_page.dart';
-import 'package:intellicart/presentation/screens/core/splash_screen.dart';
-import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart';
-
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    BlocProvider(
-      create: (context) => AppModeBloc(repository: AppRepositoryImpl())..add(LoadAppMode()),
-=======
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
 import 'package:intellicart_frontend/bloc/auth/auth_bloc.dart';
 import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
@@ -59,7 +44,6 @@ void main() async {
         ),
 
       ],
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
       child: const MyApp(),
     ),
   );
@@ -91,10 +75,7 @@ class AppInitializer extends StatefulWidget {
 
 class _AppInitializerState extends State<AppInitializer> {
   bool _isInitialized = false;
-<<<<<<< HEAD
-  List<Product> _products = [];
-=======
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 
   @override
   void initState() {
@@ -103,22 +84,7 @@ class _AppInitializerState extends State<AppInitializer> {
   }
 
   Future<void> _initializeApp() async {
-<<<<<<< HEAD
-    // 1. Fetch products from the API Service (which uses the mock backend)
-    final apiService = ApiService();
-    final productsFromApi = await apiService.getProducts();
-
-    // 2. Save fetched products to the local repository
-    final repository = AppRepositoryImpl();
-    await repository.insertProducts(productsFromApi);
-
-    // 3. Load products from the repository to be used by the UI
-    _products = await repository.getProducts();
-
-    // Simulate other loading tasks
-=======
     // Simulate loading tasks
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
     await Future.delayed(const Duration(seconds: 2));
 
     if (mounted) {
@@ -134,20 +100,6 @@ class _AppInitializerState extends State<AppInitializer> {
       return const SplashScreen();
     }
 
-<<<<<<< HEAD
-    // After initialization, use the AppModeBloc to decide which page to show
-    return BlocBuilder<AppModeBloc, AppModeState>(
-      builder: (context, state) {
-        if (state.mode == AppMode.seller) {
-          return const SellerDashboardPage();
-        }
-        // Default to Buyer mode
-        return EcommerceHomePage(products: _products);
-      },
-    );
-  }
-}
-=======
     // First check authentication state
     return BlocBuilder<AuthBloc, AuthState>(
       builder: (context, authState) {
@@ -179,4 +131,3 @@ class _AppInitializerState extends State<AppInitializer> {
     );
   }
 }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

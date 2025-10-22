@@ -60,10 +60,10 @@ class CartDatabaseHelper {
     return await db.update(
       _cartTable,
       cartItem.toMap(),
-      where: 'id = ?',
-      whereArgs: [cartItem.id],
+      where: 'productId = ?',
+      whereArgs: [cartItem.productId],
     );
-  }
+ }
 
   Future<int> deleteCartItem(int id) async {
     final db = await instance.database;
@@ -97,5 +97,14 @@ class CartDatabaseHelper {
       whereArgs: [productId],
     );
     return result.isNotEmpty;
+  }
+  
+  Future<int> deleteCartItemByProductId(String productId) async {
+    final db = await instance.database;
+    return await db.delete(
+      _cartTable,
+      where: 'productId = ?',
+      whereArgs: [productId],
+    );
   }
 }

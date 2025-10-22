@@ -51,9 +51,7 @@ export class PaymentMethodController {
         return c.json({ message: 'No payment methods found for this user' }, 404);
       }
       
-      return c.json({ 
-        paymentMethods: userPaymentMethods 
-      }, 200);
+      return c.json(userPaymentMethods, 200);
     } catch (error) {
       Logger.error('Error in getUserPaymentMethods:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -132,9 +130,7 @@ export class PaymentMethodController {
       // Return without sensitive data
       const { cvv: _, ...safeReturn } = newPaymentMethod;
       
-      return c.json({ 
-        paymentMethod: safeReturn 
-      }, 201);
+      return c.json(safeReturn, 201);
     } catch (error) {
       Logger.error('Error in createPaymentMethod:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -188,9 +184,7 @@ export class PaymentMethodController {
       // Return without sensitive data
       const { cvv: _, ...safeReturn } = updatedPaymentMethod;
       
-      return c.json({ 
-        paymentMethod: safeReturn 
-      }, 200);
+      return c.json(safeReturn, 200);
     } catch (error) {
       Logger.error('Error in updatePaymentMethod:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -211,7 +205,7 @@ export class PaymentMethodController {
       
       return c.json({ 
         message: 'Payment method deleted successfully' 
-      }, 204);
+      }, 200);
     } catch (error) {
       Logger.error('Error in deletePaymentMethod:', error);
       return c.json({ message: 'Internal server error' }, 500);

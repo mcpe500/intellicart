@@ -1,13 +1,11 @@
 // lib/presentation/bloc/seller_order_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-<<<<<<< HEAD
-import 'package:intellicart/models/order.dart';
-import 'package:intellicart/models/product.dart';
-=======
+
 import 'package:intellicart_frontend/models/order.dart';
+import 'package:intellicart_frontend/models/product.dart';
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 
 // --- EVENTS ---
 abstract class SellerOrderEvent extends Equatable {
@@ -46,34 +44,36 @@ class SellerOrderError extends SellerOrderState {}
 
 // --- BLOC ---
 class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
-<<<<<<< HEAD
+
   // Mock order list
   final List<Order> _orders = [
     Order(
       id: '12345',
+      customerId: 'customer1', // Add required parameter
       customerName: 'Buyer One',
       items: [
-        Product(name: 'Stylish Headphones', description: '', price: '\$49.99', imageUrl: '', reviews: [])
+        Product(id: 'prod1', name: 'Stylish Headphones', description: '', price: '\$49.9', imageUrl: '', reviews: [])
       ],
-      total: 49.99,
+      total: 49.9,
       status: 'Pending',
       orderDate: DateTime.now().subtract(const Duration(hours: 2)),
     ),
     Order(
       id: '12346',
+      customerId: 'customer2', // Add required parameter
       customerName: 'Buyer Two',
       items: [
-        Product(name: 'Wireless Earbuds', description: '', price: '\$79.99', imageUrl: '', reviews: []),
-        Product(name: 'Smartwatch', description: '', price: '\$199.99', imageUrl: '', reviews: [])
+        Product(id: 'prod2', name: 'Wireless Earbuds', description: '', price: '\$79.9', imageUrl: '', reviews: []),
+        Product(id: 'prod3', name: 'Smartwatch', description: '', price: '\$199.9', imageUrl: '', reviews: [])
       ],
       total: 279.98,
       status: 'Shipped',
       orderDate: DateTime.now().subtract(const Duration(days: 1)),
     ),
   ];
-=======
+
   final AppRepositoryImpl _repository = AppRepositoryImpl();
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 
   SellerOrderBloc() : super(SellerOrderLoading()) {
     on<LoadSellerOrders>(_onLoadOrders);
@@ -85,40 +85,35 @@ class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
     Emitter<SellerOrderState> emit,
   ) async {
     emit(SellerOrderLoading());
-<<<<<<< HEAD
-    await Future.delayed(const Duration(milliseconds: 500));
-    emit(SellerOrderLoaded(List.from(_orders)));
-=======
+
     try {
+      await Future.delayed(const Duration(milliseconds: 500));
       final orders = await _repository.getSellerOrders();
       emit(SellerOrderLoaded(orders));
     } catch (e) {
       emit(SellerOrderError());
     }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   }
 
   Future<void> _onUpdateStatus(
     UpdateOrderStatus event,
     Emitter<SellerOrderState> emit,
   ) async {
-<<<<<<< HEAD
-    int index = _orders.indexWhere((o) => o.id == event.orderId);
-    if (index != -1) {
-      _orders[index] = Order(
-        id: _orders[index].id,
-        customerName: _orders[index].customerName,
-        items: _orders[index].items,
-        total: _orders[index].total,
-        orderDate: _orders[index].orderDate,
-        status: event.newStatus, // The updated status
-      );
-    }
-    emit(SellerOrderLoaded(List.from(_orders)));
-  }
-}
-=======
     try {
+      // Update local mock list
+      int index = _orders.indexWhere((o) => o.id == event.orderId);
+      if (index != -1) {
+        _orders[index] = Order(
+          id: _orders[index].id,
+          customerId: _orders[index].customerId, // Add required parameter
+          customerName: _orders[index].customerName,
+          items: _orders[index].items,
+          total: _orders[index].total,
+          status: event.newStatus, // The updated status
+          orderDate: _orders[index].orderDate,
+        );
+      }
+
       await _repository.updateOrderStatus(event.orderId, event.newStatus);
       // Reload orders after status update
       final orders = await _repository.getSellerOrders();
@@ -128,4 +123,4 @@ class SellerOrderBloc extends Bloc<SellerOrderEvent, SellerOrderState> {
     }
   }
 }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+

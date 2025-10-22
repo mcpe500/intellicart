@@ -31,19 +31,37 @@ class RemoveFromWishlist extends WishlistEvent {
 
 class ClearWishlist extends WishlistEvent {}
 
-class WishlistState extends Equatable {
-  final List<WishlistItem> wishlistItems;
-  final bool isLoading;
-  final String? error;
-
-  const WishlistState({
-    this.wishlistItems = const [],
-    this.isLoading = false,
-    this.error,
-  });
-
+abstract class WishlistState extends Equatable {
+  const WishlistState();
+  
   @override
-  List<Object?> get props => [wishlistItems, isLoading, error];
+  List<Object?> get props => [];
+}
+
+class WishlistInitial extends WishlistState {
+  const WishlistInitial();
+}
+
+class WishlistLoading extends WishlistState {
+  const WishlistLoading();
+}
+
+class WishlistLoaded extends WishlistState {
+  final List<WishlistItem> wishlistItems;
+  
+  const WishlistLoaded(this.wishlistItems);
+  
+  @override
+  List<Object> get props => [wishlistItems];
+}
+
+class WishlistError extends WishlistState {
+  final String message;
+  
+  const WishlistError(this.message);
+  
+  @override
+  List<Object> get props => [message];
 }
 
 class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
@@ -51,7 +69,7 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
 
   WishlistBloc({required WishlistRepository wishlistRepository})
       : _wishlistRepository = wishlistRepository,
-        super(const WishlistState()) {
+        super(const WishlistInitial()) {
     on<LoadWishlist>(_onLoadWishlist);
     on<AddToWishlist>(_onAddToWishlist);
     on<RemoveFromWishlist>(_onRemoveFromWishlist);
@@ -62,12 +80,12 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
   }
 
   Future<void> _onLoadWishlist(LoadWishlist event, Emitter<WishlistState> emit) async {
-    emit(const WishlistState(isLoading: true));
+    emit(const WishlistLoading());
     try {
       final wishlistItems = await _wishlistRepository.getWishlistItems();
-      emit(WishlistState(wishlistItems: wishlistItems));
+      emit(WishlistLoaded(wishlistItems));
     } catch (e) {
-      emit(WishlistState(error: e.toString()));
+      emit(WishlistError(e.toString()));
     }
   }
 
@@ -75,9 +93,9 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     try {
       await _wishlistRepository.addToWishlist(event.wishlistItem);
       final wishlistItems = await _wishlistRepository.getWishlistItems();
-      emit(WishlistState(wishlistItems: wishlistItems));
+      emit(WishlistLoaded(wishlistItems));
     } catch (e) {
-      emit(WishlistState(error: e.toString()));
+      emit(WishlistError(e.toString()));
     }
   }
 
@@ -85,18 +103,18 @@ class WishlistBloc extends Bloc<WishlistEvent, WishlistState> {
     try {
       await _wishlistRepository.removeFromWishlist(event.productId);
       final wishlistItems = await _wishlistRepository.getWishlistItems();
-      emit(WishlistState(wishlistItems: wishlistItems));
+      emit(WishlistLoaded(wishlistItems));
     } catch (e) {
-      emit(WishlistState(error: e.toString()));
+      emit(WishlistError(e.toString()));
     }
   }
 
   Future<void> _onClearWishlist(ClearWishlist event, Emitter<WishlistState> emit) async {
     try {
       await _wishlistRepository.clearWishlist();
-      emit(const WishlistState(wishlistItems: []));
+      emit(const WishlistLoaded([]));
     } catch (e) {
-      emit(WishlistState(error: e.toString()));
+      emit(WishlistError(e.toString()));
     }
   }
 }

@@ -77,18 +77,18 @@ packages:
     dependency: transitive
     description:
       name: build_daemon
-      sha256: "8e928697a82be082206edb0b9c99c5a4ad6bc31c9e9b8b2f291ae65cd4a25daa"
+      sha256: "409002f1adeea601018715d613115cfaf0e31f512cb80ae4534c79867ae2363d"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.4"
+    version: "4.1.0"
   build_runner:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: "4e54dbeefdc70691ba80b3bce3976af63b5425c8c07dface348dfee664a0edc1"
+      sha256: "8cd45bdd6217138f4cfbaf6286c93f270ae4b3e2e281e69c904bd00cdf8aa626"
       url: "https://pub.dev"
     source: hosted
-    version: "2.9.0"
+    version: "2.10.0"
   built_collection:
     dependency: transitive
     description:
@@ -536,7 +536,23 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-
+  path_provider:
+    dependency: "direct main"
+    description:
+      name: path_provider
+      sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.5"
+  path_provider_android:
+    dependency: transitive
+    description:
+      name: path_provider_android
+      sha256: e122c5ea805bb6773bb12ce667611265980940145be920cd09a4b0ec0285cb16
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.20"
+  path_provider_foundation:
     dependency: transitive
     description:
       name: path_provider_foundation
@@ -544,7 +560,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.3"
-
   path_provider_linux:
     dependency: transitive
     description:
@@ -569,7 +584,17 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
-
+  permission_handler:
+    dependency: "direct main"
+    description:
+      name: permission_handler
+      sha256: bc917da36261b00137bbc8896bf1482169cd76f866282368948f032c8c1caae1
+      url: "https://pub.dev"
+    source: hosted
+    version: "12.0.1"
+  permission_handler_android:
+    dependency: transitive
+    description:
       name: permission_handler_android
       sha256: "1e3bc410ca1bf84662104b100eb126e066cb55791b7451307f9708d4007350e6"
       url: "https://pub.dev"
@@ -615,7 +640,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
-
   platform:
     dependency: transitive
     description:
@@ -925,7 +949,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
-
+  xml:
+    dependency: transitive
+    description:
+      name: xml
+      sha256: "971043b3a0d3da28727e40ed3e0b5d18b742fa5a68665cca88e74b7876d5e025"
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.6.1"
   yaml:
     dependency: transitive
     description:

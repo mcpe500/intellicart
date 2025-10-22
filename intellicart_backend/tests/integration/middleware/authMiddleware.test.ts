@@ -1,6 +1,9 @@
-import { describe, it, expect, beforeEach } from 'bun:test';
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test';
 import { Hono } from 'hono';
-import { authMiddleware } from '../../../../src/middleware/auth';
+
+// Import using require to avoid TypeScript module resolution issue
+const authModule = require('../../../../src/middleware/auth');
+const { authMiddleware } = authModule;
 
 describe('Auth Middleware', () => {
   let app: Hono;

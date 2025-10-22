@@ -70,8 +70,33 @@ class FirestoreDbService implements DbService {
     const updatedData = updatedDoc.data() as User;
     
     // Remove password from the returned user object
-    const { password, ...userWithoutPassword } = updatedData;
+    const { password, ...userWithoutPassword } = updatedData as any;
     return userWithoutPassword;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    const snapshot = await this.db.collection('users').get();
+    const users: User[] = [];
+    
+    snapshot.forEach(doc => {
+      const userData = doc.data() as User & { password?: string };
+      if (userData) {
+        const { password, ...userWithoutPassword } = userData;
+        users.push(userWithoutPassword);
+      }
+    });
+    
+    return users;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    const userRef = this.db.collection('users').doc(id);
+    const doc = await userRef.get();
+    
+    if (!doc.exists) return false;
+    
+    await userRef.delete();
+    return true;
   }
 
   // --- Product Methods ---

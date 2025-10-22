@@ -1,13 +1,4 @@
 // lib/data/repositories/app_repository_impl.dart
-<<<<<<< HEAD
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/data/repositories/app_repository.dart';
-
-class AppRepositoryImpl implements AppRepository {
-  static const String _appModeKey = 'app_mode';
-  static const String _productsKey = 'products';
-=======
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intellicart_frontend/models/product.dart';
@@ -22,7 +13,6 @@ class AppRepositoryImpl implements AppRepository {
   final ApiService _apiService;
   
   AppRepositoryImpl({ApiService? apiService}) : _apiService = apiService ?? ApiService();
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   
   @override
   Future<void> setAppMode(String mode) async {
@@ -32,10 +22,6 @@ class AppRepositoryImpl implements AppRepository {
 
   @override
   Future<String> getAppMode() async {
-<<<<<<< HEAD
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_appModeKey) ?? 'buyer';
-=======
     // On web, always use SharedPreferences
     if (kIsWeb) {
       final prefs = await SharedPreferences.getInstance();
@@ -51,23 +37,10 @@ class AppRepositoryImpl implements AppRepository {
       final prefs = await SharedPreferences.getInstance();
       return prefs.getString(_appModeKey) ?? 'buyer';
     }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   }
 
   @override
   Future<void> insertProducts(List<Product> products) async {
-<<<<<<< HEAD
-    final prefs = await SharedPreferences.getInstance();
-    final productList = products.map((product) => {
-      'name': product.name,
-      'description': product.description,
-      'price': product.price,
-      'originalPrice': product.originalPrice,
-      'imageUrl': product.imageUrl,
-    }).toList();
-    await prefs.setStringList(_productsKey, productList.map((p) => 
-      "${p['name']},${p['description']},${p['price']},${p['originalPrice']},${p['imageUrl']}").toList());
-=======
     // Use the API service to add products to the backend
     for (final product in products) {
       try {
@@ -88,29 +61,10 @@ class AppRepositoryImpl implements AppRepository {
         print('Failed to store products locally: $e');
       }
     }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   }
 
   @override
   Future<List<Product>> getProducts() async {
-<<<<<<< HEAD
-    final prefs = await SharedPreferences.getInstance();
-    final productList = prefs.getStringList(_productsKey) ?? [];
-    
-    return productList.map((productString) {
-      final parts = productString.split(',');
-      return Product(
-        name: parts[0],
-        description: parts[1],
-        price: parts[2],
-        originalPrice: parts.length > 3 ? parts[3] : null,
-        imageUrl: parts.length > 4 ? parts[4] : '',
-        reviews: [], // Reviews are not persisted in this simplified implementation
-      );
-    }).toList();
-  }
-}
-=======
     try {
       // First try to get fresh data from API
       final products = await _apiService.getProducts();
@@ -192,4 +146,3 @@ class AppRepositoryImpl implements AppRepository {
     }
   }
 }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

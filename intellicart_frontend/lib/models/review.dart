@@ -11,9 +11,6 @@ class Review {
     required this.rating,
     required this.timeAgo,
   });
-<<<<<<< HEAD
-}
-=======
 
   factory Review.fromJson(Map<String, dynamic> json) {
     return Review(
@@ -33,4 +30,3 @@ class Review {
     };
   }
 }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

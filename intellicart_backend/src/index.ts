@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-/**
-=======
 /** 
  * Intellicart API Main Application File
  * 
@@ -32,6 +29,7 @@ import { paymentMethodRoutes } from './routes/paymentMethodRoutes';
 import { deliveryRoutes } from './routes/deliveryRoutes';
 import { userManagementRoutes } from './routes/userManagementRoutes';
 import { authManagementRoutes } from './routes/authManagementRoutes';
+import { adminRoutes } from './routes/adminRoutes';
 import { initializeDb } from './database/db_service';
 import { requestLogger } from './utils/logger';
 import { cors } from './middleware/cors';
@@ -69,6 +67,7 @@ app.route('/api/addresses', addressRoutes);
 app.route('/api/payment-methods', paymentMethodRoutes);
 app.route('/api/deliveries', deliveryRoutes);
 app.route('/api/auth', authManagementRoutes);   // Additional auth management routes
+app.route('/api', adminRoutes);                 // Admin routes
 
 /**
  * Root endpoint for API health check and information
@@ -138,6 +137,10 @@ app.doc('/doc', {
     {
       name: 'Deliveries',
       description: 'Operations related to order deliveries and tracking'
+    },
+    {
+      name: 'Admin',
+      description: 'Administrator-only operations for system management'
     }
   ]
 });
@@ -163,7 +166,13 @@ app.get('/swagger.yaml', async (c) => {
     return c.body(yamlContent);
   } catch (error) {
     // If static file doesn't exist, generate spec dynamically and return as YAML
-    const openApiDoc = app.getOpenAPIDocument();
+    const openApiDoc = app.getOpenAPIDocument({
+      openapi: '3.1.0',
+      info: {
+        title: 'Intellicart API',
+        version: '1.0.0',
+      },
+    });
     
     // Create a clean copy without functions for YAML serialization
     const cleanOpenApiDoc = JSON.parse(JSON.stringify(openApiDoc, (key, value) => {
@@ -214,6 +223,10 @@ app.get('/swagger.yaml', async (c) => {
         {
           name: 'Deliveries',
           description: 'Operations related to order deliveries and tracking'
+        },
+        {
+          name: 'Admin',
+          description: 'Administrator-only operations for system management'
         }
       ],
       ...cleanOpenApiDoc, // This adds paths, components, etc.

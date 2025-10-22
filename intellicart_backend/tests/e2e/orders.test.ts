@@ -112,7 +112,7 @@ describe('E2E - Orders API', () => {
             const res = await app.request(req);
             expect(res.status).toBe(200);
             
-            const body = await res.json();
+            const body: any = await res.json();
             expect(body.id).toBe(orderId);
             expect(body.status).toBe('Shipped');
         } else {

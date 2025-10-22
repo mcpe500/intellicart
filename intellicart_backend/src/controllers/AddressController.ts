@@ -49,9 +49,7 @@ export class AddressController {
         return c.json({ message: 'No addresses found for this user' }, 404);
       }
       
-      return c.json({ 
-        addresses: userAddresses 
-      }, 200);
+      return c.json(userAddresses, 200);
     } catch (error) {
       Logger.error('Error in getUserAddresses:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -105,9 +103,7 @@ export class AddressController {
       
       addresses.push(newAddress);
       
-      return c.json({ 
-        address: newAddress 
-      }, 201);
+      return c.json(newAddress, 201);
     } catch (error) {
       Logger.error('Error in createAddress:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -158,9 +154,7 @@ export class AddressController {
       
       addresses[addressIndex] = updatedAddress;
       
-      return c.json({ 
-        address: updatedAddress 
-      }, 200);
+      return c.json(updatedAddress, 200);
     } catch (error) {
       Logger.error('Error in updateAddress:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -181,7 +175,7 @@ export class AddressController {
       
       return c.json({ 
         message: 'Address deleted successfully' 
-      }, 204);
+      }, 200);
     } catch (error) {
       Logger.error('Error in deleteAddress:', error);
       return c.json({ message: 'Internal server error' }, 500);

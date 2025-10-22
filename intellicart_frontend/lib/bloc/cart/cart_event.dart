@@ -21,21 +21,22 @@ class AddToCart extends CartEvent {
 }
 
 class RemoveFromCart extends CartEvent {
-  final int itemId;
+  final String productId;
 
-  const RemoveFromCart(this.itemId);
+  const RemoveFromCart(this.productId);
 
   @override
-  List<Object> get props => [itemId];
+  List<Object> get props => [productId];
 }
 
-class UpdateCartItem extends CartEvent {
-  final CartItem item;
+class UpdateQuantity extends CartEvent {
+  final String productId;
+  final int quantity;
 
-  const UpdateCartItem(this.item);
+  const UpdateQuantity(this.productId, this.quantity);
 
   @override
-  List<Object> get props => [item];
+  List<Object> get props => [productId, quantity];
 }
 
 class ClearCart extends CartEvent {

@@ -32,7 +32,7 @@ describe('E2E - Auth API', () => {
         const res = await app.request(req);
         expect(res.status).toBe(201);
 
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body).toHaveProperty('token');
         expect(body.user.name).toBe(newUser.name);
         expect(body.user.email).toBe(newUser.email);
@@ -63,7 +63,7 @@ describe('E2E - Auth API', () => {
 
         const res = await app.request(req);
         expect(res.status).toBe(409);
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.error).toBe('User with this email already exists');
     });
 
@@ -78,7 +78,7 @@ describe('E2E - Auth API', () => {
           expect(res.status).toBe(400); // Zod validation should fail
           
           // The exact error message depends on Hono's Zod validation middleware
-          const body = await res.json();
+          const body: any = await res.json();
           expect(body).toHaveProperty('error');
     });
 
@@ -103,7 +103,7 @@ describe('E2E - Auth API', () => {
 
         const res = await app.request(req);
         expect(res.status).toBe(200);
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body).toHaveProperty('token');
         expect(body.user.email).toBe(userCreds.email);
         expect(body.user.role).toBe(userCreds.role);
@@ -129,7 +129,7 @@ describe('E2E - Auth API', () => {
         });
         const res = await app.request(req);
         expect(res.status).toBe(401);
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.error).toBe('Invalid email or password');
     });
 
@@ -141,7 +141,7 @@ describe('E2E - Auth API', () => {
         });
         const res = await app.request(req);
         expect(res.status).toBe(401);
-        const body = await res.json();
+        const body: any = await res.json();
         expect(body.error).toBe('Invalid email or password');
     });
 
@@ -164,7 +164,8 @@ describe('E2E - Auth API', () => {
               body: JSON.stringify({ email: userCreds.email, password: userCreds.password })
           });
           
-          const { token } = await loginRes.json();
+          const loginResJson: any = await loginRes.json();
+          const { token } = loginResJson;
           expect(token).toBeString();
 
           // Request profile with token
@@ -174,7 +175,7 @@ describe('E2E - Auth API', () => {
           const res = await app.request(req);
 
           expect(res.status).toBe(200);
-          const body = await res.json();
+          const body: any = await res.json();
           expect(body.id).toBe(createdUser.id);
           expect(body.email).toBe(userCreds.email);
           expect(body.name).toBe(userCreds.name);

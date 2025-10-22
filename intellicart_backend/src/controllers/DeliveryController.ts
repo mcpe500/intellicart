@@ -72,9 +72,7 @@ export class DeliveryController {
         return c.json({ message: 'No deliveries found for this user' }, 404);
       }
       
-      return c.json({ 
-        deliveries: userDeliveries 
-      }, 200);
+      return c.json(userDeliveries, 200);
     } catch (error) {
       Logger.error('Error in getUserDeliveries:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -93,9 +91,7 @@ export class DeliveryController {
         return c.json({ message: 'Delivery not found' }, 404);
       }
       
-      return c.json({ 
-        delivery 
-      }, 200);
+      return c.json(delivery, 200);
     } catch (error) {
       Logger.error('Error in getDeliveryByTrackingNumber:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -143,9 +139,7 @@ export class DeliveryController {
       
       deliveries.push(newDelivery);
       
-      return c.json({ 
-        delivery: newDelivery 
-      }, 201);
+      return c.json(newDelivery, 201);
     } catch (error) {
       Logger.error('Error in createDelivery:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -205,9 +199,7 @@ export class DeliveryController {
       
       deliveries[deliveryIndex] = updatedDelivery;
       
-      return c.json({ 
-        delivery: updatedDelivery 
-      }, 200);
+      return c.json(updatedDelivery, 200);
     } catch (error) {
       Logger.error('Error in updateDelivery:', error);
       return c.json({ message: 'Internal server error' }, 500);
@@ -228,7 +220,7 @@ export class DeliveryController {
       
       return c.json({ 
         message: 'Delivery deleted successfully' 
-      }, 204);
+      }, 200);
     } catch (error) {
       Logger.error('Error in deleteDelivery:', error);
       return c.json({ message: 'Internal server error' }, 500);

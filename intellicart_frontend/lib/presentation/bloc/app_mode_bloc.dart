@@ -1,13 +1,8 @@
 // lib/presentation/bloc/app_mode_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-<<<<<<< HEAD
-import 'package:intellicart/data/repositories/app_repository.dart';
-import 'package:intellicart/data/repositories/app_repository_impl.dart';
-=======
 import 'package:intellicart_frontend/data/repositories/app_repository.dart';
 import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
 
 // --- ENUM for Modes ---
 enum AppMode { buyer, seller }
@@ -66,8 +61,4 @@ class AppModeBloc extends Bloc<AppModeEvent, AppModeState> {
     await _repository.setAppMode(modeString);
     emit(AppModeState(event.mode));
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

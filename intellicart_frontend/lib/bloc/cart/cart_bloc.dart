@@ -31,29 +31,47 @@ class UpdateQuantity extends CartEvent {
 }
 
 class RemoveFromCart extends CartEvent {
-  final int id;
+ final String productId;
 
-  RemoveFromCart(this.id);
+  RemoveFromCart(this.productId);
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [productId];
 }
 
 class ClearCart extends CartEvent {}
 
-class CartState extends Equatable {
-  final List<CartItem> cartItems;
-  final bool isLoading;
-  final String? error;
-
-  const CartState({
-    this.cartItems = const [],
-    this.isLoading = false,
-    this.error,
-  });
-
+abstract class CartState extends Equatable {
+  const CartState();
+  
   @override
-  List<Object?> get props => [cartItems, isLoading, error];
+  List<Object?> get props => [];
+}
+
+class CartInitial extends CartState {
+  const CartInitial();
+}
+
+class CartLoading extends CartState {
+  const CartLoading();
+}
+
+class CartLoaded extends CartState {
+  final List<CartItem> cartItems;
+  
+  const CartLoaded(this.cartItems);
+  
+  @override
+  List<Object> get props => [cartItems];
+}
+
+class CartError extends CartState {
+  final String message;
+  
+  const CartError(this.message);
+  
+  @override
+  List<Object> get props => [message];
 }
 
 class CartBloc extends Bloc<CartEvent, CartState> {
@@ -61,7 +79,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
   CartBloc({required CartRepository cartRepository})
       : _cartRepository = cartRepository,
-        super(const CartState()) {
+        super(const CartInitial()) {
     on<LoadCart>(_onLoadCart);
     on<AddToCart>(_onAddToCart);
     on<UpdateQuantity>(_onUpdateQuantity);
@@ -73,22 +91,22 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   Future<void> _onLoadCart(LoadCart event, Emitter<CartState> emit) async {
-    emit(const CartState(isLoading: true));
+    emit(const CartLoading());
     try {
       final cartItems = await _cartRepository.getCartItems();
-      emit(CartState(cartItems: cartItems));
+      emit(CartLoaded(cartItems));
     } catch (e) {
-      emit(CartState(error: e.toString()));
+      emit(CartError(e.toString()));
     }
-  }
+ }
 
   Future<void> _onAddToCart(AddToCart event, Emitter<CartState> emit) async {
     try {
       await _cartRepository.updateOrAddCartItem(event.cartItem);
       final cartItems = await _cartRepository.getCartItems();
-      emit(CartState(cartItems: cartItems));
+      emit(CartLoaded(cartItems));
     } catch (e) {
-      emit(CartState(error: e.toString()));
+      emit(CartError(e.toString()));
     }
   }
 
@@ -96,28 +114,28 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     try {
       await _cartRepository.updateQuantity(event.productId, event.quantity);
       final cartItems = await _cartRepository.getCartItems();
-      emit(CartState(cartItems: cartItems));
+      emit(CartLoaded(cartItems));
     } catch (e) {
-      emit(CartState(error: e.toString()));
+      emit(CartError(e.toString()));
     }
   }
 
   Future<void> _onRemoveFromCart(RemoveFromCart event, Emitter<CartState> emit) async {
     try {
-      await _cartRepository.removeFromCart(event.id);
-      final cartItems = await _cartRepository.getCartItems();
-      emit(CartState(cartItems: cartItems));
+      await _cartRepository.removeFromCartByProductId(event.productId);
+      final updatedCartItems = await _cartRepository.getCartItems();
+      emit(CartLoaded(updatedCartItems));
     } catch (e) {
-      emit(CartState(error: e.toString()));
+      emit(CartError(e.toString()));
     }
   }
 
   Future<void> _onClearCart(ClearCart event, Emitter<CartState> emit) async {
     try {
       await _cartRepository.clearCart();
-      emit(const CartState(cartItems: []));
+      emit(const CartLoaded([]));
     } catch (e) {
-      emit(CartState(error: e.toString()));
+      emit(CartError(e.toString()));
     }
   }
 }

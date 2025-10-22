@@ -1,13 +1,10 @@
 // lib/screens/seller/seller_order_management_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-<<<<<<< HEAD
-import 'package:intellicart/models/order.dart';
-import 'package:intellicart/presentation/bloc/seller/seller_order_bloc.dart';
-=======
+
 import 'package:intellicart_frontend/models/order.dart';
 import 'package:intellicart_frontend/presentation/bloc/seller/seller_order_bloc.dart';
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 // Note: You would also import a formatting package like 'intl' for dates in a real app
 
 class SellerOrderManagementPage extends StatelessWidget {
@@ -97,11 +94,7 @@ class SellerOrderManagementPage extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-<<<<<<< HEAD
-                    color: statusColor.withOpacity(0.1),
-=======
                     color: statusColor.withAlpha((255 * 0.1).round()),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -137,9 +130,8 @@ class SellerOrderManagementPage extends StatelessWidget {
         ),
       ),
     );
-  }
-<<<<<<< HEAD
+
 }
-=======
+
 }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+

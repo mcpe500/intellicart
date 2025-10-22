@@ -1,13 +1,10 @@
 // lib/screens/seller/seller_add_edit_product_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-<<<<<<< HEAD
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/presentation/bloc/seller/seller_product_bloc.dart';
-=======
+
 import 'package:intellicart_frontend/models/product.dart';
 import 'package:intellicart_frontend/presentation/bloc/seller/seller_product_bloc.dart';
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 
 class SellerAddEditProductPage extends StatefulWidget {
   final Product? product; // Null if adding a new product
@@ -48,16 +45,10 @@ class _SellerAddEditProductPageState extends State<SellerAddEditProductPage> {
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final product = Product(
-<<<<<<< HEAD
-        name: _nameController.text,
-        description: _descController.text,
-        price: '\$${_priceController.text}', // Add currency symbol back
-=======
         id: widget.product?.id ?? DateTime.now().millisecondsSinceEpoch.toString(), // Generate a new ID or use existing one
         name: _nameController.text,
         description: _descController.text,
         price: '\${_priceController.text}', // Add currency symbol back
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
         imageUrl: _imageUrlController.text,
         reviews: widget.product?.reviews ?? [], // Preserve existing reviews
       );
@@ -155,8 +146,5 @@ class _SellerAddEditProductPageState extends State<SellerAddEditProductPage> {
       ),
     );
   }
-<<<<<<< HEAD
+
 }
-=======
-}
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

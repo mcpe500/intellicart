@@ -1,10 +1,7 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/review.dart'; // Ensure Review model is imported
-import 'package:intellicart/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
-=======
+
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart_frontend/models/product.dart';
 import 'package:intellicart_frontend/models/review.dart';
@@ -17,7 +14,8 @@ import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
 import 'package:intellicart_frontend/utils/service_locator.dart';
 
 import 'package:intellicart_frontend/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
+
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
@@ -32,8 +30,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   int _quantity = 1; // State variable for the quantity
-<<<<<<< HEAD
-=======
+
+
   List<Review> _reviews = [];
   bool _isLoadingReviews = true;
 
@@ -66,7 +64,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       }
       
       // Ensure the service is ready before making the request
-      await apiService.ensureInitialized();
+      // await apiService.ensureInitialized(); // Commenting out as ensureInitialized is not a method of ApiService
       
       final reviews = await apiService.getProductReviews(widget.product.id);
       if (mounted) {
@@ -86,7 +84,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       }
     }
   }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 
   // Function to increment quantity
   void _incrementQuantity() {
@@ -104,22 +102,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     }
   }
 
-<<<<<<< HEAD
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      final page = _pageController.page;
-      if (page != null) {
-        setState(() {
-          _currentPage = page.round();
-        });
-      }
-    });
-  }
-=======
-  
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
+
 
   @override
   void dispose() {
@@ -147,9 +131,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
     return Scaffold(
       backgroundColor: pageBgColor,
-<<<<<<< HEAD
+
       // The body is wrapped in a Stack to allow for the sticky bottom bar
-=======
+
       appBar: AppBar(
         backgroundColor: pageBgColor,
         elevation: 0,
@@ -173,50 +157,16 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           ),
         ],
       ),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
       body: Stack(
         children: [
           // Main scrollable content
           SingleChildScrollView(
-<<<<<<< HEAD
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Custom App Bar section (using a Padding and Row instead of a real AppBar)
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top,
-                      left: 4.0,
-                      right: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: lightTextColor),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Text(
-                        'Product Details',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.share, color: lightTextColor),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
-
-=======
             padding: const EdgeInsets.only(bottom: 160), // Add bottom padding to account for bottom bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
                 // Image Carousel
                 Padding(
                   padding: const EdgeInsets.symmetric(
@@ -232,12 +182,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(12.0),
                               child: Image.network(
-<<<<<<< HEAD
+
                                 productImages[index],
                                 fit: BoxFit.cover,
-=======
-                                productImages[index] ?? 'https://via.placeholder.com/300',
-                                fit: BoxFit.cover,
+
                                 loadingBuilder: (context, child, loadingProgress) {
                                   if (loadingProgress == null) return child;
                                   return Container(
@@ -247,7 +195,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                     ),
                                   );
                                 },
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
                                 errorBuilder: (context, error, stackTrace) =>
                                 const Center(
                                     child: Icon(Icons.broken_image)),
@@ -271,13 +219,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 width: _currentPage == index ? 10.0 : 8.0,
                                 height: _currentPage == index ? 10.0 : 8.0,
                                 decoration: BoxDecoration(
-<<<<<<< HEAD
+
                                   color: _currentPage == index
                                       ? Colors.white
                                       : Colors.white.withOpacity(0.5),
-=======
-                                  color: Colors.white.withAlpha((255 * 0.5).round()),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
                                   shape: BoxShape.circle,
                                 ),
                               );
@@ -310,23 +256,32 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
-<<<<<<< HEAD
+
                       _buildStarRating(4.5, starColor),
                       const SizedBox(width: 8.0),
-                      const Text(
-                        '4.5 (120 Reviews)',
-                        style: TextStyle(
-=======
-                      _buildStarRating(_calculateAverageRating(), starColor),
-                      const SizedBox(width: 8.0),
-                      Text(
-                        '${_calculateAverageRating().toStringAsFixed(1)} (${_reviews.length} Reviews)',
-                        style: const TextStyle(
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: secondaryTextColor,
-                        ),
+                      Row(
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              final avgRating = _calculateAverageRating();
+                              return _buildStarRating(avgRating, starColor);
+                            }
+                          ),
+                          const SizedBox(width: 8.0),
+                          Builder(
+                            builder: (context) {
+                              final avgRating = _calculateAverageRating();
+                              return Text(
+                                '${avgRating.toStringAsFixed(1)} (${_reviews.length} Reviews)',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: secondaryTextColor,
+                                ),
+                              );
+                            }
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -406,19 +361,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             ),
                           ),
                           TextButton(
-<<<<<<< HEAD
-                            onPressed: () {
-                              // Navigate to the AddReviewPage
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddReviewPage(
-                                    // We'll use the product name as a stand-in for ID
-                                    productId: widget.product.name,
-                                  ),
-                                ),
-                              );
-=======
                             onPressed: () async {
                               // Navigate to the AddReviewPage and await result
                               final result = await Navigator.push(
@@ -434,7 +376,6 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               if (result != null) {
                                 _loadProductReviews(); // Refresh the reviews
                               }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
                             },
                             child: const Text(
                               'Write a Review', // <-- CHANGED TEXT
@@ -448,10 +389,10 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 8.0),
-<<<<<<< HEAD
+
                       // Build reviews from the product model
                       if (widget.product.reviews.isEmpty)
-=======
+
                       // Build reviews from fetched reviews
                       if (_isLoadingReviews)
                         const Center(
@@ -461,7 +402,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                           ),
                         )
                       else if (_reviews.isEmpty)
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.0),
                           child: Text(
@@ -473,19 +414,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-<<<<<<< HEAD
-                          itemCount: widget.product.reviews.length,
-                          separatorBuilder: (context, index) =>
-                          const SizedBox(height: 12.0),
-                          itemBuilder: (context, index) {
-                            final review = widget.product.reviews[index];
-=======
                           itemCount: _reviews.length,
                           separatorBuilder: (context, index) =>
                           const SizedBox(height: 12.0),
                           itemBuilder: (context, index) {
                             final review = _reviews[index];
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
                             return _buildReviewCard(
                               review.title,
                               review.reviewText,
@@ -498,98 +432,34 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     ],
                   ),
                 ),
-<<<<<<< HEAD
+
 
                 // Spacer to prevent content from being hidden by the bottom bar
                 const SizedBox(height: 120),
-=======
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
+
               ],
             ),
           ),
 
-<<<<<<< HEAD
+
           // Sticky Bottom "Add to Cart" Bar
-=======
+
           // Fixed Bottom "Add to Cart" Bar with Wishlist button
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-<<<<<<< HEAD
-              padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0,
-                  MediaQuery.of(context).padding.bottom + 12.0),
-=======
               padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
               decoration: BoxDecoration(
                 color: pageBgColor,
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
                 boxShadow: [
                   BoxShadow(
-<<<<<<< HEAD
                     color: Colors.black.withOpacity(0.05),
                     blurRadius: 10,
-                  )
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove, color: accentColor),
-                          onPressed: _decrementQuantity,
-                        ),
-                        Text(
-                          '$_quantity',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: primaryTextColor),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.add, color: accentColor),
-                          onPressed: _incrementQuantity,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16.0),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        print(
-                            'Added ${widget.product.name} (Qty: $_quantity) to cart.');
-                        // Here you would typically call a state management provider
-                        // or bloc to actually add the item to the cart.
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-=======
-                    color: Colors.black.withAlpha((255 * 0.1).round()),
-                    blurRadius: 8,
-                    offset: const Offset(0, -4),
                   )
                 ],
               ),
@@ -681,6 +551,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     onPressed: () {
                       // Add product to wishlist
                       final wishlistItem = WishlistItem(
+                        addedAt: DateTime.now(), // Add the missing required parameter
                         productId: widget.product.id,
                         productName: widget.product.name,
                         productDescription: widget.product.description,
@@ -712,7 +583,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
                       ),
                     ),
                   ),
@@ -777,8 +648,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       ),
     );
   }
-<<<<<<< HEAD
-=======
+
+
   
   // Helper function to calculate average rating
   double _calculateAverageRating() {
@@ -792,5 +663,5 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     }
     return totalRating / _reviews.length;
   }
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
+
 }

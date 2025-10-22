@@ -1,17 +1,6 @@
 // lib/presentation/screens/core/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-<<<<<<< HEAD
-import 'package:intellicart/main.dart'; // For AppInitializer
-import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/presentation/screens/core/login_page.dart'; // For LoginPage
-import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart'; // <-- ADD THIS IMPORT
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-=======
 import 'package:intellicart_frontend/main.dart'; // For AppInitializer
 import 'package:intellicart_frontend/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart_frontend/presentation/screens/core/login_page.dart'; // For LoginPage
@@ -61,233 +50,29 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Helper method to get user with proper token handling and retries
   Future<User?> _getCurrentUserWithToken() async {
-    // Use the shared ApiService instance from the service locator
     final apiService = serviceLocator.apiService;
-    
-    // First, make sure the token is loaded in the shared service
     final token = await serviceLocator.authRepository.getAuthToken();
-    if (token != null && token.isNotEmpty) {
+    
+    if (token != null) {
       apiService.setToken(token);
+      return await apiService.getCurrentUser();
     }
-    
-    // Ensure the service is ready before making the request
-    await apiService.ensureInitialized();
-    
-    return await apiService.getCurrentUser();
+    return null;
   }
 
   @override
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
   Widget build(BuildContext context) {
-    // Define colors from the HTML for consistency
-    const Color pageBgColor = Color(0xFFFFFAF0);
-    const Color primaryTextColor = Color(0xFF4A2511);
-    const Color accentColor = Color(0xFFD97706);
-    const Color accentColorBright = Color(0xFFFFA500);
-    const Color iconBgColor = Color(0xFFFFF7ED);
-
     return Scaffold(
-      backgroundColor: pageBgColor,
       appBar: AppBar(
-        backgroundColor: pageBgColor,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
-          onPressed: () {
-            // If this page is part of the main navigation, you might not need a back button.
-            // But if it's pushed on top, this is how you'd go back.
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);
-            }
-          },
-        ),
-        title: const Text(
-          'My Profile',
-          style: TextStyle(
-            color: primaryTextColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
+        title: const Text('Profile'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings, color: primaryTextColor),
-            onPressed: () {},
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadUserProfile,
           ),
         ],
       ),
-<<<<<<< HEAD
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Column(
-            children: [
-              const SizedBox(height: 24),
-              // Profile Header
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(4.0),
-                      decoration: const BoxDecoration(
-                        color: accentColorBright,
-                        shape: BoxShape.circle,
-                      ),
-                      child: const CircleAvatar(
-                        radius: 60,
-                        backgroundImage: NetworkImage(
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuA56SWfDWVeNbwHLebF80iyl1g37Jn0frJ7zYWzJiJCM1kR29OGexdUdHeROcIyqrfBPXYSf8QxTqXKqBufi7WJwie0BGfACBAof8kUjd7IgFBIJNGAc7UF2GpXAG4_c--c7dvDpJvw-fxmPtIgjCPRW0OBSa6Tsqcf5r06tnEyrAVrJGqUtzvV9nEZiCn6jGEU77Gk7h1pMGgGxu08ZSfXCOxq91F_6CGeUb5IYvEXjzS2aA73krJfY3KirhaxWj0DgZTVQH5To-P9',
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Olivia Chen',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: primaryTextColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Edit Profile',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: accentColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-
-              // --- MODIFICATION: ADDED SELLER MODE BUTTON ---
-              _buildProfileOption(
-                icon: Icons.storefront_outlined, // New Icon
-                title: 'Switch to Seller Mode', // New Title
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-                onTap: () {
-                  // Dispatch event to change mode
-                  context.read<AppModeBloc>().add(const SetAppMode(AppMode.seller));
-                  // Navigate and replace the current screen
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SellerDashboardPage()),
-                    (route) => false,
-                  );
-                },
-              ),
-              // --- END MODIFICATION ---
-
-              // --- DEMO: ADD BUTTON TO SWITCH BACK TO BUYER MODE ---
-              _buildProfileOption(
-                icon: Icons.shopping_bag_outlined, // New Icon
-                title: 'Switch to Buyer Mode', // New Title
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-                onTap: () {
-                  // Dispatch event to change mode back to buyer
-                  context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
-                  // Navigate and replace the current screen
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AppInitializer()),
-                    (route) => false,
-                  );
-                },
-              ),
-              // --- END DEMO MODIFICATION ---
-
-              // Profile Options List
-              _buildProfileOption(
-                icon: Icons.person_outline,
-                title: 'Personal Information',
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-              ),
-              _buildProfileOption(
-                icon: Icons.shopping_cart_outlined,
-                title: 'My Orders',
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-              ),
-              _buildProfileOption(
-                icon: Icons.local_shipping_outlined,
-                title: 'Track Delivery',
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-              ),
-              _buildProfileOption(
-                icon: Icons.payment_outlined,
-                title: 'Payment Methods',
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-              ),
-              _buildProfileOption(
-                icon: Icons.home_outlined,
-                title: 'Addresses',
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-              ),
-              _buildProfileOption(
-                icon: Icons.help_outline,
-                title: 'Help & Support',
-                iconBgColor: iconBgColor,
-                primaryTextColor: primaryTextColor,
-                accentColor: accentColor,
-              ),
-
-              const SizedBox(height: 40),
-
-              // Sign Out Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Dispatch event to change mode back to buyer
-                    context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
-                    // Navigate and replace the current screen with the login page
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginPage()),
-                      (route) => false,
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: accentColorBright,
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: const Text(
-                    'Sign Out',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-          ),
-        ),
-      ),
-=======
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
@@ -295,10 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
                       Text('Error: $_error'),
-                      const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: _loadUserProfile,
                         child: const Text('Retry'),
@@ -306,296 +88,207 @@ class _ProfilePageState extends State<ProfilePage> {
                     ],
                   ),
                 )
-              : SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              : RefreshIndicator(
+                  onRefresh: () async => _loadUserProfile(),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 24),
-                        // Profile Header
-                        Center(
-                          child: Column(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(4.0),
-                                decoration: const BoxDecoration(
-                                  color: accentColorBright,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(60),
-                                  child: _currentUser != null
-                                      ? CircleAvatar(
-                                          radius: 60,
-                                          backgroundColor: Colors.grey[200],
-                                          child: CircleAvatar(
-                                            radius: 56,
-                                            backgroundColor: Colors.white,
-                                            child: Text(
-                                              _currentUser!.name.isNotEmpty
-                                                  ? _currentUser!.name.substring(0, 1).toUpperCase()
-                                                  : '?',
-                                              style: const TextStyle(
-                                                fontSize: 40,
-                                                fontWeight: FontWeight.bold,
-                                                color: primaryTextColor,
-                                              ),
-                                            ),
-                                          ),
-                                        )
-                                      : Container(
-                                          width: 120,
-                                          height: 120,
-                                          color: Colors.grey[200],
-                                          child: const Icon(
-                                            Icons.person,
-                                            size: 60,
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                _currentUser?.name ?? 'User',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: primaryTextColor,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _currentUser?.email ?? '',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: accentColor,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: accentColor,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  _currentUser?.role?.toUpperCase() ?? '',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                        // User Info Section
+                        if (_currentUser != null) ...[
+                          Card(
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Welcome, ${_currentUser!.name}',
+                                    style: Theme.of(context).textTheme.headlineSmall,
                                   ),
-                                ),
+                                  const SizedBox(height: 8),
+                                  Text('Email: ${_currentUser!.email}'),
+                                  if (_currentUser!.phoneNumber != null)
+                                    Text('Phone: ${_currentUser!.phoneNumber}'),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // Mode Switching Options
+                        Text(
+                          'Switch Mode',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          icon: Icons.storefront,
+                          title: 'Seller Dashboard',
+                          subtitle: 'Manage your store and products',
+                          onTap: () {
+                            // Update app mode to seller
+                            context.read<AppModeBloc>().add(const SetAppMode(AppMode.seller));
+                            // Navigate to seller dashboard
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const SellerDashboardPage()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          icon: Icons.shopping_cart,
+                          title: 'Buyer Mode',
+                          subtitle: 'Browse and purchase products',
+                          onTap: () {
+                            // Update app mode to buyer
+                            context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
+                            // Navigate to buyer home
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AppInitializer()),
+                            );
+                          },
                         ),
                         const SizedBox(height: 32),
 
-                        // --- MODIFICATION: ADDED SELLER MODE BUTTON ---
-                        _buildProfileOption(
-                          icon: Icons.storefront_outlined, // New Icon
-                          title: 'Switch to Seller Mode', // New Title
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
-                          onTap: () {
-                            // Dispatch event to change mode
-                            context.read<AppModeBloc>().add(const SetAppMode(AppMode.seller));
-                            // Navigate and replace the current screen
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => const SellerDashboardPage()),
-                              (route) => false,
-                            );
-                          },
+                        // Profile Management Options
+                        Text(
+                          'Profile Management',
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
-                        // --- END MODIFICATION ---
-
-                        // --- DEMO: ADD BUTTON TO SWITCH BACK TO BUYER MODE ---
+                        const SizedBox(height: 16),
                         _buildProfileOption(
-                          icon: Icons.shopping_bag_outlined, // New Icon
-                          title: 'Switch to Buyer Mode', // New Title
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
-                          onTap: () {
-                            // Dispatch event to change mode back to buyer
-                            context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
-                            // Navigate and replace the current screen
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AppInitializer()),
-                              (route) => false,
-                            );
-                          },
-                        ),
-                        // --- END DEMO MODIFICATION ---
-
-                        // Profile Options List
-                        _buildProfileOption(
-                          icon: Icons.person_outline,
+                          icon: Icons.account_circle,
                           title: 'Personal Information',
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
+                          subtitle: 'Update your personal details',
                           onTap: () {
+                            // Navigate to personal information page
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => const PersonalInformationPage(),
-                              ),
+                              MaterialPageRoute(builder: (context) => const PersonalInformationPage()),
                             );
                           },
                         ),
+                        const SizedBox(height: 16),
                         _buildProfileOption(
-                          icon: Icons.shopping_cart_outlined,
-                          title: 'My Orders',
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
+                          icon: Icons.store,
+                          title: 'Store Settings',
+                          subtitle: 'Manage your store information',
+                          onTap: () {
+                            // Update app mode to seller
+                            context.read<AppModeBloc>().add(const SetAppMode(AppMode.seller));
+                            // Navigate to seller dashboard
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const SellerDashboardPage()),
+                            );
+                          },
                         ),
+                        const SizedBox(height: 16),
                         _buildProfileOption(
-                          icon: Icons.local_shipping_outlined,
-                          title: 'Track Delivery',
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
+                          icon: Icons.shopping_bag,
+                          title: 'Buyer Preferences',
+                          subtitle: 'Manage your shopping preferences',
+                          onTap: () {
+                            // Update app mode to buyer
+                            context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
+                            // Navigate to buyer home
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const AppInitializer()),
+                            );
+                          },
                         ),
-                        _buildProfileOption(
-                          icon: Icons.payment_outlined,
-                          title: 'Payment Methods',
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
-                        ),
-                        _buildProfileOption(
-                          icon: Icons.home_outlined,
-                          title: 'Addresses',
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
-                        ),
-                        _buildProfileOption(
-                          icon: Icons.help_outline,
-                          title: 'Help & Support',
-                          iconBgColor: iconBgColor,
-                          primaryTextColor: primaryTextColor,
-                          accentColor: accentColor,
-                        ),
+                        const SizedBox(height: 32),
 
-                        const SizedBox(height: 40),
-
-                        // Sign Out Button
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              // Dispatch event to change mode back to buyer
-                              context.read<AuthBloc>().add(const LogoutRequested());
-                              // Navigate and replace the current screen with the login page
-                              Navigator.pushAndRemoveUntil(
-                                context,
-                                MaterialPageRoute(builder: (context) => const LoginPage()),
-                                (route) => false,
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: accentColorBright,
-                              padding: const EdgeInsets.symmetric(vertical: 16.0),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12.0),
-                              ),
-                              elevation: 2,
-                            ),
-                            child: const Text(
-                              'Sign Out',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                        // Account Actions
+                        Text(
+                          'Account Actions',
+                          style: Theme.of(context).textTheme.titleLarge,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          icon: Icons.logout,
+                          title: 'Logout',
+                          subtitle: 'Sign out of your account',
+                          onTap: () {
+                            // Dispatch logout event
+                            context.read<AuthBloc>().add(const LogoutRequested());
+                            // Navigate to login page
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginPage()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _buildProfileOption(
+                          icon: Icons.delete,
+                          title: 'Delete Account',
+                          subtitle: 'Permanently delete your account',
+                          onTap: () {
+                            // Show confirmation dialog
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text('Delete Account'),
+                                  content: const Text(
+                                      'Are you sure you want to delete your account? This action cannot be undone.'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.of(context).pop(),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        // TODO: Implement account deletion
+                                        Navigator.of(context).pop();
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Account deletion not implemented yet')),
+                                        );
+                                      },
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
                 ),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
     );
   }
 
-  // --- MODIFICATION: ADDED OPTIONAL onTap PARAMETER ---
   Widget _buildProfileOption({
     required IconData icon,
     required String title,
-    required Color iconBgColor,
-    required Color primaryTextColor,
-    required Color accentColor,
-    VoidCallback? onTap, // Make onTap optional
+    required String subtitle,
+    required VoidCallback onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12.0),
-          boxShadow: [
-            BoxShadow(
-<<<<<<< HEAD
-              color: Colors.black.withOpacity(0.05),
-=======
-              color: Colors.black.withAlpha((255 * 0.05).round()),
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap ?? () {}, // Use the provided onTap or an empty function
-            borderRadius: BorderRadius.circular(12.0),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8.0),
-                    decoration: BoxDecoration(
-                      color: iconBgColor,
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Icon(icon, color: primaryTextColor),
-                  ),
-                  const SizedBox(width: 16.0),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: primaryTextColor,
-                      ),
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: accentColor),
-                ],
-              ),
-            ),
-          ),
-        ),
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        leading: Icon(icon, size: 36),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle),
+        trailing: const Icon(Icons.arrow_forward_ios),
+        onTap: onTap,
       ),
     );
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> e51c7f0dc99661f83454b223f01cf3df2db30631

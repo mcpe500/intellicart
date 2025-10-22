@@ -29,8 +29,9 @@ describe('ProductController', () => {
   });
 
   it('should have tests for ProductController methods', async () => {
-    // Dynamically import the controller to avoid import errors
-    const { ProductController } = await import('../../../../src/controllers/ProductController');
+    // Use require to avoid TypeScript module resolution issue
+    const productControllerModule = require('../../../../src/controllers/ProductController');
+    const ProductController = productControllerModule.ProductController;
     
     // Basic test to verify the controller exists and has the expected methods
     expect(ProductController).toBeDefined();
