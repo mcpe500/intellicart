@@ -30,23 +30,32 @@ class ProductDto {
   });
   
   factory ProductDto.fromJson(Map<String, dynamic> json) {
+    // Helper function to parse price values that might be string, int, or double
+    double parsePrice(dynamic priceValue) {
+      if (priceValue == null) return 0.0;
+      if (priceValue is double) return priceValue;
+      if (priceValue is int) return priceValue.toDouble();
+      if (priceValue is String) {
+        // Remove currency symbols and other non-numeric characters before parsing
+        final cleanValue = priceValue.replaceAll(RegExp(r'[^\d.-]'), '');
+        return double.tryParse(cleanValue) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return ProductDto(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      price: (json['price'] is int) ? (json['price'] as int).toDouble() : (json['price'] as double?) ?? 0.0,
-      originalPrice: (json['originalPrice'] is int) 
-          ? (json['originalPrice'] as int).toDouble() 
-          : (json['originalPrice'] as double?),
+      price: parsePrice(json['price']),
+      originalPrice: json['originalPrice'] != null ? parsePrice(json['originalPrice']) : null,
       imageUrl: json['imageUrl'] ?? '',
       sellerId: json['sellerId'] ?? '',
       categoryId: json['categoryId'],
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
       reviews: json['reviews'] ?? [],
-      averageRating: (json['averageRating'] is int) 
-          ? (json['averageRating'] as int).toDouble() 
-          : (json['averageRating'] as double?),
+      averageRating: json['averageRating'] != null ? parsePrice(json['averageRating']) : null,
     );
   }
   

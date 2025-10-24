@@ -60,7 +60,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   final ApiService _apiService;
 
   ReviewBloc({ApiService? apiService}) : 
-    _apiService = apiService ?? ApiService(),
+    _apiService = apiService ?? serviceLocator.apiService,
     super(ReviewInitial()) {
     on<SubmitReview>(_onSubmitReview);
   }

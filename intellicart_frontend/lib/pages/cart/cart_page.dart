@@ -43,8 +43,15 @@ class CartPage extends StatelessWidget {
               }
               
               double totalPrice = state.items.fold(
-                0,
-                (sum, item) => sum + (item.price * item.quantity),
+                0.0,
+                (sum, item) {
+                  // Convert the string price to a double for calculation
+                  String priceString = item.productPrice.toString();
+                  // Remove any non-numeric characters except decimal point
+                  final cleanPrice = priceString.replaceAll(RegExp(r'[^\d.]'), '');
+                  final price = double.tryParse(cleanPrice) ?? 0.0;
+                  return sum + (price * item.quantity);
+                },
               );
               
               return Column(

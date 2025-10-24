@@ -77,15 +77,28 @@ class Product extends Equatable {
   }
 
   factory Product.fromMap(Map<String, dynamic> map) {
+    // Helper function to parse price values that might be string, int, or double
+    double parsePrice(dynamic priceValue) {
+      if (priceValue == null) return 0.0;
+      if (priceValue is double) return priceValue;
+      if (priceValue is int) return priceValue.toDouble();
+      if (priceValue is String) {
+        // Remove currency symbols and other non-numeric characters before parsing
+        final cleanValue = priceValue.replaceAll(RegExp(r'[^\d.-]'), '');
+        return double.tryParse(cleanValue) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return Product(
       id: map['id'] ?? '',
       name: map['name'] ?? '',
-      price: map['price']?.toDouble() ?? 0.0,
+      price: parsePrice(map['price']),
       description: map['description'] ?? '',
       imageUrl: map['image_url'],
       category: map['category'] ?? '',
       tags: List<String>.from(map['tags'] ?? []),
-      rating: map['rating']?.toDouble() ?? 0.0,
+      rating: map['rating'] != null ? parsePrice(map['rating']) : 0.0,
       reviewCount: map['review_count']?.toInt() ?? 0,
       inStock: map['in_stock'] ?? true,
       createdAt: DateTime.parse(map['created_at']),

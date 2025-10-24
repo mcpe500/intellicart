@@ -390,10 +390,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       ),
                       const SizedBox(height: 8.0),
 
-                      // Build reviews from the product model
-                      if (widget.product.reviews.isEmpty)
-
-                      // Build reviews from fetched reviews
+                      // Build reviews from fetched reviews (always use fetched data)
                       if (_isLoadingReviews)
                         const Center(
                           child: Padding(

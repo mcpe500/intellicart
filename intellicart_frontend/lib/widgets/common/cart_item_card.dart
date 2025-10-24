@@ -108,7 +108,7 @@ class CartItemCard extends StatelessWidget {
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
                           context.read<CartBloc>().add(
-                            RemoveFromCart(item.id!)
+                            RemoveFromCart(item.productId)
                           );
                         },
                         padding: EdgeInsets.zero,

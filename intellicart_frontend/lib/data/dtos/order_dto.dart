@@ -20,11 +20,24 @@ class OrderDto {
   });
   
   factory OrderDto.fromJson(Map<String, dynamic> json) {
+    // Helper function to parse numeric values that might be string, int, or double
+    double parseNumber(dynamic value) {
+      if (value == null) return 0.0;
+      if (value is double) return value;
+      if (value is int) return value.toDouble();
+      if (value is String) {
+        // Remove currency symbols and other non-numeric characters before parsing
+        final cleanValue = value.replaceAll(RegExp(r'[^\d.-]'), '');
+        return double.tryParse(cleanValue) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return OrderDto(
       id: json['id'] ?? '',
       customerId: json['customerId'] ?? '',
       customerName: json['customerName'] ?? '',
-      total: (json['total'] is int) ? (json['total'] as int).toDouble() : (json['total'] as double?) ?? 0.0,
+      total: parseNumber(json['total']),
       status: json['status'] ?? '',
       orderDate: DateTime.tryParse(json['orderDate'] ?? '') ?? DateTime.now(),
       items: (json['items'] as List<dynamic>?)
@@ -60,11 +73,24 @@ class OrderItemDto {
   });
   
   factory OrderItemDto.fromJson(Map<String, dynamic> json) {
+    // Helper function to parse price values that might be string, int, or double
+    double parsePrice(dynamic priceValue) {
+      if (priceValue == null) return 0.0;
+      if (priceValue is double) return priceValue;
+      if (priceValue is int) return priceValue.toDouble();
+      if (priceValue is String) {
+        // Remove currency symbols and other non-numeric characters before parsing
+        final cleanValue = priceValue.replaceAll(RegExp(r'[^\d.-]'), '');
+        return double.tryParse(cleanValue) ?? 0.0;
+      }
+      return 0.0;
+    }
+
     return OrderItemDto(
       productId: json['productId'] ?? '',
       productName: json['productName'] ?? '',
       quantity: json['quantity'] ?? 1,
-      price: (json['price'] is int) ? (json['price'] as int).toDouble() : (json['price'] as double?) ?? 0.0,
+      price: parsePrice(json['price']),
     );
   }
   

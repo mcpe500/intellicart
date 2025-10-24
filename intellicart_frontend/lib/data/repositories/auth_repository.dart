@@ -7,6 +7,8 @@ abstract class AuthRepository {
   Future<void> clearAuthentication();
   Future<String?> getAuthToken();
   Future<String?> getUserId();
+  Future<void> setAuthToken(String token);
+  Future<void> removeAuthToken();
 }
 
 class AuthRepositoryImpl implements AuthRepository {
@@ -46,5 +48,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<String?> getUserId() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_userIdKey);
+  }
+
+  @override
+  Future<void> setAuthToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isAuthenticatedKey, true);
+    await prefs.setString(_authTokenKey, token);
+  }
+
+  @override
+  Future<void> removeAuthToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_authTokenKey);
+    // Also update the isAuthenticated flag to false when removing auth token
+    await prefs.setBool(_isAuthenticatedKey, false);
   }
 }

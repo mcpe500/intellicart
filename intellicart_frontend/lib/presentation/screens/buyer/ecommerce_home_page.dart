@@ -279,10 +279,15 @@ class _ProductCard extends StatelessWidget {
                   fit: BoxFit.cover,
                   width: double.infinity,
                   errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      'assets/images/placeholder.png',
-                      fit: BoxFit.cover,
+                    return Container(
                       width: double.infinity,
+                      height: 200, // Match the expected image height
+                      color: Colors.grey[300],
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 60,
+                        color: Colors.grey,
+                      ),
                     );
                   },
                 ),

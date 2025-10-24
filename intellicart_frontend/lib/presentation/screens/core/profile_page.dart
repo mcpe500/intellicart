@@ -31,9 +31,23 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _loadUserProfile() async {
+    // Ensure we start in a loading state every time
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+    }
+
     try {
       final user = await _getCurrentUserWithToken();
-      
+
+      // If the user is null (either from no token or API returned null),
+      // treat it as an error to be displayed.
+      if (user == null) {
+        throw Exception('Failed to load user profile. Please log in again.');
+      }
+
       if (mounted) {
         setState(() {
           _currentUser = user;
@@ -43,6 +57,8 @@ class _ProfilePageState extends State<ProfilePage> {
     } catch (e) {
       if (mounted) {
         setState(() {
+          // This will catch both the TypeError from the API
+          // and the new Exception we just added.
           _error = e.toString();
           _isLoading = false;
         });

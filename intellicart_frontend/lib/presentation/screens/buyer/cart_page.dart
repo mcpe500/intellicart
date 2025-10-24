@@ -1,7 +1,7 @@
-// lib/screens/cart_page.dart
+// lib/presentation/screens/buyer/cart_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart_frontend/models/product.dart';
+// import 'package:intellicart_frontend/models/product.dart'; // Unused import removed
 import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
 import 'package:intellicart_frontend/data/models/cart_item.dart';
 
@@ -137,7 +137,10 @@ class CartPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    cartItem.productPrice,
+                    // Displaying the price. Ensuring proper type handling.
+                    cartItem.productPrice is num
+                        ? '\${(cartItem.productPrice as num).toStringAsFixed(2)}'
+                        : cartItem.productPrice.toString(),
                     style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
                   ),
                   const SizedBox(height: 8),
@@ -178,11 +181,15 @@ class CartPage extends StatelessWidget {
   }
 
   Widget _buildOrderSummary(List<CartItem> cartItems, BuildContext context) {
+    // Fixed the calculation to properly handle price types
     final subtotal = cartItems.fold<double>(0.0, (sum, item) {
-      final priceString = item.productPrice.replaceAll('\$', '');
+      // Convert price to string then clean it for parsing
+      String priceStringRaw = item.productPrice.toString();
+      final priceString = priceStringRaw.replaceAll(RegExp(r'[^\d.]'), '');
       final price = double.tryParse(priceString) ?? 0.0;
       return sum + (price * item.quantity);
     });
+    
     final tax = subtotal * 0.1; // 10% tax
     final deliveryFee = 5.99;
     final total = subtotal + tax + deliveryFee;
@@ -211,7 +218,7 @@ class CartPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Subtotal'),
-              Text('\$${subtotal.toStringAsFixed(2)}'),
+              Text('\${subtotal.toStringAsFixed(2)}'),
             ],
           ),
           const SizedBox(height: 8),
@@ -219,7 +226,7 @@ class CartPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Tax (10%)'),
-              Text('\$${tax.toStringAsFixed(2)}'),
+              Text('\${tax.toStringAsFixed(2)}'),
             ],
           ),
           const SizedBox(height: 8),
@@ -227,7 +234,7 @@ class CartPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('Delivery Fee'),
-              Text('\$${deliveryFee.toStringAsFixed(2)}'),
+              Text('\${deliveryFee.toStringAsFixed(2)}'),
             ],
           ),
           const Divider(height: 24),
@@ -239,7 +246,7 @@ class CartPage extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
-                '\$${total.toStringAsFixed(2)}',
+                '\${total.toStringAsFixed(2)}',
                 style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.deepPurple),
               ),
             ],

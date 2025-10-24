@@ -28,12 +28,21 @@ class Product {
           .toList();
     }
 
+    // Handle both String and double types for price fields
+    String formatPrice(dynamic priceValue) {
+      if (priceValue == null) return '';
+      if (priceValue is String) return priceValue;
+      if (priceValue is double) return priceValue.toString();
+      if (priceValue is int) return priceValue.toString();
+      return priceValue.toString();
+    }
+
     return Product(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      price: json['price'] ?? '',
-      originalPrice: json['originalPrice'],
+      price: formatPrice(json['price']),
+      originalPrice: formatPrice(json['originalPrice']),
       imageUrl: json['imageUrl'] ?? '',
       reviews: reviews,
     );

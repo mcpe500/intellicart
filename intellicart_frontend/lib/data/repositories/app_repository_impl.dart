@@ -7,12 +7,13 @@ import 'package:intellicart_frontend/data/repositories/app_repository.dart';
 import 'package:intellicart_frontend/data/datasources/api_service.dart';
 import 'package:intellicart_frontend/data/datasources/sqlite_helper.dart';
 import 'package:flutter/foundation.dart'; // For platform detection
+import 'package:intellicart_frontend/utils/service_locator.dart'; // Add import for serviceLocator
 
 class AppRepositoryImpl implements AppRepository {
   static const String _appModeKey = 'app_mode';
   final ApiService _apiService;
   
-  AppRepositoryImpl({ApiService? apiService}) : _apiService = apiService ?? ApiService();
+  AppRepositoryImpl({ApiService? apiService}) : _apiService = apiService ?? serviceLocator.apiService;
   
   @override
   Future<void> setAppMode(String mode) async {

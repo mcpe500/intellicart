@@ -85,7 +85,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
   AuthBloc({AuthRepository? authRepository, ApiService? apiService}) // Modified constructor
       : _authRepository = authRepository ?? AuthRepositoryImpl(),
-        _apiService = apiService ?? ApiService(), // Add this
+        _apiService = apiService ?? serviceLocator.apiService, // Use shared instance
         super(const AuthStateInitial()) {
     on<LoginRequested>(_onLoginRequested);
     on<LogoutRequested>(_onLogoutRequested);
