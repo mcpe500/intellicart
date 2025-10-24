@@ -1,8 +1,8 @@
 // lib/presentation/bloc/app_mode_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:intellicart/data/repositories/app_repository.dart';
-import 'package:intellicart/data/repositories/app_repository_impl.dart';
+import 'package:intellicart_frontend/data/repositories/app_repository.dart';
+import 'package:intellicart_frontend/data/repositories/app_repository_impl.dart';
 
 // --- ENUM for Modes ---
 enum AppMode { buyer, seller }

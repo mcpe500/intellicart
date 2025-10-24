@@ -18,6 +18,10 @@
 // Import the serve function from @hono/node-server package
 // This function creates an HTTP server that serves the Hono application
 import { serve } from '@hono/node-server';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 // Import the main Hono application instance from the index file
 // This contains all routes, middleware, and configuration

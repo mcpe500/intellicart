@@ -1,0 +1,4983 @@
+openapi: 3.1.0
+info:
+  title: Intellicart API
+  version: 1.0.0
+  description: Auto-generated API documentation with Zod + Hono
+tags:
+  - name: Authentication
+    description: Authentication related endpoints for user login and registration
+  - name: Users
+    description: Operations related to user management
+  - name: Products
+    description: Operations related to product management
+  - name: Orders
+    description: Operations related to order management
+  - name: Reviews
+    description: Operations related to product reviews
+  - name: Addresses
+    description: Operations related to user addresses
+  - name: Payment Methods
+    description: Operations related to user payment methods
+  - name: Deliveries
+    description: Operations related to order deliveries and tracking
+components:
+  schemas: {}
+  parameters: {}
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  minLength: 1
+                  pattern: ^[^\s@]+@[^\s@]+\.[^\s@]+$
+                  description: User's email address
+                  example: john@example.com
+                password:
+                  type: string
+                  minLength: 1
+                  description: User's password
+                  example: password123
+              required:
+                - email
+                - password
+      responses:
+        "200":
+          description: User logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authentication
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    description: Refresh token for obtaining new access tokens (optional)
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Unique identifier for the user
+                        example: user-1234567890
+                      name:
+                        type: string
+                        description: User's full name
+                        example: John Doe
+                      email:
+                        type: string
+                        format: email
+                        description: User's email address
+                        example: john@example.com
+                      role:
+                        type: string
+                        description: User's role (buyer or seller)
+                        example: buyer
+                      createdAt:
+                        type: string
+                        description: User creation timestamp (optional)
+                        example: 2023-01-01T00:00:00.000Z
+                    required:
+                      - id
+                      - name
+                      - email
+                      - role
+                required:
+                  - token
+                  - user
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+        "401":
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  description: User's full name
+                  example: John Doe
+                email:
+                  type: string
+                  minLength: 1
+                  pattern: ^[^\s@]+@[^\s@]+\.[^\s@]+$
+                  description: User's email address
+                  example: john@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  description: User's password (min 6 characters)
+                  example: password123
+                role:
+                  type: string
+                  default: buyer
+                  description: User's role (buyer or seller)
+                  example: buyer
+              required:
+                - name
+                - email
+                - password
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authentication
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    description: Refresh token for obtaining new access tokens (optional)
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Unique identifier for the user
+                        example: user-1234567890
+                      name:
+                        type: string
+                        description: User's full name
+                        example: John Doe
+                      email:
+                        type: string
+                        format: email
+                        description: User's email address
+                        example: john@example.com
+                      role:
+                        type: string
+                        description: User's role (buyer or seller)
+                        example: buyer
+                      createdAt:
+                        type: string
+                        description: User creation timestamp (optional)
+                        example: 2023-01-01T00:00:00.000Z
+                    required:
+                      - id
+                      - name
+                      - email
+                      - role
+                required:
+                  - token
+                  - user
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      middleware:
+        - null
+      responses:
+        "200":
+          description: Returns the authenticated user's profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  createdAt:
+                    type: string
+                required:
+                  - id
+                  - name
+                  - email
+                  - role
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/auth/profile:
+    get:
+      tags:
+        - Authentication
+      middleware:
+        - null
+      responses:
+        "200":
+          description: Returns the authenticated user's profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  name:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  createdAt:
+                    type: string
+                required:
+                  - id
+                  - name
+                  - email
+                  - role
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+                  description: Refresh token used to obtain a new access token
+                  example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+              required:
+                - refreshToken
+      responses:
+        "200":
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: New JWT token for authentication
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken:
+                    type: string
+                    description: New refresh token (optional)
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                required:
+                  - token
+        "400":
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+        "501":
+          description: Refresh tokens not yet implemented
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/users/users:
+    get:
+      tags:
+        - Users
+      responses:
+        "200":
+          description: Returns all users in the system
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Unique identifier for the user (auto-generated)
+                      example: user-1234567890
+                    name:
+                      type: string
+                      description: User's full name
+                      example: John Doe
+                    email:
+                      type: string
+                      format: email
+                      description: User's email address (must be valid email format)
+                      example: john@example.com
+                    role:
+                      type: string
+                      description: User's role (buyer or seller)
+                      example: buyer
+                    createdAt:
+                      type: string
+                      format: date-time
+                      description: Timestamp when the user was created
+                      example: 2025-10-20T17:18:25.964Z
+                  required:
+                    - id
+                    - name
+                    - email
+                    - role
+                    - createdAt
+        "404":
+          description: Endpoint not available for privacy reasons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+    post:
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  description: User's full name (required, minimum 1 character)
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  description: User's email address (required, must be valid format)
+                  example: john@example.com
+                password:
+                  type: string
+                  minLength: 6
+                  description: User's password (required, minimum 6 characters)
+                  example: password123
+                role:
+                  type: string
+                  default: buyer
+                  description: User's role (optional, defaults to buyer)
+                  example: buyer
+              required:
+                - name
+                - email
+                - password
+      responses:
+        "201":
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the user (auto-generated)
+                    example: user-1234567890
+                  name:
+                    type: string
+                    description: User's full name
+                    example: John Doe
+                  email:
+                    type: string
+                    format: email
+                    description: User's email address (must be valid email format)
+                    example: john@example.com
+                  role:
+                    type: string
+                    description: User's role (buyer or seller)
+                    example: buyer
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the user was created
+                    example: 2025-10-20T17:18:25.964Z
+                required:
+                  - id
+                  - name
+                  - email
+                  - role
+                  - createdAt
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+        "409":
+          description: User already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/users/users/{id}:
+    get:
+      tags:
+        - Users
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the user to retrieve/update/delete
+            example: user-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Returns the requested user by ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the user (auto-generated)
+                    example: user-1234567890
+                  name:
+                    type: string
+                    description: User's full name
+                    example: John Doe
+                  email:
+                    type: string
+                    format: email
+                    description: User's email address (must be valid email format)
+                    example: john@example.com
+                  role:
+                    type: string
+                    description: User's role (buyer or seller)
+                    example: buyer
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the user was created
+                    example: 2025-10-20T17:18:25.964Z
+                required:
+                  - id
+                  - name
+                  - email
+                  - role
+                  - createdAt
+        "404":
+          description: User with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+    put:
+      tags:
+        - Users
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the user to retrieve/update/delete
+            example: user-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  description: User's full name (optional, minimum 1 character if provided)
+                  example: John Doe
+                email:
+                  type: string
+                  format: email
+                  description: User's email address (optional, must be valid format if provided)
+                  example: john@example.com
+                role:
+                  type: string
+                  description: User's role (optional)
+                  example: seller
+      responses:
+        "200":
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the user (auto-generated)
+                    example: user-1234567890
+                  name:
+                    type: string
+                    description: User's full name
+                    example: John Doe
+                  email:
+                    type: string
+                    format: email
+                    description: User's email address (must be valid email format)
+                    example: john@example.com
+                  role:
+                    type: string
+                    description: User's role (buyer or seller)
+                    example: buyer
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the user was created
+                    example: 2025-10-20T17:18:25.964Z
+                required:
+                  - id
+                  - name
+                  - email
+                  - role
+                  - createdAt
+        "400":
+          description: User updates not supported through this endpoint
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+        "404":
+          description: User with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+    delete:
+      tags:
+        - Users
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the user to retrieve/update/delete
+            example: user-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Confirmation message
+                    example: User deleted successfully
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Unique identifier for the user (auto-generated)
+                        example: user-1234567890
+                      name:
+                        type: string
+                        description: User's full name
+                        example: John Doe
+                      email:
+                        type: string
+                        format: email
+                        description: User's email address (must be valid email format)
+                        example: john@example.com
+                      role:
+                        type: string
+                        description: User's role (buyer or seller)
+                        example: buyer
+                      createdAt:
+                        type: string
+                        format: date-time
+                        description: Timestamp when the user was created
+                        example: 2025-10-20T17:18:25.964Z
+                    required:
+                      - id
+                      - name
+                      - email
+                      - role
+                      - createdAt
+                required:
+                  - message
+                  - user
+        "400":
+          description: User deletion not supported for security reasons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+        "404":
+          description: User with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: User not found
+                required:
+                  - error
+  /api/products:
+    get:
+      tags:
+        - Products
+      parameters:
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "1"
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "10"
+          required: false
+          name: limit
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: search
+          in: query
+        - schema:
+            type: string
+          required: false
+          name: category
+          in: query
+      responses:
+        "200":
+          description: Returns all products in the system with pagination
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the product
+                          example: prod-1234567890
+                        name:
+                          type: string
+                          minLength: 1
+                          description: Product name
+                          example: Wireless Headphones
+                        description:
+                          type: string
+                          description: Product description
+                          example: High-quality wireless headphones with noise cancellation
+                        price:
+                          type: number
+                          minimum: 0
+                          description: Product price
+                          example: 99.99
+                        originalPrice:
+                          type: number
+                          minimum: 0
+                          description: Original/MSRP price (optional)
+                          example: 129.99
+                        imageUrl:
+                          type: string
+                          format: uri
+                          description: URL to product image
+                          example: https://example.com/product-image.jpg
+                        sellerId:
+                          type: string
+                          description: ID of the seller
+                          example: user-1234567890
+                        categoryId:
+                          type: string
+                          description: Category ID (optional)
+                          example: electronics
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the product was created
+                          example: 2025-10-20T17:18:25.970Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the product was last updated
+                          example: 2025-10-20T17:18:25.970Z
+                        reviews:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                description: Unique identifier for the review
+                                example: rev-1234567890
+                              title:
+                                type: string
+                                description: Review title (optional)
+                                example: Excellent Product!
+                              reviewText:
+                                type: string
+                                description: Review text content (optional)
+                                example: Great quality and functionality.
+                              rating:
+                                type: number
+                                minimum: 1
+                                maximum: 5
+                                description: Rating from 1 to 5
+                                example: 5
+                              userId:
+                                type: string
+                                description: ID of the user who wrote the review
+                                example: user-1234567890
+                              userName:
+                                type: string
+                                description: Name of the user who wrote the review (optional)
+                                example: John Doe
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: Timestamp when the review was created
+                                example: 2025-10-20T17:18:25.970Z
+                            required:
+                              - id
+                              - rating
+                              - userId
+                              - createdAt
+                          description: Array of product reviews
+                        averageRating:
+                          type: number
+                          minimum: 0
+                          maximum: 5
+                          description: Average rating based on all reviews
+                          example: 4.5
+                      required:
+                        - id
+                        - name
+                        - description
+                        - price
+                        - imageUrl
+                        - sellerId
+                        - createdAt
+                        - updatedAt
+                        - reviews
+                        - averageRating
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      total:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - page
+                      - limit
+                      - total
+                      - totalPages
+                required:
+                  - products
+                  - pagination
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+    post:
+      tags:
+        - Products
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  description: Product name (required, minimum 1 character)
+                  example: Wireless Headphones
+                description:
+                  type: string
+                  description: Product description (optional)
+                  example: High-quality wireless headphones with noise cancellation
+                price:
+                  type: number
+                  minimum: 0
+                  description: Product price (required, minimum 0)
+                  example: 99.99
+                originalPrice:
+                  type: number
+                  minimum: 0
+                  description: Original/MSRP price (optional)
+                  example: 129.99
+                imageUrl:
+                  type: string
+                  format: uri
+                  description: URL to product image (required, must be valid URL)
+                  example: https://example.com/product-image.jpg
+                categoryId:
+                  type: string
+                  description: Category ID (optional)
+                  example: electronics
+              required:
+                - name
+                - description
+                - price
+                - imageUrl
+      responses:
+        "201":
+          description: Product created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the product
+                    example: prod-1234567890
+                  name:
+                    type: string
+                    minLength: 1
+                    description: Product name
+                    example: Wireless Headphones
+                  description:
+                    type: string
+                    description: Product description
+                    example: High-quality wireless headphones with noise cancellation
+                  price:
+                    type: number
+                    minimum: 0
+                    description: Product price
+                    example: 99.99
+                  originalPrice:
+                    type: number
+                    minimum: 0
+                    description: Original/MSRP price (optional)
+                    example: 129.99
+                  imageUrl:
+                    type: string
+                    format: uri
+                    description: URL to product image
+                    example: https://example.com/product-image.jpg
+                  sellerId:
+                    type: string
+                    description: ID of the seller
+                    example: user-1234567890
+                  categoryId:
+                    type: string
+                    description: Category ID (optional)
+                    example: electronics
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the product was created
+                    example: 2025-10-20T17:18:25.970Z
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the product was last updated
+                    example: 2025-10-20T17:18:25.970Z
+                  reviews:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the review
+                          example: rev-1234567890
+                        title:
+                          type: string
+                          description: Review title (optional)
+                          example: Excellent Product!
+                        reviewText:
+                          type: string
+                          description: Review text content (optional)
+                          example: Great quality and functionality.
+                        rating:
+                          type: number
+                          minimum: 1
+                          maximum: 5
+                          description: Rating from 1 to 5
+                          example: 5
+                        userId:
+                          type: string
+                          description: ID of the user who wrote the review
+                          example: user-1234567890
+                        userName:
+                          type: string
+                          description: Name of the user who wrote the review (optional)
+                          example: John Doe
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the review was created
+                          example: 2025-10-20T17:18:25.970Z
+                      required:
+                        - id
+                        - rating
+                        - userId
+                        - createdAt
+                    description: Array of product reviews
+                  averageRating:
+                    type: number
+                    minimum: 0
+                    maximum: 5
+                    description: Average rating based on all reviews
+                    example: 4.5
+                required:
+                  - id
+                  - name
+                  - description
+                  - price
+                  - imageUrl
+                  - sellerId
+                  - createdAt
+                  - updatedAt
+                  - reviews
+                  - averageRating
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+  /api/products/seller/{sellerId}:
+    get:
+      tags:
+        - Products
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the seller
+            example: user-1234567890
+          required: true
+          name: sellerId
+          in: path
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "1"
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "10"
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Returns products for a specific seller with pagination
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the product
+                          example: prod-1234567890
+                        name:
+                          type: string
+                          minLength: 1
+                          description: Product name
+                          example: Wireless Headphones
+                        description:
+                          type: string
+                          description: Product description
+                          example: High-quality wireless headphones with noise cancellation
+                        price:
+                          type: number
+                          minimum: 0
+                          description: Product price
+                          example: 99.99
+                        originalPrice:
+                          type: number
+                          minimum: 0
+                          description: Original/MSRP price (optional)
+                          example: 129.99
+                        imageUrl:
+                          type: string
+                          format: uri
+                          description: URL to product image
+                          example: https://example.com/product-image.jpg
+                        sellerId:
+                          type: string
+                          description: ID of the seller
+                          example: user-1234567890
+                        categoryId:
+                          type: string
+                          description: Category ID (optional)
+                          example: electronics
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the product was created
+                          example: 2025-10-20T17:18:25.970Z
+                        updatedAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the product was last updated
+                          example: 2025-10-20T17:18:25.970Z
+                        reviews:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                description: Unique identifier for the review
+                                example: rev-1234567890
+                              title:
+                                type: string
+                                description: Review title (optional)
+                                example: Excellent Product!
+                              reviewText:
+                                type: string
+                                description: Review text content (optional)
+                                example: Great quality and functionality.
+                              rating:
+                                type: number
+                                minimum: 1
+                                maximum: 5
+                                description: Rating from 1 to 5
+                                example: 5
+                              userId:
+                                type: string
+                                description: ID of the user who wrote the review
+                                example: user-1234567890
+                              userName:
+                                type: string
+                                description: Name of the user who wrote the review (optional)
+                                example: John Doe
+                              createdAt:
+                                type: string
+                                format: date-time
+                                description: Timestamp when the review was created
+                                example: 2025-10-20T17:18:25.970Z
+                            required:
+                              - id
+                              - rating
+                              - userId
+                              - createdAt
+                          description: Array of product reviews
+                        averageRating:
+                          type: number
+                          minimum: 0
+                          maximum: 5
+                          description: Average rating based on all reviews
+                          example: 4.5
+                      required:
+                        - id
+                        - name
+                        - description
+                        - price
+                        - imageUrl
+                        - sellerId
+                        - createdAt
+                        - updatedAt
+                        - reviews
+                        - averageRating
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      total:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - page
+                      - limit
+                      - total
+                      - totalPages
+                required:
+                  - products
+                  - pagination
+        "404":
+          description: Seller not found or has no products
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+  /api/products/{id}:
+    get:
+      tags:
+        - Products
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the product
+            example: prod-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Returns the requested product by ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the product
+                    example: prod-1234567890
+                  name:
+                    type: string
+                    minLength: 1
+                    description: Product name
+                    example: Wireless Headphones
+                  description:
+                    type: string
+                    description: Product description
+                    example: High-quality wireless headphones with noise cancellation
+                  price:
+                    type: number
+                    minimum: 0
+                    description: Product price
+                    example: 99.99
+                  originalPrice:
+                    type: number
+                    minimum: 0
+                    description: Original/MSRP price (optional)
+                    example: 129.99
+                  imageUrl:
+                    type: string
+                    format: uri
+                    description: URL to product image
+                    example: https://example.com/product-image.jpg
+                  sellerId:
+                    type: string
+                    description: ID of the seller
+                    example: user-1234567890
+                  categoryId:
+                    type: string
+                    description: Category ID (optional)
+                    example: electronics
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the product was created
+                    example: 2025-10-20T17:18:25.970Z
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the product was last updated
+                    example: 2025-10-20T17:18:25.970Z
+                  reviews:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the review
+                          example: rev-1234567890
+                        title:
+                          type: string
+                          description: Review title (optional)
+                          example: Excellent Product!
+                        reviewText:
+                          type: string
+                          description: Review text content (optional)
+                          example: Great quality and functionality.
+                        rating:
+                          type: number
+                          minimum: 1
+                          maximum: 5
+                          description: Rating from 1 to 5
+                          example: 5
+                        userId:
+                          type: string
+                          description: ID of the user who wrote the review
+                          example: user-1234567890
+                        userName:
+                          type: string
+                          description: Name of the user who wrote the review (optional)
+                          example: John Doe
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the review was created
+                          example: 2025-10-20T17:18:25.970Z
+                      required:
+                        - id
+                        - rating
+                        - userId
+                        - createdAt
+                    description: Array of product reviews
+                  averageRating:
+                    type: number
+                    minimum: 0
+                    maximum: 5
+                    description: Average rating based on all reviews
+                    example: 4.5
+                required:
+                  - id
+                  - name
+                  - description
+                  - price
+                  - imageUrl
+                  - sellerId
+                  - createdAt
+                  - updatedAt
+                  - reviews
+                  - averageRating
+        "404":
+          description: Product with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+    put:
+      tags:
+        - Products
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the product
+            example: prod-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  description: Product name (optional, minimum 1 character if provided)
+                  example: Wireless Headphones
+                description:
+                  type: string
+                  description: Product description (optional)
+                  example: High-quality wireless headphones with noise cancellation
+                price:
+                  type: number
+                  minimum: 0
+                  description: Product price (optional, minimum 0 if provided)
+                  example: 99.99
+                originalPrice:
+                  type: number
+                  minimum: 0
+                  description: Original/MSRP price (optional)
+                  example: 129.99
+                imageUrl:
+                  type: string
+                  format: uri
+                  description: URL to product image (optional, must be valid URL if provided)
+                  example: https://example.com/product-image.jpg
+                categoryId:
+                  type: string
+                  description: Category ID (optional)
+                  example: electronics
+      responses:
+        "200":
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the product
+                    example: prod-1234567890
+                  name:
+                    type: string
+                    minLength: 1
+                    description: Product name
+                    example: Wireless Headphones
+                  description:
+                    type: string
+                    description: Product description
+                    example: High-quality wireless headphones with noise cancellation
+                  price:
+                    type: number
+                    minimum: 0
+                    description: Product price
+                    example: 99.99
+                  originalPrice:
+                    type: number
+                    minimum: 0
+                    description: Original/MSRP price (optional)
+                    example: 129.99
+                  imageUrl:
+                    type: string
+                    format: uri
+                    description: URL to product image
+                    example: https://example.com/product-image.jpg
+                  sellerId:
+                    type: string
+                    description: ID of the seller
+                    example: user-1234567890
+                  categoryId:
+                    type: string
+                    description: Category ID (optional)
+                    example: electronics
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the product was created
+                    example: 2025-10-20T17:18:25.970Z
+                  updatedAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the product was last updated
+                    example: 2025-10-20T17:18:25.970Z
+                  reviews:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the review
+                          example: rev-1234567890
+                        title:
+                          type: string
+                          description: Review title (optional)
+                          example: Excellent Product!
+                        reviewText:
+                          type: string
+                          description: Review text content (optional)
+                          example: Great quality and functionality.
+                        rating:
+                          type: number
+                          minimum: 1
+                          maximum: 5
+                          description: Rating from 1 to 5
+                          example: 5
+                        userId:
+                          type: string
+                          description: ID of the user who wrote the review
+                          example: user-1234567890
+                        userName:
+                          type: string
+                          description: Name of the user who wrote the review (optional)
+                          example: John Doe
+                        createdAt:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the review was created
+                          example: 2025-10-20T17:18:25.970Z
+                      required:
+                        - id
+                        - rating
+                        - userId
+                        - createdAt
+                    description: Array of product reviews
+                  averageRating:
+                    type: number
+                    minimum: 0
+                    maximum: 5
+                    description: Average rating based on all reviews
+                    example: 4.5
+                required:
+                  - id
+                  - name
+                  - description
+                  - price
+                  - imageUrl
+                  - sellerId
+                  - createdAt
+                  - updatedAt
+                  - reviews
+                  - averageRating
+        "404":
+          description: Product with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+    delete:
+      tags:
+        - Products
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the product
+            example: prod-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "200":
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        "404":
+          description: Product with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+  /api/products/{id}/reviews:
+    post:
+      tags:
+        - Products
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the product
+            example: prod-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rating:
+                  type: number
+                  minimum: 1
+                  maximum: 5
+                  description: Rating from 1 to 5 (required)
+                  example: 5
+                title:
+                  type: string
+                  description: Review title (optional)
+                  example: Excellent Product!
+                reviewText:
+                  type: string
+                  maxLength: 1000
+                  description: Review text content (optional, max 1000 characters)
+                  example: Great quality and functionality.
+              required:
+                - rating
+      responses:
+        "201":
+          description: Review added successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  userId:
+                    type: string
+                  title:
+                    type: string
+                  reviewText:
+                    type: string
+                  rating:
+                    type: number
+                  userName:
+                    type: string
+                  createdAt:
+                    type: string
+                required:
+                  - id
+                  - userId
+                  - rating
+                  - createdAt
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+        "404":
+          description: Product with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Product not found
+                required:
+                  - error
+  /api/orders/orders:
+    get:
+      tags:
+        - Orders
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          required: false
+          name: status
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "1"
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "10"
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Returns orders for the authenticated seller
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the order
+                          example: order-1234567890
+                        buyerId:
+                          type: string
+                          description: ID of the buyer (optional for customer view)
+                          example: user-1234567890
+                        customerId:
+                          type: string
+                          description: ID of the customer
+                          example: user-1234567890
+                        customerName:
+                          type: string
+                          description: Name of the customer
+                          example: John Doe
+                        sellerId:
+                          type: string
+                          description: ID of the seller
+                          example: user-1234567890
+                        total:
+                          type: number
+                          minimum: 0
+                          description: Total price of the order
+                          example: 199.98
+                        status:
+                          type: string
+                          description: Current status of the order
+                          example: Pending
+                        orderDate:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the order was created
+                          example: 2025-10-20T17:18:25.973Z
+                        items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              productId:
+                                type: string
+                                description: ID of the product
+                                example: prod-1234567890
+                              productName:
+                                type: string
+                                description: Name of the product
+                                example: Wireless Headphones
+                              quantity:
+                                type: number
+                                minimum: 1
+                                description: Quantity of the product
+                                example: 2
+                              price:
+                                type: number
+                                minimum: 0
+                                description: Price of the product at order time
+                                example: 99.99
+                            required:
+                              - productId
+                              - productName
+                              - quantity
+                              - price
+                          description: Array of items in the order with product names
+                      required:
+                        - id
+                        - customerId
+                        - customerName
+                        - sellerId
+                        - total
+                        - status
+                        - orderDate
+                        - items
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      total:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - page
+                      - limit
+                      - total
+                      - totalPages
+                required:
+                  - orders
+                  - pagination
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+  /api/orders/user:
+    get:
+      tags:
+        - Orders
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+          required: false
+          name: status
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "1"
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "10"
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Returns orders for the authenticated user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the order
+                          example: order-1234567890
+                        buyerId:
+                          type: string
+                          description: ID of the buyer (optional for customer view)
+                          example: user-1234567890
+                        customerId:
+                          type: string
+                          description: ID of the customer
+                          example: user-1234567890
+                        customerName:
+                          type: string
+                          description: Name of the customer
+                          example: John Doe
+                        sellerId:
+                          type: string
+                          description: ID of the seller
+                          example: user-1234567890
+                        total:
+                          type: number
+                          minimum: 0
+                          description: Total price of the order
+                          example: 199.98
+                        status:
+                          type: string
+                          description: Current status of the order
+                          example: Pending
+                        orderDate:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the order was created
+                          example: 2025-10-20T17:18:25.973Z
+                        items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              productId:
+                                type: string
+                                description: ID of the product
+                                example: prod-1234567890
+                              productName:
+                                type: string
+                                description: Name of the product
+                                example: Wireless Headphones
+                              quantity:
+                                type: number
+                                minimum: 1
+                                description: Quantity of the product
+                                example: 2
+                              price:
+                                type: number
+                                minimum: 0
+                                description: Price of the product at order time
+                                example: 99.99
+                            required:
+                              - productId
+                              - productName
+                              - quantity
+                              - price
+                          description: Array of items in the order with product names
+                      required:
+                        - id
+                        - customerId
+                        - customerName
+                        - sellerId
+                        - total
+                        - status
+                        - orderDate
+                        - items
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      total:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - page
+                      - limit
+                      - total
+                      - totalPages
+                required:
+                  - orders
+                  - pagination
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+  /api/orders/user/{userId}:
+    get:
+      tags:
+        - Orders
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the user
+            example: user-1234567890
+          required: true
+          name: userId
+          in: path
+        - schema:
+            type: string
+          required: false
+          name: status
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "1"
+          required: false
+          name: page
+          in: query
+        - schema:
+            type: string
+            pattern: ^\d+$
+            default: "10"
+          required: false
+          name: limit
+          in: query
+      responses:
+        "200":
+          description: Returns orders for the specified user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  orders:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Unique identifier for the order
+                          example: order-1234567890
+                        buyerId:
+                          type: string
+                          description: ID of the buyer (optional for customer view)
+                          example: user-1234567890
+                        customerId:
+                          type: string
+                          description: ID of the customer
+                          example: user-1234567890
+                        customerName:
+                          type: string
+                          description: Name of the customer
+                          example: John Doe
+                        sellerId:
+                          type: string
+                          description: ID of the seller
+                          example: user-1234567890
+                        total:
+                          type: number
+                          minimum: 0
+                          description: Total price of the order
+                          example: 199.98
+                        status:
+                          type: string
+                          description: Current status of the order
+                          example: Pending
+                        orderDate:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the order was created
+                          example: 2025-10-20T17:18:25.973Z
+                        items:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              productId:
+                                type: string
+                                description: ID of the product
+                                example: prod-1234567890
+                              productName:
+                                type: string
+                                description: Name of the product
+                                example: Wireless Headphones
+                              quantity:
+                                type: number
+                                minimum: 1
+                                description: Quantity of the product
+                                example: 2
+                              price:
+                                type: number
+                                minimum: 0
+                                description: Price of the product at order time
+                                example: 99.99
+                            required:
+                              - productId
+                              - productName
+                              - quantity
+                              - price
+                          description: Array of items in the order with product names
+                      required:
+                        - id
+                        - customerId
+                        - customerName
+                        - sellerId
+                        - total
+                        - status
+                        - orderDate
+                        - items
+                  pagination:
+                    type: object
+                    properties:
+                      page:
+                        type: number
+                      limit:
+                        type: number
+                      total:
+                        type: number
+                      totalPages:
+                        type: number
+                    required:
+                      - page
+                      - limit
+                      - total
+                      - totalPages
+                required:
+                  - orders
+                  - pagination
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+        "403":
+          description: "Forbidden: You are not authorized to access these orders"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+  /api/orders/orders/{id}:
+    put:
+      tags:
+        - Orders
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            description: Unique identifier of the order
+            example: order-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  description: New status for the order
+                  example: Shipped
+              required:
+                - status
+      responses:
+        "200":
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Unique identifier for the order
+                    example: order-1234567890
+                  buyerId:
+                    type: string
+                    description: ID of the buyer (optional for customer view)
+                    example: user-1234567890
+                  customerId:
+                    type: string
+                    description: ID of the customer
+                    example: user-1234567890
+                  customerName:
+                    type: string
+                    description: Name of the customer
+                    example: John Doe
+                  sellerId:
+                    type: string
+                    description: ID of the seller
+                    example: user-1234567890
+                  total:
+                    type: number
+                    minimum: 0
+                    description: Total price of the order
+                    example: 199.98
+                  status:
+                    type: string
+                    description: Current status of the order
+                    example: Pending
+                  orderDate:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the order was created
+                    example: 2025-10-20T17:18:25.973Z
+                  items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        productId:
+                          type: string
+                          description: ID of the product
+                          example: prod-1234567890
+                        productName:
+                          type: string
+                          description: Name of the product
+                          example: Wireless Headphones
+                        quantity:
+                          type: number
+                          minimum: 1
+                          description: Quantity of the product
+                          example: 2
+                        price:
+                          type: number
+                          minimum: 0
+                          description: Price of the product at order time
+                          example: 99.99
+                      required:
+                        - productId
+                        - productName
+                        - quantity
+                        - price
+                    description: Array of items in the order with product names
+                required:
+                  - id
+                  - customerId
+                  - customerName
+                  - sellerId
+                  - total
+                  - status
+                  - orderDate
+                  - items
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+        "403":
+          description: "Forbidden: You are not authorized to update this order"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+        "404":
+          description: Order with the specified ID was not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message explaining why the request failed
+                    example: Order not found
+                required:
+                  - error
+  /api/reviews:
+    post:
+      description: Create a new review for a product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                  minLength: 1
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                comment:
+                  type: string
+                userId:
+                  type: string
+              required:
+                - productId
+                - rating
+      responses:
+        "201":
+          description: Review created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+  /api/reviews/product/{productId}:
+    get:
+      description: Get all reviews for a specific product
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+          required: true
+          name: productId
+          in: path
+      responses:
+        "200":
+          description: Reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+        "404":
+          description: Product not found or no reviews found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+  /api/reviews/{id}:
+    get:
+      description: "Get a specific review by ID (note: productId is needed as path
+        param in actual implementation)"
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+          required: true
+          name: id
+          in: path
+        - schema:
+            type: string
+            minLength: 1
+          required: true
+          name: productId
+          in: path
+      responses:
+        "200":
+          description: Review retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+        "404":
+          description: Review not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+  /api/reviews/user/{userId}:
+    get:
+      description: Get all reviews by a specific user
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+          required: true
+          name: userId
+          in: path
+      responses:
+        "200":
+          description: User reviews retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+        "404":
+          description: User not found or no reviews found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    anyOf:
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                          productId:
+                            type: string
+                            minLength: 1
+                          userId:
+                            type: string
+                            minLength: 1
+                          rating:
+                            type: number
+                            minimum: 1
+                            maximum: 5
+                          comment:
+                            type: string
+                          createdAt:
+                            type: string
+                          updatedAt:
+                            type: string
+                        required:
+                          - productId
+                          - userId
+                          - rating
+                      - type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                            productId:
+                              type: string
+                              minLength: 1
+                            userId:
+                              type: string
+                              minLength: 1
+                            rating:
+                              type: number
+                              minimum: 1
+                              maximum: 5
+                            comment:
+                              type: string
+                            createdAt:
+                              type: string
+                            updatedAt:
+                              type: string
+                          required:
+                            - productId
+                            - userId
+                            - rating
+                  count:
+                    type: number
+                  errors:
+                    type: array
+                    items:
+                      nullable: true
+                required:
+                  - success
+  /api/addresses/user/{userId}:
+    get:
+      tags:
+        - Addresses
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the user
+            example: user-1234567890
+          required: true
+          name: userId
+          in: path
+      responses:
+        "200":
+          description: Returns all addresses for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      minLength: 1
+                      description: Unique identifier for the address
+                      example: address-1234567890
+                    userId:
+                      type: string
+                      minLength: 1
+                      description: ID of the user who owns this address
+                      example: user-1234567890
+                    name:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: Name for this address (e.g., Home, Work)
+                      example: Home Address
+                    street:
+                      type: string
+                      minLength: 1
+                      maxLength: 255
+                      description: Street address
+                      example: 123 Main Street
+                    city:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: City name
+                      example: New York
+                    state:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: State or province name
+                      example: NY
+                    zipCode:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                      description: ZIP or postal code
+                      example: "10001"
+                    country:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: Country name
+                      example: USA
+                    phoneNumber:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                      description: Phone number associated with this address
+                      example: +1-555-123-4567
+                    isDefault:
+                      type: boolean
+                      default: false
+                      description: Whether this is the default address for the user
+                      example: true
+                  required:
+                    - id
+                    - userId
+                    - name
+                    - street
+                    - city
+                    - state
+                    - zipCode
+                    - country
+                    - isDefault
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to access these addresses"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: User not found or has no addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+    post:
+      tags:
+        - Addresses
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the user
+            example: user-1234567890
+          required: true
+          name: userId
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Name for this address (e.g., Home, Work)
+                  example: Home Address
+                street:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  description: Street address
+                  example: 123 Main Street
+                city:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: City name
+                  example: New York
+                state:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: State or province name
+                  example: NY
+                zipCode:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                  description: ZIP or postal code
+                  example: "10001"
+                country:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Country name
+                  example: USA
+                phoneNumber:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                  description: Phone number associated with this address
+                  example: +1-555-123-4567
+                isDefault:
+                  type: boolean
+                  default: false
+                  description: Whether this is the default address for the user
+                  example: true
+              required:
+                - name
+                - street
+                - city
+                - state
+                - zipCode
+                - country
+      responses:
+        "201":
+          description: Address created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the address
+                    example: address-1234567890
+                  userId:
+                    type: string
+                    minLength: 1
+                    description: ID of the user who owns this address
+                    example: user-1234567890
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Name for this address (e.g., Home, Work)
+                    example: Home Address
+                  street:
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                    description: Street address
+                    example: 123 Main Street
+                  city:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: City name
+                    example: New York
+                  state:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: State or province name
+                    example: NY
+                  zipCode:
+                    type: string
+                    minLength: 1
+                    maxLength: 20
+                    description: ZIP or postal code
+                    example: "10001"
+                  country:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Country name
+                    example: USA
+                  phoneNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 20
+                    description: Phone number associated with this address
+                    example: +1-555-123-4567
+                  isDefault:
+                    type: boolean
+                    default: false
+                    description: Whether this is the default address for the user
+                    example: true
+                required:
+                  - id
+                  - userId
+                  - name
+                  - street
+                  - city
+                  - state
+                  - zipCode
+                  - country
+                  - isDefault
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to add an address for this user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/addresses/{id}:
+    put:
+      tags:
+        - Addresses
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the address
+            example: address-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Name for this address (e.g., Home, Work)
+                  example: Home Address
+                street:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                  description: Street address
+                  example: 123 Main Street
+                city:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: City name
+                  example: New York
+                state:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: State or province name
+                  example: NY
+                zipCode:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                  description: ZIP or postal code
+                  example: "10001"
+                country:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Country name
+                  example: USA
+                phoneNumber:
+                  type: string
+                  minLength: 1
+                  maxLength: 20
+                  description: Phone number associated with this address
+                  example: +1-555-123-4567
+                isDefault:
+                  type: boolean
+                  description: Whether this is the default address for the user
+                  example: true
+      responses:
+        "200":
+          description: Address updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the address
+                    example: address-1234567890
+                  userId:
+                    type: string
+                    minLength: 1
+                    description: ID of the user who owns this address
+                    example: user-1234567890
+                  name:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Name for this address (e.g., Home, Work)
+                    example: Home Address
+                  street:
+                    type: string
+                    minLength: 1
+                    maxLength: 255
+                    description: Street address
+                    example: 123 Main Street
+                  city:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: City name
+                    example: New York
+                  state:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: State or province name
+                    example: NY
+                  zipCode:
+                    type: string
+                    minLength: 1
+                    maxLength: 20
+                    description: ZIP or postal code
+                    example: "10001"
+                  country:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Country name
+                    example: USA
+                  phoneNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 20
+                    description: Phone number associated with this address
+                    example: +1-555-123-4567
+                  isDefault:
+                    type: boolean
+                    default: false
+                    description: Whether this is the default address for the user
+                    example: true
+                required:
+                  - id
+                  - userId
+                  - name
+                  - street
+                  - city
+                  - state
+                  - zipCode
+                  - country
+                  - isDefault
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to update this address"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+    delete:
+      tags:
+        - Addresses
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the address
+            example: address-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "204":
+          description: Address deleted successfully
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to delete this address"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Address not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/payment-methods/user/{userId}:
+    get:
+      tags:
+        - Payment Methods
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the user
+            example: user-1234567890
+          required: true
+          name: userId
+          in: path
+      responses:
+        "200":
+          description: Returns all payment methods for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      minLength: 1
+                      description: Unique identifier for the payment method
+                      example: payment-1234567890
+                    userId:
+                      type: string
+                      minLength: 1
+                      description: ID of the user who owns this payment method
+                      example: user-1234567890
+                    type:
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      description: Type of payment method (e.g., credit_card, debit_card, paypal)
+                      example: credit_card
+                    cardNumber:
+                      type: string
+                      minLength: 1
+                      maxLength: 20
+                      description: Card number (masked for security)
+                      example: "**** **** **** 1234"
+                    cardHolderName:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: Name on the card
+                      example: John Doe
+                    expiryMonth:
+                      type: string
+                      minLength: 1
+                      maxLength: 2
+                      description: Expiry month (MM format)
+                      example: "12"
+                    expiryYear:
+                      type: string
+                      minLength: 1
+                      maxLength: 4
+                      description: Expiry year (YYYY format)
+                      example: "2025"
+                    cvv:
+                      type: string
+                      minLength: 1
+                      maxLength: 4
+                      description: CVV code (masked for security)
+                      example: "***"
+                    isDefault:
+                      type: boolean
+                      default: false
+                      description: Whether this is the default payment method for the user
+                      example: true
+                    brand:
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      description: Brand of the card (e.g., Visa, Mastercard)
+                      example: Visa
+                    last4:
+                      type: string
+                      minLength: 1
+                      maxLength: 4
+                      description: Last 4 digits of the card
+                      example: "1234"
+                  required:
+                    - id
+                    - userId
+                    - type
+                    - isDefault
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to access these payment methods"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: User not found or has no payment methods
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+    post:
+      tags:
+        - Payment Methods
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the user
+            example: user-1234567890
+          required: true
+          name: userId
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: Type of payment method (e.g., credit_card, debit_card, paypal)
+                  example: credit_card
+                cardNumber:
+                  type: string
+                  minLength: 13
+                  maxLength: 19
+                  pattern: ^\d+$
+                  description: Full card number (will be securely stored)
+                  example: "4111111111111111"
+                cardHolderName:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Name on the card
+                  example: John Doe
+                expiryMonth:
+                  type: string
+                  minLength: 1
+                  maxLength: 2
+                  pattern: ^(0?[1-9]|1[0-2])$
+                  description: Expiry month (MM format)
+                  example: "12"
+                expiryYear:
+                  type: string
+                  minLength: 4
+                  maxLength: 4
+                  pattern: ^\d{4}$
+                  description: Expiry year (YYYY format)
+                  example: "2025"
+                cvv:
+                  type: string
+                  minLength: 3
+                  maxLength: 4
+                  pattern: ^\d+$
+                  description: CVV code
+                  example: "123"
+                isDefault:
+                  type: boolean
+                  default: false
+                  description: Whether this is the default payment method for the user
+                  example: true
+              required:
+                - type
+      responses:
+        "201":
+          description: Payment method created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the payment method
+                    example: payment-1234567890
+                  userId:
+                    type: string
+                    minLength: 1
+                    description: ID of the user who owns this payment method
+                    example: user-1234567890
+                  type:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Type of payment method (e.g., credit_card, debit_card, paypal)
+                    example: credit_card
+                  cardNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 20
+                    description: Card number (masked for security)
+                    example: "**** **** **** 1234"
+                  cardHolderName:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Name on the card
+                    example: John Doe
+                  expiryMonth:
+                    type: string
+                    minLength: 1
+                    maxLength: 2
+                    description: Expiry month (MM format)
+                    example: "12"
+                  expiryYear:
+                    type: string
+                    minLength: 1
+                    maxLength: 4
+                    description: Expiry year (YYYY format)
+                    example: "2025"
+                  cvv:
+                    type: string
+                    minLength: 1
+                    maxLength: 4
+                    description: CVV code (masked for security)
+                    example: "***"
+                  isDefault:
+                    type: boolean
+                    default: false
+                    description: Whether this is the default payment method for the user
+                    example: true
+                  brand:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Brand of the card (e.g., Visa, Mastercard)
+                    example: Visa
+                  last4:
+                    type: string
+                    minLength: 1
+                    maxLength: 4
+                    description: Last 4 digits of the card
+                    example: "1234"
+                required:
+                  - id
+                  - userId
+                  - type
+                  - isDefault
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to add a payment method for this
+            user"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/payment-methods/{id}:
+    put:
+      tags:
+        - Payment Methods
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the payment method
+            example: payment-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: Type of payment method (e.g., credit_card, debit_card, paypal)
+                  example: credit_card
+                cardHolderName:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Name on the card
+                  example: John Doe
+                isDefault:
+                  type: boolean
+                  description: Whether this is the default payment method for the user
+                  example: true
+      responses:
+        "200":
+          description: Payment method updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the payment method
+                    example: payment-1234567890
+                  userId:
+                    type: string
+                    minLength: 1
+                    description: ID of the user who owns this payment method
+                    example: user-1234567890
+                  type:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Type of payment method (e.g., credit_card, debit_card, paypal)
+                    example: credit_card
+                  cardNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 20
+                    description: Card number (masked for security)
+                    example: "**** **** **** 1234"
+                  cardHolderName:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Name on the card
+                    example: John Doe
+                  expiryMonth:
+                    type: string
+                    minLength: 1
+                    maxLength: 2
+                    description: Expiry month (MM format)
+                    example: "12"
+                  expiryYear:
+                    type: string
+                    minLength: 1
+                    maxLength: 4
+                    description: Expiry year (YYYY format)
+                    example: "2025"
+                  cvv:
+                    type: string
+                    minLength: 1
+                    maxLength: 4
+                    description: CVV code (masked for security)
+                    example: "***"
+                  isDefault:
+                    type: boolean
+                    default: false
+                    description: Whether this is the default payment method for the user
+                    example: true
+                  brand:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Brand of the card (e.g., Visa, Mastercard)
+                    example: Visa
+                  last4:
+                    type: string
+                    minLength: 1
+                    maxLength: 4
+                    description: Last 4 digits of the card
+                    example: "1234"
+                required:
+                  - id
+                  - userId
+                  - type
+                  - isDefault
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to update this payment method"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Payment method not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+    delete:
+      tags:
+        - Payment Methods
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the payment method
+            example: payment-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "204":
+          description: Payment method deleted successfully
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to delete this payment method"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Payment method not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/deliveries/user/{userId}:
+    get:
+      tags:
+        - Deliveries
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the user
+            example: user-1234567890
+          required: true
+          name: userId
+          in: path
+      responses:
+        "200":
+          description: Returns all deliveries for the specified user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      minLength: 1
+                      description: Unique identifier for the delivery
+                      example: delivery-1234567890
+                    orderId:
+                      type: string
+                      minLength: 1
+                      description: ID of the associated order
+                      example: order-1234567890
+                    status:
+                      type: string
+                      minLength: 1
+                      maxLength: 50
+                      description: Current status of the delivery
+                      example: shipped
+                    trackingNumber:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: Tracking number for the shipment
+                      example: TRK123456789
+                    estimatedDelivery:
+                      type: string
+                      format: date-time
+                      description: Estimated delivery date
+                      example: 2023-10-20T00:00:00.000Z
+                    actualDelivery:
+                      type: string
+                      format: date-time
+                      description: Actual delivery date (if delivered)
+                      example: 2023-10-19T15:30:00.000Z
+                    shippingAddress:
+                      type: string
+                      description: Shipping address for the delivery
+                      example: 123 Main Street, New York, NY 10001
+                    carrier:
+                      type: string
+                      minLength: 1
+                      maxLength: 100
+                      description: Shipping carrier
+                      example: FedEx
+                    lastUpdate:
+                      type: string
+                      format: date-time
+                      description: Timestamp of the last update
+                      example: 2023-10-15T10:30:00.000Z
+                    updates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          status:
+                            type: string
+                            minLength: 1
+                            maxLength: 50
+                            description: Current status of the delivery update
+                            example: shipped
+                          location:
+                            type: string
+                            maxLength: 255
+                            description: Current location of the shipment
+                            example: New York Distribution Center
+                          timestamp:
+                            type: string
+                            format: date-time
+                            description: Timestamp of the update
+                            example: 2023-10-15T10:30:00.000Z
+                          description:
+                            type: string
+                            maxLength: 500
+                            description: Description of the update
+                            example: Package has been shipped from distribution center
+                        required:
+                          - status
+                          - timestamp
+                      default: []
+                      description: History of delivery updates
+                  required:
+                    - id
+                    - orderId
+                    - status
+                    - trackingNumber
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to access these deliveries"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: User not found or has no deliveries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/deliveries/tracking/{trackingNumber}:
+    get:
+      tags:
+        - Deliveries
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            maxLength: 100
+            description: Tracking number for the shipment
+            example: TRK123456789
+          required: true
+          name: trackingNumber
+          in: path
+      responses:
+        "200":
+          description: Returns delivery information for the specified tracking number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the delivery
+                    example: delivery-1234567890
+                  orderId:
+                    type: string
+                    minLength: 1
+                    description: ID of the associated order
+                    example: order-1234567890
+                  status:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Current status of the delivery
+                    example: shipped
+                  trackingNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Tracking number for the shipment
+                    example: TRK123456789
+                  estimatedDelivery:
+                    type: string
+                    format: date-time
+                    description: Estimated delivery date
+                    example: 2023-10-20T00:00:00.000Z
+                  actualDelivery:
+                    type: string
+                    format: date-time
+                    description: Actual delivery date (if delivered)
+                    example: 2023-10-19T15:30:00.000Z
+                  shippingAddress:
+                    type: string
+                    description: Shipping address for the delivery
+                    example: 123 Main Street, New York, NY 10001
+                  carrier:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Shipping carrier
+                    example: FedEx
+                  lastUpdate:
+                    type: string
+                    format: date-time
+                    description: Timestamp of the last update
+                    example: 2023-10-15T10:30:00.000Z
+                  updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          minLength: 1
+                          maxLength: 50
+                          description: Current status of the delivery update
+                          example: shipped
+                        location:
+                          type: string
+                          maxLength: 255
+                          description: Current location of the shipment
+                          example: New York Distribution Center
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of the update
+                          example: 2023-10-15T10:30:00.000Z
+                        description:
+                          type: string
+                          maxLength: 500
+                          description: Description of the update
+                          example: Package has been shipped from distribution center
+                      required:
+                        - status
+                        - timestamp
+                    default: []
+                    description: History of delivery updates
+                required:
+                  - id
+                  - orderId
+                  - status
+                  - trackingNumber
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to access this delivery"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Delivery not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/deliveries:
+    post:
+      tags:
+        - Deliveries
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                orderId:
+                  type: string
+                  minLength: 1
+                  description: ID of the associated order
+                  example: order-1234567890
+                trackingNumber:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Tracking number for the shipment
+                  example: TRK123456789
+                estimatedDelivery:
+                  type: string
+                  format: date-time
+                  description: Estimated delivery date
+                  example: 2023-10-20T00:00:00.000Z
+                carrier:
+                  type: string
+                  minLength: 1
+                  maxLength: 100
+                  description: Shipping carrier
+                  example: FedEx
+              required:
+                - orderId
+                - trackingNumber
+      responses:
+        "201":
+          description: Delivery created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the delivery
+                    example: delivery-1234567890
+                  orderId:
+                    type: string
+                    minLength: 1
+                    description: ID of the associated order
+                    example: order-1234567890
+                  status:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Current status of the delivery
+                    example: shipped
+                  trackingNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Tracking number for the shipment
+                    example: TRK123456789
+                  estimatedDelivery:
+                    type: string
+                    format: date-time
+                    description: Estimated delivery date
+                    example: 2023-10-20T00:00:00.000Z
+                  actualDelivery:
+                    type: string
+                    format: date-time
+                    description: Actual delivery date (if delivered)
+                    example: 2023-10-19T15:30:00.000Z
+                  shippingAddress:
+                    type: string
+                    description: Shipping address for the delivery
+                    example: 123 Main Street, New York, NY 10001
+                  carrier:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Shipping carrier
+                    example: FedEx
+                  lastUpdate:
+                    type: string
+                    format: date-time
+                    description: Timestamp of the last update
+                    example: 2023-10-15T10:30:00.000Z
+                  updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          minLength: 1
+                          maxLength: 50
+                          description: Current status of the delivery update
+                          example: shipped
+                        location:
+                          type: string
+                          maxLength: 255
+                          description: Current location of the shipment
+                          example: New York Distribution Center
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of the update
+                          example: 2023-10-15T10:30:00.000Z
+                        description:
+                          type: string
+                          maxLength: 500
+                          description: Description of the update
+                          example: Package has been shipped from distribution center
+                      required:
+                        - status
+                        - timestamp
+                    default: []
+                    description: History of delivery updates
+                required:
+                  - id
+                  - orderId
+                  - status
+                  - trackingNumber
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to create a delivery"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "409":
+          description: Delivery with this tracking number already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+  /api/deliveries/{id}:
+    put:
+      tags:
+        - Deliveries
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the delivery
+            example: delivery-1234567890
+          required: true
+          name: id
+          in: path
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: New status for the delivery
+                  example: delivered
+                actualDelivery:
+                  type: string
+                  format: date-time
+                  description: Actual delivery date
+                  example: 2023-10-19T15:30:00.000Z
+                updates:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        minLength: 1
+                        maxLength: 50
+                        description: Status for this update
+                        example: shipped
+                      location:
+                        type: string
+                        maxLength: 255
+                        description: Location for this update
+                        example: New York Distribution Center
+                      timestamp:
+                        type: string
+                        format: date-time
+                        description: Timestamp of the update
+                        example: 2023-10-15T10:30:00.000Z
+                      description:
+                        type: string
+                        maxLength: 500
+                        description: Description of the update
+                        example: Package has been shipped from distribution center
+                    required:
+                      - status
+                      - timestamp
+                  description: Array of delivery updates
+      responses:
+        "200":
+          description: Delivery updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    minLength: 1
+                    description: Unique identifier for the delivery
+                    example: delivery-1234567890
+                  orderId:
+                    type: string
+                    minLength: 1
+                    description: ID of the associated order
+                    example: order-1234567890
+                  status:
+                    type: string
+                    minLength: 1
+                    maxLength: 50
+                    description: Current status of the delivery
+                    example: shipped
+                  trackingNumber:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Tracking number for the shipment
+                    example: TRK123456789
+                  estimatedDelivery:
+                    type: string
+                    format: date-time
+                    description: Estimated delivery date
+                    example: 2023-10-20T00:00:00.000Z
+                  actualDelivery:
+                    type: string
+                    format: date-time
+                    description: Actual delivery date (if delivered)
+                    example: 2023-10-19T15:30:00.000Z
+                  shippingAddress:
+                    type: string
+                    description: Shipping address for the delivery
+                    example: 123 Main Street, New York, NY 10001
+                  carrier:
+                    type: string
+                    minLength: 1
+                    maxLength: 100
+                    description: Shipping carrier
+                    example: FedEx
+                  lastUpdate:
+                    type: string
+                    format: date-time
+                    description: Timestamp of the last update
+                    example: 2023-10-15T10:30:00.000Z
+                  updates:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          minLength: 1
+                          maxLength: 50
+                          description: Current status of the delivery update
+                          example: shipped
+                        location:
+                          type: string
+                          maxLength: 255
+                          description: Current location of the shipment
+                          example: New York Distribution Center
+                        timestamp:
+                          type: string
+                          format: date-time
+                          description: Timestamp of the update
+                          example: 2023-10-15T10:30:00.000Z
+                        description:
+                          type: string
+                          maxLength: 500
+                          description: Description of the update
+                          example: Package has been shipped from distribution center
+                      required:
+                        - status
+                        - timestamp
+                    default: []
+                    description: History of delivery updates
+                required:
+                  - id
+                  - orderId
+                  - status
+                  - trackingNumber
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to update this delivery"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Delivery not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+    delete:
+      tags:
+        - Deliveries
+      middleware:
+        - null
+      security:
+        - BearerAuth: []
+      parameters:
+        - schema:
+            type: string
+            minLength: 1
+            description: Unique identifier of the delivery
+            example: delivery-1234567890
+          required: true
+          name: id
+          in: path
+      responses:
+        "204":
+          description: Delivery deleted successfully
+        "401":
+          description: "Unauthorized: Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "403":
+          description: "Forbidden: You are not authorized to delete this delivery"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message
+        "404":
+          description: Delivery not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: Error message
+                    example: Invalid input
+                  details:
+                    nullable: true
+                    description: Additional error details
+                required:
+                  - message

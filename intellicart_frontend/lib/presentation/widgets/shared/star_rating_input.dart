@@ -53,4 +53,5 @@ class _StarRatingInputState extends State<StarRatingInput> {
       children: List.generate(5, (index) => _buildStar(index)),
     );
   }
+
 }

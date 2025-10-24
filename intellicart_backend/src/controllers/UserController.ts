@@ -1,259 +1,287 @@
-/**
- * User Controller
- * 
- * This controller handles all user-related business logic including:
- * - Retrieving all users
- * - Retrieving a specific user by ID
- * - Creating new users
- * - Updating existing users
- * - Deleting users
- * 
- * All methods are static for easy access from route handlers.
- * The controller uses a mock in-memory database for demonstration purposes.
- * 
- * @class UserController
- * @description Business logic layer for user operations
- * @author Intellicart Team
- * @version 1.0.0
- */
-
 import { Context } from 'hono';
-import { z } from 'zod';
-
-/**
- * Mock in-memory database for users
- * In a real application, this would be replaced with a persistent database
- */
-let users: Array<{
-  id: number;
-  name: string;
-  email: string;
-  age?: number;
-  createdAt: string;
-}> = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    age: 30,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { db } from '../database/db_service';
+import { JWTUserPayload } from '../types/AuthTypes';
+import { Logger } from '../utils/logger';
+import { User } from '../types/UserTypes';
 
 export class UserController {
-  /**
-   * Retrieve all users from the mock database
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing array of all users
-   * @route GET /api/users
-   * 
-   * Example response:
-   * [
-   *   {
-   *     "id": 1,
-   *     "name": "John Doe",
-   *     "email": "john@example.com",
-   *     "age": 30,
-   *     "createdAt": "2023-01-01T00:00:00.000Z"
-   *   }
-   * ]
-   */
-  static async getAllUsers(c: Context) {
-    // Return all users in the mock database
-    return c.json(users);
-  }
+  static async updateUserInfo(c: Context) {
+    try {
+      const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
+      if (!jwtPayload) {
+        Logger.warn('Update user info failed: No JWT payload');
+        return c.json({ error: 'Authentication required' }, 401);
+      }
 
-  /**
-   * Retrieve a specific user by ID
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing the user object or error if not found
-   * @route GET /api/users/:id
-   * 
-   * Example response (success):
-   * {
-   *   "id": 1,
-   *   "name": "John Doe",
-   *   "email": "john@example.com",
-   *   "age": 30,
-   *   "createdAt": "2023-01-01T00:00:00.000Z"
-   * }
-   * 
-   * Example response (error):
-   * {
-   *   "error": "User not found"
-   * }
-   */
-  static async getUserById(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
-    
-    // Find user in mock database by ID
-    const user = users.find(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (!user) {
-      return c.json({ error: 'User not found' }, 404);
+      // Get userId from path parameters (can be either 'userId' or 'id' depending on route)
+      let userId = c.req.param('userId');
+      if (!userId) {
+        userId = c.req.param('id');
+      }
+      
+      // Check if user is authorized to update this account
+      if (jwtPayload.id !== userId) {
+        Logger.warn(`Update user info failed: Unauthorized access to user ${userId} by ${jwtPayload.id}`);
+        return c.json({ error: 'User not authorized to update this account' }, 403);
+      }
+
+      const { name, phoneNumber } = await c.req.json();
+      
+      // Validate request body
+      if (name === undefined && phoneNumber === undefined) {
+        return c.json({ error: 'At least one field (name or phoneNumber) must be provided' }, 400);
+      }
+
+      // Update user information in database
+      const userData: Partial<User> = {};
+      if (name !== undefined) userData.name = name;
+      if (phoneNumber !== undefined) userData.phoneNumber = phoneNumber;
+      
+      const updatedUser = await db().updateUser(userId, userData);
+
+      if (!updatedUser) {
+        Logger.warn(`Update user info failed: User not found: ${userId}`);
+        return c.json({ error: 'User not found' }, 404);
+      }
+
+      Logger.info(`User info updated successfully for user: ${userId}`);
+      return c.json({
+        user: {
+          id: updatedUser.id,
+          email: updatedUser.email,
+          name: updatedUser.name,
+          role: updatedUser.role,
+          phoneNumber: updatedUser.phoneNumber
+        }
+      });
+    } catch (error) {
+      Logger.error('Update user info error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    // Return found user
-    return c.json(user);
   }
 
-  /**
-   * Create a new user in the mock database
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing the created user object
-   * @route POST /api/users
-   * 
-   * Example request body:
-   * {
-   *   "name": "Jane Smith",
-   *   "email": "jane@example.com",
-   *   "age": 25
-   * }
-   * 
-   * Example response:
-   * {
-   *   "id": 2,
-   *   "name": "Jane Smith",
-   *   "email": "jane@example.com",
-   *   "age": 25,
-   *   "createdAt": "2023-01-01T00:00:00.000Z"
-   * }
-   */
-  static async createUser(c: Context) {
-    // Extract validated request body from context
-    // The body has already been validated against Zod schema in route definition
-    const body = c.req.valid('json') as {
-      name: string;
-      email: string;
-      age?: number;
-    };
-    
-    // Generate new user object with auto-incremented ID and creation timestamp
-    const newUser = {
-      // Calculate new ID based on current highest ID in database
-      id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-      ...body, // Spread validated request body into new user object
-      createdAt: new Date().toISOString(), // Add creation timestamp
-    };
-    
-    // Add new user to mock database
-    users.push(newUser);
-    
-    // Return created user with 201 status (Created)
-    return c.json(newUser, 201);
-  }
-
-  /**
-   * Update an existing user in the mock database
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing the updated user object or error if not found
-   * @route PUT /api/users/:id
-   * 
-   * Example request body:
-   * {
-   *   "name": "Jane Smith Updated",
-   *   "age": 26
-   * }
-   * 
-   * Example response (success):
-   * {
-   *   "id": 2,
-   *   "name": "Jane Smith Updated",
-   *   "email": "jane@example.com",
-   *   "age": 26,
-   *   "createdAt": "2023-01-01T00:00:00.000Z"
-   * }
-   * 
-   * Example response (error):
-   * {
-   *   "error": "User not found"
-   * }
-   */
+  // Alias for the existing route - matches the expected name in userRoutes.ts
   static async updateUser(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
-    
-    // Extract validated request body from context
-    const body = c.req.valid('json') as {
-      name?: string;
-      email?: string;
-      age?: number;
-    };
-    
-    // Find index of user in mock database by ID
-    const index = users.findIndex(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (index === -1) {
-      return c.json({ error: 'User not found' }, 404);
-    }
-    
-    // Update user object by merging existing data with validated request body
-    users[index] = { ...users[index], ...body };
-    
-    // Return updated user
-    return c.json(users[index]);
+    return UserController.updateUserInfo(c);
   }
 
-  /**
-   * Delete a user from the mock database
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response indicating success or error
-   * @route DELETE /api/users/:id
-   * 
-   * Example response (success):
-   * {
-   *   "message": "User deleted successfully",
-   *   "user": {
-   *     "id": 2,
-   *     "name": "Jane Smith",
-   *     "email": "jane@example.com",
-   *     "age": 25,
-   *     "createdAt": "2023-01-01T00:00:00.000Z"
-   *   }
-   * }
-   * 
-   * Example response (error):
-   * {
-   *   "error": "User not found"
-   * }
-   */
-  static async deleteUser(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
-    
-    // Find index of user in mock database by ID
-    const index = users.findIndex(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (index === -1) {
-      return c.json({ error: 'User not found' }, 404);
+  static async requestEmailChange(c: Context) {
+    try {
+      const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
+      if (!jwtPayload) {
+        Logger.warn('Request email change failed: No JWT payload');
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+
+      const { reason, phoneNumber } = await c.req.json();
+
+      // Validate request body
+      if (!reason || !phoneNumber) {
+        return c.json({ error: 'Reason and phoneNumber are required' }, 400);
+      }
+
+      // In a real implementation, you would send an OTP/SMS to the old email
+      // For now, we'll just log the request
+      Logger.info(`Email change request for user ${jwtPayload.id}: reason=${reason}, phoneNumber=${phoneNumber}`);
+
+      // Simulate rate limiting check (in a real app you'd check this against a store)
+      // const recentRequests = await checkRateLimit(jwtPayload.id, 'email_change');
+      // if (recentRequests > 5) {
+      //   return c.json({ error: 'Rate limit exceeded' }, 429);
+      // }
+
+      // Store the email change request (in a real app you'd use a separate table)
+      // await storeEmailChangeRequest(jwtPayload.id, newEmail, reason, phoneNumber);
+      
+      Logger.info(`Email change request successful for user: ${jwtPayload.id}`);
+      return c.json({ message: 'Email change request successful' });
+    } catch (error) {
+      Logger.error('Request email change error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    // Remove user from mock database and store the deleted user
-    const deletedUser = users.splice(index, 1)[0];
-    
-    // Return success message and deleted user object
-    return c.json({ 
-      message: 'User deleted successfully', 
-      user: deletedUser 
-    });
+  }
+
+  static async verifyPhone(c: Context) {
+    try {
+      const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
+      if (!jwtPayload) {
+        Logger.warn('Verify phone failed: No JWT payload');
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+
+      const { phoneNumber, otp } = await c.req.json();
+
+      // Validate request body
+      if (!phoneNumber || !otp) {
+        return c.json({ error: 'phoneNumber and otp are required' }, 400);
+      }
+
+      // In a real implementation, you would verify the OTP against a store
+      // For now, we'll just validate length (in a real app you'd check if it matches what was sent)
+      if (otp.length !== 6) {
+        return c.json({ error: 'Invalid OTP code' }, 400);
+      }
+
+      // Simulate OTP verification (in a real app you'd check this against a store)
+      // const isValidOtp = await verifyOtp(jwtPayload.id, phoneNumber, otp);
+      // if (!isValidOtp) {
+      //   return c.json({ error: 'Invalid OTP code' }, 401);
+      // }
+
+      Logger.info(`Phone number verified for user: ${jwtPayload.id}, phoneNumber: ${phoneNumber}`);
+      return c.json({ message: 'Phone number verified successfully' });
+    } catch (error) {
+      Logger.error('Verify phone error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async requestPhoneChange(c: Context) {
+    try {
+      const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
+      if (!jwtPayload) {
+        Logger.warn('Request phone change failed: No JWT payload');
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+
+      const { reason, newPhoneNumber } = await c.req.json();
+
+      // Validate request body
+      if (!reason || !newPhoneNumber) {
+        return c.json({ error: 'reason and newPhoneNumber are required' }, 400);
+      }
+
+      // In a real implementation, you would send an OTP to the new phone number
+      // For now, we'll just log the request
+      Logger.info(`Phone change request for user ${jwtPayload.id}: reason=${reason}, newPhoneNumber=${newPhoneNumber}`);
+
+      // Store the phone change request (in a real app you'd use a separate table)
+      // await storePhoneChangeRequest(jwtPayload.id, newPhoneNumber, reason);
+      
+      Logger.info(`Phone change request successful for user: ${jwtPayload.id}`);
+      return c.json({ message: 'Phone change request successful' });
+    } catch (error) {
+      Logger.error('Request phone change error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async updatePhoneAfterVerification(c: Context) {
+    try {
+      const jwtPayload = c.get('jwtPayload') as JWTUserPayload;
+      if (!jwtPayload) {
+        Logger.warn('Update phone after verification failed: No JWT payload');
+        return c.json({ error: 'Authentication required' }, 401);
+      }
+
+      const { newPhoneNumber, otp } = await c.req.json();
+
+      // Validate request body
+      if (!newPhoneNumber || !otp) {
+        return c.json({ error: 'newPhoneNumber and otp are required' }, 400);
+      }
+
+      // In a real implementation, you would verify the OTP against a store
+      // For now, we'll just validate length (in a real app you'd check if it matches what was sent)
+      if (otp.length !== 6) {
+        return c.json({ error: 'Invalid OTP code' }, 400);
+      }
+
+      // In a real implementation, you would verify the OTP first
+      // const isValidOtp = await verifyOtp(jwtPayload.id, newPhoneNumber, otp);
+      // if (!isValidOtp) {
+      //   return c.json({ error: 'Invalid OTP code' }, 401);
+      // }
+
+      // Update the user's phone number in the database
+      const userData: Partial<User> = { phoneNumber: newPhoneNumber };
+      const updatedUser = await db().updateUser(jwtPayload.id, userData);
+
+      if (!updatedUser) {
+        Logger.warn(`Update phone after verification failed: User not found: ${jwtPayload.id}`);
+        return c.json({ error: 'User not found' }, 404);
+      }
+
+      Logger.info(`Phone number updated successfully for user: ${jwtPayload.id}, newPhoneNumber: ${newPhoneNumber}`);
+      return c.json({ message: 'Phone number updated successfully' });
+    } catch (error) {
+      Logger.error('Update phone after verification error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async getAllUsers(c: Context) {
+    try {
+      const users = await db().getAllUsers();
+      
+      return c.json(users, 200);
+    } catch (error) {
+      Logger.error('Get all users error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async getUserById(c: Context) {
+    try {
+      const { id } = c.req.param();
+      
+      const user = await db().getUserById(id);
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      return c.json(user, 200);
+    } catch (error) {
+      Logger.error('Get user by ID error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async createUser(c: Context) {
+    try {
+      const userData = await c.req.json();
+      
+      // In a real implementation, you'd validate the user data and hash the password
+      const newUser = await db().createUser(userData);
+      
+      // Return user without sensitive data
+      const { password, ...safeUser } = newUser as any;
+      
+      return c.json(safeUser, 201);
+    } catch (error) {
+      Logger.error('Create user error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  static async deleteUser(c: Context) {
+    try {
+      const { id } = c.req.param();
+      
+      const user = await db().getUserById(id);
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      // Get user before deleting so we can return it in the response
+      const userToReturn = {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        name: user.name,
+        createdAt: user.createdAt,
+        phoneNumber: user.phoneNumber
+      };
+      
+      await db().deleteUser(id);
+      
+      return c.json({ 
+        message: 'User deleted successfully',
+        user: userToReturn
+      }, 200);
+    } catch (error) {
+      Logger.error('Delete user error:', { error: (error as Error).message, stack: (error as Error).stack });
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 }

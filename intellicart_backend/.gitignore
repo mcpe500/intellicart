@@ -7,13 +7,8 @@ yarn-error.log*
 .bun-error.log*
 
 # Environment variables
-.env
-.env.local
-.env.development
-.env.production
-.env.test
-.env.testing
-.env.*
+.env*
+!.env.example
 
 # Logs
 *.log
@@ -130,3 +125,6 @@ output/
 
 # Windows
 Thumbs.db
+
+# Database files
+src/database/db.json

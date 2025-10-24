@@ -55,7 +55,7 @@ class SplashScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white.withOpacity(0.8),
+                  color: Colors.white.withAlpha((255 * 0.8).round()),
                 ),
               ),
             ),
@@ -78,7 +78,7 @@ class SplashScreen extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(10.0),
                     child: LinearProgressIndicator(
-                      backgroundColor: Colors.white.withOpacity(0.2),
+                      backgroundColor: Colors.white.withAlpha((255 * 0.2).round()),
                       valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                       minHeight: 8.0,
                     ),
@@ -91,4 +91,7 @@ class SplashScreen extends StatelessWidget {
       ),
     );
   }
+
+
 }
+

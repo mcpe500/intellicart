@@ -11,11 +11,22 @@
  * @module userRoutes
  * @description API routes for user management
  * @author Intellicart Team
- * @version 1.0.0
+ * @version 4.0.0
  */
 
-import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { OpenAPIHono, createRoute } from '@hono/zod-openapi';
 import { UserController } from '../controllers/UserController';
+import { 
+  UserSchema, 
+  CreateUserSchema, 
+  UpdateUserSchema, 
+  UpdateUserRequestSchema,
+  UpdateUserResponseSchema,
+  ErrorSchema, 
+  DeleteUserResponseSchema, 
+  UserIdParamSchema 
+} from '../schemas/UserSchemas';
+import { authMiddleware } from '../middleware/auth';
 
 /**
  * Create a new OpenAPIHono instance for user routes
@@ -24,93 +35,8 @@ import { UserController } from '../controllers/UserController';
 const userRoutes = new OpenAPIHono();
 
 /**
- * Zod schema defining the structure of a User object
- * This schema is used for both request and response validation
- */
-const UserSchema = z.object({
-  // Unique identifier for the user (auto-generated)
-  id: z.number().openapi({ 
-    example: 1,
-    description: 'Unique identifier for the user (auto-generated)'
-  }),
-  
-  // User's full name (required)
-  name: z.string().openapi({ 
-    example: 'John Doe',
-    description: 'User\'s full name'
-  }),
-  
-  // User's email address (required, validated as email format)
-  email: z.string().email().openapi({ 
-    example: 'john@example.com',
-    description: 'User\'s email address (must be valid email format)'
-  }),
-  
-  // User's age (optional)
-  age: z.number().min(0).optional().openapi({ 
-    example: 30,
-    description: 'User\'s age (optional, minimum value: 0)'
-  }),
-  
-  // Creation timestamp (auto-generated)
-  createdAt: z.string().datetime().openapi({ 
-    example: new Date().toISOString(),
-    description: 'Timestamp when the user was created'
-  }),
-});
-
-/**
- * Zod schema defining the structure for creating a new user
- * Used for validation of POST /api/users request body
- */
-const CreateUserSchema = z.object({
-  // User's full name (required, minimum length: 1 character)
-  name: z.string().min(1, { message: 'Name is required' }).openapi({ 
-    example: 'John Doe',
-    description: 'User\'s full name (required, minimum 1 character)'
-  }),
-  
-  // User's email address (required, validated as email format)
-  email: z.string().email({ message: 'Must be a valid email address' }).openapi({ 
-    example: 'john@example.com',
-    description: 'User\'s email address (required, must be valid format)'
-  }),
-  
-  // User's age (optional, minimum value: 0)
-  age: z.number().min(0, { message: 'Age must be 0 or greater' }).optional().openapi({ 
-    example: 30,
-    description: 'User\'s age (optional, minimum value: 0)'
-  }),
-});
-
-/**
- * Zod schema defining the structure for updating an existing user
- * Used for validation of PUT /api/users/:id request body
- * All fields are optional to allow partial updates
- */
-const UpdateUserSchema = z.object({
-  // User's full name (optional, minimum length: 1 character if provided)
-  name: z.string().min(1, { message: 'Name must be at least 1 character' }).optional().openapi({ 
-    example: 'John Doe',
-    description: 'User\'s full name (optional, minimum 1 character if provided)'
-  }),
-  
-  // User's email address (optional, validated as email format if provided)
-  email: z.string().email({ message: 'Must be a valid email address' }).optional().openapi({ 
-    example: 'john@example.com',
-    description: 'User\'s email address (optional, must be valid format if provided)'
-  }),
-  
-  // User's age (optional, minimum value: 0 if provided)
-  age: z.number().min(0, { message: 'Age must be 0 or greater' }).optional().openapi({ 
-    example: 30,
-    description: 'User\'s age (optional, minimum value: 0 if provided)'
-  }),
-});
-
-/**
  * Route: GET /api/users
- * Description: Retrieve all users from the database
+ * Description: Retrieve all users from the database (not implemented for security reasons)
  * 
  * Request:
  * - Method: GET
@@ -120,13 +46,14 @@ const UpdateUserSchema = z.object({
  * - Body: None
  * 
  * Response:
- * - Status: 200 OK
+ * - Status: 404 Not Found (endpoint not available for privacy reasons)
  * - Content-Type: application/json
- * - Body: Array of User objects
+ * - Body: Error object
  */
 const getAllUsersRoute = createRoute({
   method: 'get',
   path: '/users',
+  tags: ['Users'],
   // Documentation for the successful response
   responses: {
     200: {
@@ -134,7 +61,16 @@ const getAllUsersRoute = createRoute({
       content: {
         'application/json': {
           // Response body schema
-          schema: z.array(UserSchema),
+          schema: UserSchema.array(),
+        },
+      },
+    },
+    404: {
+      description: 'Endpoint not available for privacy reasons',
+      content: {
+        'application/json': {
+          // Error response schema
+          schema: ErrorSchema,
         },
       },
     },
@@ -150,8 +86,8 @@ userRoutes.openapi(getAllUsersRoute, UserController.getAllUsers);
  * 
  * Request:
  * - Method: GET
- * - Path: /users/{id}
- * - Parameters: id (number, required)
+ * - Path: /{id}
+ * - Parameters: id (string, required)
  * - Query: None
  * - Body: None
  * 
@@ -166,20 +102,11 @@ userRoutes.openapi(getAllUsersRoute, UserController.getAllUsers);
  */
 const getUserByIdRoute = createRoute({
   method: 'get',
-  path: '/users/{id}',
+  path: '/{id}',
+  tags: ['Users'],
   // Validate request parameters
   request: {
-    params: z.object({
-      // ID parameter: string that matches numeric pattern, transformed to number
-      id: z
-        .string()
-        .regex(/^\d+$/, { message: 'ID must be a positive number' })
-        .transform(Number)
-        .openapi({ 
-          example: 1,
-          description: 'Unique identifier of the user to retrieve'
-        }),
-    }),
+    params: UserIdParamSchema,
   },
   // Documentation for possible responses
   responses: {
@@ -197,12 +124,7 @@ const getUserByIdRoute = createRoute({
       content: {
         'application/json': {
           // Error response schema
-          schema: z.object({
-            error: z.string().openapi({ 
-              example: 'User not found',
-              description: 'Error message explaining why the request failed'
-            }),
-          }),
+          schema: ErrorSchema,
         },
       },
     },
@@ -231,6 +153,7 @@ userRoutes.openapi(getUserByIdRoute, UserController.getUserById);
 const createUserRoute = createRoute({
   method: 'post',
   path: '/users',
+  tags: ['Users'],
   // Validate request body
   request: {
     body: {
@@ -253,6 +176,22 @@ const createUserRoute = createRoute({
         },
       },
     },
+    400: {
+      description: 'Invalid input',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+    409: {
+      description: 'User already exists',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
   },
 });
 
@@ -261,45 +200,32 @@ userRoutes.openapi(createUserRoute, UserController.createUser);
 
 /**
  * Route: PUT /api/users/:id
- * Description: Update an existing user by ID (full update)
+ * Description: Update an existing user by ID (full update) - Not supported for security reasons
  * 
  * Request:
  * - Method: PUT
- * - Path: /users/{id}
- * - Parameters: id (number, required)
+ * - Path: /{id}
+ * - Parameters: id (string, required)
  * - Query: None
  * - Body: User update object (validated against UpdateUserSchema)
  * 
  * Response:
- * - Status: 200 OK (user updated successfully)
- * - Content-Type: application/json
- * - Body: Updated User object
- * 
- * - Status: 404 Not Found (user not found)
+ * - Status: 400 Bad Request (not supported through this endpoint)
  * - Content-Type: application/json
  * - Body: Error object
  */
 const updateUserRoute = createRoute({
   method: 'put',
-  path: '/users/{id}',
+  path: '/{id}',
+  tags: ['Users'],
   // Validate request parameters and body
   request: {
-    params: z.object({
-      // ID parameter: string that matches numeric pattern, transformed to number
-      id: z
-        .string()
-        .regex(/^\d+$/, { message: 'ID must be a positive number' })
-        .transform(Number)
-        .openapi({ 
-          example: 1,
-          description: 'Unique identifier of the user to update'
-        }),
-    }),
+    params: UserIdParamSchema,
     body: {
       content: {
         'application/json': {
-          // Request body schema
-          schema: UpdateUserSchema,
+          // Request body schema (using new update schema)
+          schema: UpdateUserRequestSchema,
         },
       },
     },
@@ -311,7 +237,32 @@ const updateUserRoute = createRoute({
       content: {
         'application/json': {
           // Response body schema
-          schema: UserSchema,
+          schema: UpdateUserResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: 'Invalid user data provided',
+      content: {
+        'application/json': {
+          // Error response schema
+          schema: ErrorSchema,
+        },
+      },
+    },
+    401: {
+      description: 'User not authorized to update this account',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
+        },
+      },
+    },
+    403: {
+      description: 'User not authorized to update this account',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
         },
       },
     },
@@ -320,36 +271,42 @@ const updateUserRoute = createRoute({
       content: {
         'application/json': {
           // Error response schema
-          schema: z.object({
-            error: z.string().openapi({ 
-              example: 'User not found',
-              description: 'Error message explaining why the request failed'
-            }),
-          }),
+          schema: ErrorSchema,
+        },
+      },
+    },
+    422: {
+      description: 'User validation failed',
+      content: {
+        'application/json': {
+          schema: ErrorSchema,
         },
       },
     },
   },
 });
 
+// Apply auth middleware to the update user route
+userRoutes.use('/users/:id', authMiddleware);
+
 // Register the route with its corresponding controller method
 userRoutes.openapi(updateUserRoute, UserController.updateUser);
 
 /**
  * Route: DELETE /api/users/:id
- * Description: Delete an existing user by ID
+ * Description: Delete an existing user by ID - Not supported for security reasons
  * 
  * Request:
  * - Method: DELETE
- * - Path: /users/{id}
- * - Parameters: id (number, required)
+ * - Path: /{id}
+ * - Parameters: id (string, required)
  * - Query: None
  * - Body: None
  * 
  * Response:
- * - Status: 200 OK (user deleted successfully)
+ * - Status: 400 Bad Request (not supported for security reasons)
  * - Content-Type: application/json
- * - Body: Success message and deleted user object
+ * - Body: Error object
  * 
  * - Status: 404 Not Found (user not found)
  * - Content-Type: application/json
@@ -357,20 +314,11 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
  */
 const deleteUserRoute = createRoute({
   method: 'delete',
-  path: '/users/{id}',
+  path: '/{id}',
+  tags: ['Users'],
   // Validate request parameters
   request: {
-    params: z.object({
-      // ID parameter: string that matches numeric pattern, transformed to number
-      id: z
-        .string()
-        .regex(/^\d+$/, { message: 'ID must be a positive number' })
-        .transform(Number)
-        .openapi({ 
-          example: 1,
-          description: 'Unique identifier of the user to delete'
-        }),
-    }),
+    params: UserIdParamSchema,
   },
   // Documentation for possible responses
   responses: {
@@ -379,13 +327,16 @@ const deleteUserRoute = createRoute({
       content: {
         'application/json': {
           // Response body schema
-          schema: z.object({
-            message: z.string().openapi({ 
-              example: 'User deleted successfully',
-              description: 'Confirmation message'
-            }),
-            user: UserSchema, // Return the deleted user object
-          }),
+          schema: DeleteUserResponseSchema,
+        },
+      },
+    },
+    400: {
+      description: 'User deletion not supported for security reasons',
+      content: {
+        'application/json': {
+          // Error response schema
+          schema: ErrorSchema,
         },
       },
     },
@@ -394,12 +345,7 @@ const deleteUserRoute = createRoute({
       content: {
         'application/json': {
           // Error response schema
-          schema: z.object({
-            error: z.string().openapi({ 
-              example: 'User not found',
-              description: 'Error message explaining why the request failed'
-            }),
-          }),
+          schema: ErrorSchema,
         },
       },
     },

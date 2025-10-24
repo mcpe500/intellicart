@@ -1,7 +1,8 @@
 // lib/models/product.dart
-import 'package:intellicart/models/review.dart'; // Import the new Review model
+import 'package:intellicart_frontend/models/review.dart'; // Import the new Review model
 
 class Product {
+  final String id;
   final String name;
   final String description;
   final String price;
@@ -10,6 +11,7 @@ class Product {
   final List<Review> reviews; // A list of reviews for the product
 
   Product({
+    required this.id,
     required this.name,
     required this.description,
     required this.price,
@@ -17,4 +19,44 @@ class Product {
     required this.imageUrl,
     required this.reviews, // Make it required
   });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    List<Review> reviews = [];
+    if (json['reviews'] != null) {
+      reviews = (json['reviews'] as List)
+          .map((reviewJson) => Review.fromJson(reviewJson))
+          .toList();
+    }
+
+    // Handle both String and double types for price fields
+    String formatPrice(dynamic priceValue) {
+      if (priceValue == null) return '';
+      if (priceValue is String) return priceValue;
+      if (priceValue is double) return priceValue.toString();
+      if (priceValue is int) return priceValue.toString();
+      return priceValue.toString();
+    }
+
+    return Product(
+      id: json['id'] ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: formatPrice(json['price']),
+      originalPrice: formatPrice(json['originalPrice']),
+      imageUrl: json['imageUrl'] ?? '',
+      reviews: reviews,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'originalPrice': originalPrice,
+      'imageUrl': imageUrl,
+      'reviews': reviews.map((review) => review.toJson()).toList(),
+    };
+  }
 }

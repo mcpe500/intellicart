@@ -1,8 +1,21 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/review.dart'; // Ensure Review model is imported
-import 'package:intellicart/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
+
+
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intellicart_frontend/models/product.dart';
+import 'package:intellicart_frontend/models/review.dart';
+import 'package:intellicart_frontend/bloc/cart/cart_bloc.dart';
+import 'package:intellicart_frontend/bloc/wishlist/wishlist_bloc.dart';
+import 'package:intellicart_frontend/data/models/cart_item.dart';
+import 'package:intellicart_frontend/data/models/wishlist_item.dart';
+import 'package:intellicart_frontend/data/datasources/api_service.dart';
+import 'package:intellicart_frontend/presentation/bloc/buyer/review_bloc.dart';
+import 'package:intellicart_frontend/utils/service_locator.dart';
+
+import 'package:intellicart_frontend/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
+
+
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
@@ -17,6 +30,61 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   int _quantity = 1; // State variable for the quantity
+
+
+  List<Review> _reviews = [];
+  bool _isLoadingReviews = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      final page = _pageController.page;
+      if (page != null) {
+        setState(() {
+          _currentPage = page.round();
+        });
+      }
+    });
+    
+    // Load reviews when the page is initialized
+    _loadProductReviews();
+  }
+
+  // Function to load product reviews
+  Future<void> _loadProductReviews() async {
+    try {
+      // Use the shared ApiService instance from the service locator
+      final apiService = serviceLocator.apiService;
+      
+      // First, make sure the token is loaded in the shared service
+      final token = await serviceLocator.authRepository.getAuthToken();
+      if (token != null && token.isNotEmpty) {
+        apiService.setToken(token);
+      }
+      
+      // Ensure the service is ready before making the request
+      // await apiService.ensureInitialized(); // Commenting out as ensureInitialized is not a method of ApiService
+      
+      final reviews = await apiService.getProductReviews(widget.product.id);
+      if (mounted) {
+        setState(() {
+          _reviews = reviews;
+          _isLoadingReviews = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingReviews = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading reviews: $e')),
+        );
+      }
+    }
+  }
+
 
   // Function to increment quantity
   void _incrementQuantity() {
@@ -34,18 +102,8 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _pageController.addListener(() {
-      final page = _pageController.page;
-      if (page != null) {
-        setState(() {
-          _currentPage = page.round();
-        });
-      }
-    });
-  }
+
+
 
   @override
   void dispose() {
@@ -73,42 +131,41 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
     return Scaffold(
       backgroundColor: pageBgColor,
+
       // The body is wrapped in a Stack to allow for the sticky bottom bar
+
+      appBar: AppBar(
+        backgroundColor: pageBgColor,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: lightTextColor),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Product Details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: primaryTextColor,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share, color: lightTextColor),
+            onPressed: () {},
+          ),
+        ],
+      ),
+
       body: Stack(
         children: [
           // Main scrollable content
           SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 160), // Add bottom padding to account for bottom bar
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Custom App Bar section (using a Padding and Row instead of a real AppBar)
-                Padding(
-                  padding: EdgeInsets.only(
-                      top: MediaQuery.of(context).padding.top,
-                      left: 4.0,
-                      right: 4.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back, color: lightTextColor),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Text(
-                        'Product Details',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: primaryTextColor,
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.share, color: lightTextColor),
-                        onPressed: () {},
-                      ),
-                    ],
-                  ),
-                ),
 
                 // Image Carousel
                 Padding(
@@ -125,8 +182,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(12.0),
                               child: Image.network(
+
                                 productImages[index],
                                 fit: BoxFit.cover,
+
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: Colors.grey[200],
+                                    child: const Center(
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  );
+                                },
+
                                 errorBuilder: (context, error, stackTrace) =>
                                 const Center(
                                     child: Icon(Icons.broken_image)),
@@ -150,9 +219,11 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 width: _currentPage == index ? 10.0 : 8.0,
                                 height: _currentPage == index ? 10.0 : 8.0,
                                 decoration: BoxDecoration(
+
                                   color: _currentPage == index
                                       ? Colors.white
                                       : Colors.white.withOpacity(0.5),
+
                                   shape: BoxShape.circle,
                                 ),
                               );
@@ -185,15 +256,32 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                       horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
+
                       _buildStarRating(4.5, starColor),
                       const SizedBox(width: 8.0),
-                      const Text(
-                        '4.5 (120 Reviews)',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: secondaryTextColor,
-                        ),
+                      Row(
+                        children: [
+                          Builder(
+                            builder: (context) {
+                              final avgRating = _calculateAverageRating();
+                              return _buildStarRating(avgRating, starColor);
+                            }
+                          ),
+                          const SizedBox(width: 8.0),
+                          Builder(
+                            builder: (context) {
+                              final avgRating = _calculateAverageRating();
+                              return Text(
+                                '${avgRating.toStringAsFixed(1)} (${_reviews.length} Reviews)',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: secondaryTextColor,
+                                ),
+                              );
+                            }
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -273,17 +361,21 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {
-                              // Navigate to the AddReviewPage
-                              Navigator.push(
+                            onPressed: () async {
+                              // Navigate to the AddReviewPage and await result
+                              final result = await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => AddReviewPage(
-                                    // We'll use the product name as a stand-in for ID
-                                    productId: widget.product.name,
+                                    productId: widget.product.id,
                                   ),
                                 ),
                               );
+                              
+                              // If a new review was submitted, refresh the reviews list
+                              if (result != null) {
+                                _loadProductReviews(); // Refresh the reviews
+                              }
                             },
                             child: const Text(
                               'Write a Review', // <-- CHANGED TEXT
@@ -297,8 +389,17 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ],
                       ),
                       const SizedBox(height: 8.0),
-                      // Build reviews from the product model
-                      if (widget.product.reviews.isEmpty)
+
+                      // Build reviews from fetched reviews (always use fetched data)
+                      if (_isLoadingReviews)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      else if (_reviews.isEmpty)
+
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.0),
                           child: Text(
@@ -310,11 +411,12 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: widget.product.reviews.length,
+                          itemCount: _reviews.length,
                           separatorBuilder: (context, index) =>
                           const SizedBox(height: 12.0),
                           itemBuilder: (context, index) {
-                            final review = widget.product.reviews[index];
+                            final review = _reviews[index];
+
                             return _buildReviewCard(
                               review.title,
                               review.reviewText,
@@ -328,20 +430,26 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   ),
                 ),
 
+
                 // Spacer to prevent content from being hidden by the bottom bar
                 const SizedBox(height: 120),
+
+
               ],
             ),
           ),
 
+
           // Sticky Bottom "Add to Cart" Bar
+
+          // Fixed Bottom "Add to Cart" Bar with Wishlist button
+
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
             child: Container(
-              padding: EdgeInsets.fromLTRB(16.0, 12.0, 16.0,
-                  MediaQuery.of(context).padding.bottom + 12.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 16.0),
               decoration: BoxDecoration(
                 color: pageBgColor,
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
@@ -352,57 +460,127 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   )
                 ],
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.remove, color: accentColor),
-                          onPressed: _decrementQuantity,
+                  // Quantity controls row
+                  Row(
+                    children: [
+                      OutlinedButton(
+                        onPressed: _decrementQuantity,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(6),
+                          side: BorderSide(color: accentColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        Text(
+                        child: const Icon(Icons.remove, size: 16),
+                      ),
+                      Container(
+                        width: 40,
+                        alignment: Alignment.center,
+                        child: Text(
                           '$_quantity',
                           style: const TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: primaryTextColor),
+                              color: Color(0xFF181411)),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.add, color: accentColor),
-                          onPressed: _incrementQuantity,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16.0),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        print(
-                            'Added ${widget.product.name} (Qty: $_quantity) to cart.');
-                        // Here you would typically call a state management provider
-                        // or bloc to actually add the item to the cart.
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: accentColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16.0),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        elevation: 2,
                       ),
-                      child: const Text(
-                        'Add to Cart',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      OutlinedButton(
+                        onPressed: _incrementQuantity,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.all(6),
+                          side: BorderSide(color: accentColor),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
+                        child: const Icon(Icons.add, size: 16),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            // Add product to persistent cart
+                            final cartItem = CartItem(
+                              productId: widget.product.id,
+                              productName: widget.product.name,
+                              productDescription: widget.product.description,
+                              productPrice: widget.product.price,
+                              productImageUrl: widget.product.imageUrl ?? '',
+                              quantity: _quantity,
+                            );
+                            
+                            context.read<CartBloc>().add(AddToCart(cartItem));
+                            
+                            // Show success message
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Added ${widget.product.name} (Qty: $_quantity) to cart!'),
+                                backgroundColor: accentColor,
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: accentColor,
+                            padding: const EdgeInsets.symmetric(vertical: 12.0),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: const Text(
+                            'Add to Cart',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Wishlist button below
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      // Add product to wishlist
+                      final wishlistItem = WishlistItem(
+                        addedAt: DateTime.now(), // Add the missing required parameter
+                        productId: widget.product.id,
+                        productName: widget.product.name,
+                        productDescription: widget.product.description,
+                        productPrice: widget.product.price,
+                        productImageUrl: widget.product.imageUrl ?? '',
+                      );
+                      
+                      context.read<WishlistBloc>().add(AddToWishlist(wishlistItem));
+                      
+                      // Show success message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Added ${widget.product.name} to wishlist!'),
+                          backgroundColor: accentColor,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.favorite_border, color: Color(0xFFD97706), size: 16),
+                    label: const Text(
+                      'Add to Wishlist',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFFD97706),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFD97706)),
+                      padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+
                       ),
                     ),
                   ),
@@ -467,4 +645,20 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
       ),
     );
   }
+
+
+  
+  // Helper function to calculate average rating
+  double _calculateAverageRating() {
+    if (_reviews.isEmpty) {
+      return 0.0; // Return 0 if no reviews
+    }
+    
+    double totalRating = 0.0;
+    for (final review in _reviews) {
+      totalRating += review.rating.toDouble();
+    }
+    return totalRating / _reviews.length;
+  }
+
 }

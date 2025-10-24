@@ -13,5 +13,10 @@
     ],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
-  }
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "tests/module-declarations.d.ts"
+  ]
 }
