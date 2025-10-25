@@ -3,9 +3,19 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class OrderApiService {
-  static const String _baseUrl = 'http://localhost:3000/api/orders'; // Update with your actual backend URL
+  static String? _baseUrl;
+
+  static Future<String> getBaseUrl() async {
+    if (_baseUrl == null) {
+      await dotenv.load(fileName: ".env");
+      final apiBaseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
+      _baseUrl = '$apiBaseUrl/api/orders';
+    }
+    return _baseUrl!;
+  }
 
   // Helper method to get headers with authorization token
   Future<Map<String, String>> _getHeaders() async {
@@ -23,8 +33,9 @@ class OrderApiService {
 
   Future<List<Order>> getSellerOrders() async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.get(
-        Uri.parse(_baseUrl),  // Changed from '$_baseUrl/orders' to just _baseUrl
+        Uri.parse(baseUrl),
         headers: await _getHeaders(),
       );
 
@@ -41,8 +52,9 @@ class OrderApiService {
 
   Future<void> updateOrderStatus(String orderId, String status) async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.put(
-        Uri.parse('$_baseUrl/$orderId/status'),  // Changed from '$_baseUrl/orders/$orderId/status' to '$_baseUrl/$orderId/status'
+        Uri.parse('$baseUrl/$orderId/status'),
         headers: await _getHeaders(),
         body: jsonEncode(<String, String>{
           'status': status,

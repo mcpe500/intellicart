@@ -1,7 +1,9 @@
 // lib/presentation/screens/core/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/main.dart'; // For AppInitializer
+import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
+import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
+import 'package:intellicart/presentation/screens/auth_wrapper.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/screens/core/login_page.dart'; // For LoginPage
 import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart'; // <-- ADD THIS IMPORT
@@ -121,12 +123,14 @@ class ProfilePage extends StatelessWidget {
                 primaryTextColor: primaryTextColor,
                 accentColor: accentColor,
                 onTap: () {
+                  // Dispatch logout event to the AuthBloc
+                  context.read<AuthBloc>().add(const AuthLogoutRequested());
                   // Dispatch event to change mode back to buyer
                   context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
                   // Navigate and replace the current screen
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => const AppInitializer()),
+                    MaterialPageRoute(builder: (context) => const AuthWrapper()),
                     (route) => false,
                   );
                 },

@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "email": "a@gmail.com",
+      "password": "$2b$10$.zw5FqNNMb3fB.Gao.vWIOO64rEXkFa6AIJyy/NdU/ZS/OEoKZdzO",
+      "name": "a",
+      "role": "buyer",
+      "createdAt": "2025-10-25T14:49:44.646Z",
+      "id": 1
+    }
+  ],
+  "ids": []
+}

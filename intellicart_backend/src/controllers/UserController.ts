@@ -9,7 +9,7 @@
  * - Deleting users
  * 
  * All methods are static for easy access from route handlers.
- * The controller uses a mock in-memory database for demonstration purposes.
+ * The controller uses the DatabaseManager for data persistence.
  * 
  * @class UserController
  * @description Business logic layer for user operations
@@ -19,30 +19,11 @@
 
 import { Context } from 'hono';
 import { z } from 'zod';
-
-/**
- * Mock in-memory database for users
- * In a real application, this would be replaced with a persistent database
- */
-let users: Array<{
-  id: number;
-  name: string;
-  email: string;
-  age?: number;
-  createdAt: string;
-}> = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    age: 30,
-    createdAt: new Date().toISOString(),
-  },
-];
+import { dbManager } from '../database/Config';
 
 export class UserController {
   /**
-   * Retrieve all users from the mock database
+   * Retrieve all users from the database
    * 
    * @static
    * @async
@@ -62,8 +43,14 @@ export class UserController {
    * ]
    */
   static async getAllUsers(c: Context) {
-    // Return all users in the mock database
-    return c.json(users);
+    try {
+      const db = dbManager.getDatabase<any>();
+      const users = await db.findAll('users');
+      return c.json(users);
+    } catch (error) {
+      console.error('Error retrieving all users:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 
   /**
@@ -90,23 +77,25 @@ export class UserController {
    * }
    */
   static async getUserById(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
-    
-    // Find user in mock database by ID
-    const user = users.find(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (!user) {
-      return c.json({ error: 'User not found' }, 404);
+    try {
+      const id = Number(c.req.param('id'));
+      
+      const db = dbManager.getDatabase<any>();
+      const user = await db.findById('users', id);
+      
+      if (!user) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      return c.json(user);
+    } catch (error) {
+      console.error('Error retrieving user by ID:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    // Return found user
-    return c.json(user);
   }
 
   /**
-   * Create a new user in the mock database
+   * Create a new user in the database
    * 
    * @static
    * @async
@@ -131,31 +120,37 @@ export class UserController {
    * }
    */
   static async createUser(c: Context) {
-    // Extract validated request body from context
-    // The body has already been validated against Zod schema in route definition
-    const body = c.req.valid('json') as {
-      name: string;
-      email: string;
-      age?: number;
-    };
-    
-    // Generate new user object with auto-incremented ID and creation timestamp
-    const newUser = {
-      // Calculate new ID based on current highest ID in database
-      id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-      ...body, // Spread validated request body into new user object
-      createdAt: new Date().toISOString(), // Add creation timestamp
-    };
-    
-    // Add new user to mock database
-    users.push(newUser);
-    
-    // Return created user with 201 status (Created)
-    return c.json(newUser, 201);
+    try {
+      const body = c.req.valid('json') as {
+        name: string;
+        email: string;
+        age?: number;
+      };
+      
+      const db = dbManager.getDatabase<any>();
+      
+      // Check if user already exists
+      const existingUser = await db.findOne('users', { email: body.email });
+      if (existingUser) {
+        return c.json({ error: 'User with this email already exists' }, 409);
+      }
+      
+      const newUser = {
+        ...body,
+        createdAt: new Date().toISOString(),
+      };
+      
+      const createdUser = await db.create('users', newUser);
+      
+      return c.json(createdUser, 201);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 
   /**
-   * Update an existing user in the mock database
+   * Update an existing user in the database
    * 
    * @static
    * @async
@@ -184,33 +179,46 @@ export class UserController {
    * }
    */
   static async updateUser(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
-    
-    // Extract validated request body from context
-    const body = c.req.valid('json') as {
-      name?: string;
-      email?: string;
-      age?: number;
-    };
-    
-    // Find index of user in mock database by ID
-    const index = users.findIndex(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (index === -1) {
-      return c.json({ error: 'User not found' }, 404);
+    try {
+      const id = Number(c.req.param('id'));
+      
+      const body = c.req.valid('json') as {
+        name?: string;
+        email?: string;
+        age?: number;
+      };
+      
+      const db = dbManager.getDatabase<any>();
+      
+      // Check if user exists
+      const existingUser = await db.findById('users', id);
+      if (!existingUser) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      // Check if email is being updated and already exists for another user
+      if (body.email && body.email !== existingUser.email) {
+        const duplicateUser = await db.findOne('users', { email: body.email });
+        if (duplicateUser) {
+          return c.json({ error: 'User with this email already exists' }, 409);
+        }
+      }
+      
+      const updatedUser = await db.update('users', id, body);
+      
+      if (!updatedUser) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      return c.json(updatedUser);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    // Update user object by merging existing data with validated request body
-    users[index] = { ...users[index], ...body };
-    
-    // Return updated user
-    return c.json(users[index]);
   }
 
   /**
-   * Delete a user from the mock database
+   * Delete a user from the database
    * 
    * @static
    * @async
@@ -236,24 +244,30 @@ export class UserController {
    * }
    */
   static async deleteUser(c: Context) {
-    // Extract user ID from request parameters and convert to number
-    const id = Number(c.req.param('id'));
-    
-    // Find index of user in mock database by ID
-    const index = users.findIndex(u => u.id === id);
-    
-    // Return 404 if user not found
-    if (index === -1) {
-      return c.json({ error: 'User not found' }, 404);
+    try {
+      const id = Number(c.req.param('id'));
+      
+      const db = dbManager.getDatabase<any>();
+      
+      const deletedUser = await db.findById('users', id);
+      
+      if (!deletedUser) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+      
+      const deleted = await db.delete('users', id);
+      
+      if (deleted) {
+        return c.json({ 
+          message: 'User deleted successfully', 
+          user: deletedUser 
+        });
+      } else {
+        return c.json({ error: 'Failed to delete user' }, 500);
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    // Remove user from mock database and store the deleted user
-    const deletedUser = users.splice(index, 1)[0];
-    
-    // Return success message and deleted user object
-    return c.json({ 
-      message: 'User deleted successfully', 
-      user: deletedUser 
-    });
   }
 }

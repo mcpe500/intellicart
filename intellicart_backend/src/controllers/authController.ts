@@ -7,7 +7,7 @@
  * - Token generation and validation
  * 
  * All methods are static for easy access from route handlers.
- * The controller uses a mock in-memory database for demonstration purposes.
+ * The controller uses the DatabaseManager for user data persistence.
  * 
  * @class AuthController
  * @description Business logic layer for authentication operations
@@ -18,34 +18,8 @@
 import { Context } from 'hono';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
-// Mock in-memory database for users
-// In a real application, this would be replaced with a persistent database
-let users: Array<{
-  id: number;
-  name: string;
-  email: string;
-  password: string; // Hashed password
-  role: string; // 'buyer' or 'seller'
-  createdAt: string;
-}> = [
-  {
-    id: 1,
-    name: 'John Buyer',
-    email: 'buyer@example.com',
-    password: '$2a$10$8K1p/a0d44LpQqK4k8K1pOYqK4k8K1pOYqK4k8K1pOYqK4k8K1pOYq', // bcrypt hash for 'password123'
-    role: 'buyer',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 2,
-    name: 'Jane Seller',
-    email: 'seller@example.com',
-    password: '$2a$10$8K1p/a0d44LpQqK4k8K1pOYqK4k8K1pOYqK4k8K1pOYqK4k8K1pOYq', // bcrypt hash for 'password123'
-    role: 'seller',
-    createdAt: new Date().toISOString(),
-  },
-];
+import { dbManager } from '../database/Config';
+import { logger } from '../utils/logger';
 
 // In-memory "database" for storing tokens (in production, use Redis or database)
 const activeTokens: Map<string, { userId: number, email: string, exp: number }> = new Map();
@@ -81,62 +55,72 @@ export class AuthController {
    * }
    */
   static async register(c: Context) {
-    // Extract validated request body from context
-    // The body has already been validated against Zod schema in route definition
-    const body = c.req.valid('json') as {
-      email: string;
-      password: string;
-      name: string;
-      role: string;
-    };
-    
-    const { email, password, name, role } = body;
+    try {
+      const body = c.req.valid('json') as {
+        email: string;
+        password: string;
+        name: string;
+        role: string;
+      };
+      
+      const { email, password, name, role } = body;
 
-    // Check if user already exists
-    const existingUser = users.find(u => u.email === email);
-    if (existingUser) {
-      return c.json({ error: 'User with this email already exists' }, 409);
+      // Log the registration attempt
+      logger.info('Registration attempt received', { email, ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.header('x-forwarded-host') || c.req.header('x-forwarded-server') || c.req.header('x-forwarded-proto') || c.req.header('x-forwarded-port') || c.req.header('x-forwarded-by'), userAgent: c.req.header('user-agent') });
+
+      const db = dbManager.getDatabase<any>();
+
+      // Check if user already exists
+      const existingUser = await db.findOne('users', { email });
+      if (existingUser) {
+        logger.warn('Registration failed - user already exists', { email });
+        return c.json({ error: 'User with this email already exists' }, 409);
+      }
+
+      // Hash the password
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Create new user object
+      const newUser = {
+        email,
+        password: hashedPassword,
+        name,
+        role: role || 'buyer', // default to 'buyer' if no role provided
+        createdAt: new Date().toISOString(), // Add creation timestamp
+      };
+
+      const createdUser = await db.create('users', newUser);
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: createdUser.id, email: createdUser.email },
+        process.env.JWT_SECRET || 'default_secret',
+        { expiresIn: '24h' }
+      );
+
+      // Add token to active tokens map
+      const decodedToken = jwt.decode(token) as { exp: number };
+      activeTokens.set(token, {
+        userId: createdUser.id,
+        email: createdUser.email,
+        exp: decodedToken.exp
+      });
+
+      // Return user data and token (without password)
+      const { password: _, ...userWithoutPassword } = createdUser;
+      
+      // Log successful registration
+      logger.info('User registered successfully', { userId: createdUser.id, email: createdUser.email });
+      return c.json({ 
+        user: userWithoutPassword, 
+        token 
+      }, 201);
+    } catch (error) {
+      logger.error('Error during user registration:', { error: error instanceof Error ? error.message : 'Unknown error', email: body?.email });
+      console.error('Error during user registration:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-
-    // Hash the password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Generate new user object with auto-incremented ID and creation timestamp
-    const newUser = {
-      // Calculate new ID based on current highest ID in database
-      id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
-      email,
-      password: hashedPassword,
-      name,
-      role: role || 'buyer', // default to 'buyer' if no role provided
-      createdAt: new Date().toISOString(), // Add creation timestamp
-    };
-
-    // Add new user to mock database
-    users.push(newUser);
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: newUser.id, email: newUser.email },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '24h' }
-    );
-
-    // Add token to active tokens map
-    const decodedToken = jwt.decode(token) as { exp: number };
-    activeTokens.set(token, {
-      userId: newUser.id,
-      email: newUser.email,
-      exp: decodedToken.exp
-    });
-
-    // Return user data and token (without password)
-    const { password: _, ...userWithoutPassword } = newUser;
-    return c.json({ 
-      user: userWithoutPassword, 
-      token 
-    });
   }
 
   /**
@@ -167,50 +151,65 @@ export class AuthController {
    * }
    */
   static async login(c: Context) {
-    // Extract validated request body from context
-    const body = c.req.valid('json') as {
-      email: string;
-      password: string;
-    };
-    
-    const { email, password } = body;
+    try {
+      const body = c.req.valid('json') as {
+        email: string;
+        password: string;
+      };
+      
+      const { email, password } = body;
 
-    // Find user in mock database by email
-    const user = users.find(u => u.email === email);
-    
-    // Return 404 if user not found
-    if (!user) {
-      return c.json({ error: 'Invalid email or password' }, 401);
+      // Log the login attempt
+      logger.info('Login attempt received', { email, ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.header('x-forwarded-host') || c.req.header('x-forwarded-server') || c.req.header('x-forwarded-proto') || c.req.header('x-forwarded-port') || c.req.header('x-forwarded-by'), userAgent: c.req.header('user-agent') });
+
+      const db = dbManager.getDatabase<any>();
+
+      // Find user in database by email
+      const user = await db.findOne('users', { email });
+      
+      // Return 401 if user not found
+      if (!user) {
+        logger.warn('Login failed - user not found', { email });
+        return c.json({ error: 'Invalid email or password' }, 401);
+      }
+
+      // Verify password using bcrypt
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      
+      if (!isPasswordValid) {
+        logger.warn('Login failed - invalid password', { email });
+        return c.json({ error: 'Invalid email or password' }, 401);
+      }
+
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: user.id, email: user.email },
+        process.env.JWT_SECRET || 'default_secret',
+        { expiresIn: '24h' }
+      );
+
+      // Add token to active tokens map
+      const decodedToken = jwt.decode(token) as { exp: number };
+      activeTokens.set(token, {
+        userId: user.id,
+        email: user.email,
+        exp: decodedToken.exp
+      });
+
+      // Return user data and token (without password)
+      const { password: _, ...userWithoutPassword } = user;
+      
+      // Log successful login
+      logger.info('User logged in successfully', { userId: user.id, email: user.email });
+      return c.json({ 
+        user: userWithoutPassword, 
+        token 
+      });
+    } catch (error) {
+      logger.error('Error during user login:', { error: error instanceof Error ? error.message : 'Unknown error', email: body?.email });
+      console.error('Error during user login:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-
-    // Verify password using bcrypt
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    if (!isPasswordValid) {
-      return c.json({ error: 'Invalid email or password' }, 401);
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'default_secret',
-      { expiresIn: '24h' }
-    );
-
-    // Add token to active tokens map
-    const decodedToken = jwt.decode(token) as { exp: number };
-    activeTokens.set(token, {
-      userId: user.id,
-      email: user.email,
-      exp: decodedToken.exp
-    });
-
-    // Return user data and token (without password)
-    const { password: _, ...userWithoutPassword } = user;
-    return c.json({ 
-      user: userWithoutPassword, 
-      token 
-    });
   }
 
   /**
@@ -223,23 +222,30 @@ export class AuthController {
    * @route GET /api/auth/me
    */
   static async getCurrentUser(c: Context) {
-    // Get the user from the context (set by authentication middleware)
-    const user = c.get('user');
-    
-    if (!user) {
-      return c.json({ error: 'Unauthorized' }, 401);
-    }
+    try {
+      // Get the user from the context (set by authentication middleware)
+      const user = c.get('user');
+      
+      if (!user) {
+        return c.json({ error: 'Unauthorized' }, 401);
+      }
 
-    // Find the full user data
-    const fullUser = users.find(u => u.id === user.userId);
-    
-    if (!fullUser) {
-      return c.json({ error: 'User not found' }, 404);
-    }
+      const db = dbManager.getDatabase<any>();
 
-    // Return user data (without password)
-    const { password: _, ...userWithoutPassword } = fullUser;
-    return c.json(userWithoutPassword);
+      // Find the full user data
+      const fullUser = await db.findById('users', user.userId);
+      
+      if (!fullUser) {
+        return c.json({ error: 'User not found' }, 404);
+      }
+
+      // Return user data (without password)
+      const { password: _, ...userWithoutPassword } = fullUser;
+      return c.json(userWithoutPassword);
+    } catch (error) {
+      console.error('Error retrieving current user:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 
   /**
@@ -252,19 +258,43 @@ export class AuthController {
    * @route POST /api/auth/logout
    */
   static async logout(c: Context) {
-    // Get authorization header
-    const authHeader = c.req.header('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return c.json({ error: 'No token provided' }, 400);
+    try {
+      // Get authorization header
+      const authHeader = c.req.header('Authorization');
+      
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ error: 'No token provided' }, 400);
+      }
+      
+      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      
+      // Decode token to get user information for logging
+      let userId: number | undefined;
+      let userEmail: string | undefined;
+      try {
+        const decodedToken = jwt.decode(token) as { userId: number; email: string } | null;
+        if (decodedToken) {
+          userId = decodedToken.userId;
+          userEmail = decodedToken.email;
+        }
+      } catch (decodeError) {
+        console.error('Error decoding token for logout logging:', decodeError);
+      }
+      
+      // Log the logout attempt
+      logger.info('Logout attempt received', { userId, userEmail, ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || c.req.header('x-forwarded-host') || c.req.header('x-forwarded-server') || c.req.header('x-forwarded-proto') || c.req.header('x-forwarded-port') || c.req.header('x-forwarded-by'), userAgent: c.req.header('user-agent') });
+
+      // Remove token from active tokens
+      activeTokens.delete(token);
+      
+      // Log successful logout
+      logger.info('User logged out successfully', { userId, userEmail });
+      return c.json({ message: 'Successfully logged out' });
+    } catch (error) {
+      logger.error('Error during user logout:', { error: error instanceof Error ? error.message : 'Unknown error' });
+      console.error('Error during logout:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    // Remove token from active tokens
-    activeTokens.delete(token);
-    
-    return c.json({ message: 'Successfully logged out' });
   }
 
   /**
@@ -277,29 +307,34 @@ export class AuthController {
    * @route POST /api/auth/verify
    */
   static async verifyToken(c: Context) {
-    // Get authorization header
-    const authHeader = c.req.header('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return c.json({ valid: false }, 400);
+    try {
+      // Get authorization header
+      const authHeader = c.req.header('Authorization');
+      
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return c.json({ valid: false }, 400);
+      }
+      
+      const token = authHeader.substring(7); // Remove 'Bearer ' prefix
+      
+      // Check if token exists in our active tokens map
+      if (!activeTokens.has(token)) {
+        return c.json({ valid: false }, 401);
+      }
+      
+      // Verify token hasn't expired
+      const tokenData = activeTokens.get(token)!;
+      const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+      
+      if (currentTime > tokenData.exp) {
+        activeTokens.delete(token); // Remove expired token
+        return c.json({ valid: false }, 401);
+      }
+      
+      return c.json({ valid: true, user: { id: tokenData.userId, email: tokenData.email } });
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-    
-    // Check if token exists in our active tokens map
-    if (!activeTokens.has(token)) {
-      return c.json({ valid: false }, 401);
-    }
-    
-    // Verify token hasn't expired
-    const tokenData = activeTokens.get(token)!;
-    const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-    
-    if (currentTime > tokenData.exp) {
-      activeTokens.delete(token); // Remove expired token
-      return c.json({ valid: false }, 401);
-    }
-    
-    return c.json({ valid: true, user: { id: tokenData.userId, email: tokenData.email } });
   }
 }

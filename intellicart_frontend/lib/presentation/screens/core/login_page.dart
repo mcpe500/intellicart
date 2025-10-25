@@ -4,7 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/data/datasources/api_service.dart';
 import 'package:intellicart/models/user.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/main.dart'; // For AppInitializer
+import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
+import 'package:intellicart/presentation/screens/auth_wrapper.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -65,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
         
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const AppInitializer()),
+          MaterialPageRoute(builder: (context) => const AuthWrapper()),
           (route) => false,
         );
       }

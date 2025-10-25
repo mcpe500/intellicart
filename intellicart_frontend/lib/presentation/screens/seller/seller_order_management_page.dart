@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/presentation/bloc/seller/seller_order_bloc.dart';
+import 'package:intellicart/data/repositories/app_repository_impl.dart';
 // Note: You would also import a formatting package like 'intl' for dates in a real app
 
 class SellerOrderManagementPage extends StatelessWidget {
@@ -13,7 +14,9 @@ class SellerOrderManagementPage extends StatelessWidget {
     const Color primaryTextColor = Color(0xFF181411);
 
     return BlocProvider(
-      create: (context) => SellerOrderBloc()..add(LoadSellerOrders()),
+      create: (context) => SellerOrderBloc(
+        RepositoryProvider.of<AppRepositoryImpl>(context),
+      )..add(LoadSellerOrders()),
       child: Scaffold(
         backgroundColor: const Color(0xFFF5F2F0), // lightGreyBackground
         appBar: AppBar(

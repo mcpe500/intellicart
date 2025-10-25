@@ -56,4 +56,9 @@ class ApiService {
   Future<User?> getUserById(String userId) async {
     return await _userService.getUserById(userId);
   }
+  
+  // Get current user using the stored token
+  Future<User?> getCurrentUser() async {
+    return await _authService.getCurrentUser();
+  }
 }

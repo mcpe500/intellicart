@@ -8,6 +8,7 @@ class Order {
   final double total;
   final String status; // e.g., "Pending", "Shipped", "Delivered"
   final DateTime orderDate;
+  final String? sellerId; // ID of the seller associated with this order
 
   Order({
     this.id,
@@ -16,6 +17,7 @@ class Order {
     required this.total,
     required this.status,
     required this.orderDate,
+    this.sellerId, // Make it optional
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
@@ -28,6 +30,7 @@ class Order {
       total: (json['total'] is int) ? (json['total'] as int).toDouble() : json['total']?.toDouble() ?? 0.0,
       status: json['status'] ?? '',
       orderDate: DateTime.parse(json['orderDate'] ?? DateTime.now().toIso8601String()),
+      sellerId: json['sellerId'],
     );
   }
 
@@ -39,6 +42,7 @@ class Order {
       'total': total,
       'status': status,
       'orderDate': orderDate.toIso8601String(),
+      'sellerId': sellerId,
     };
   }
 }

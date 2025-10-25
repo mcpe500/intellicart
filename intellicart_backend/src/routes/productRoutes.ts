@@ -16,6 +16,7 @@
 
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
 import { verifyToken } from '../middleware/authMiddleware';
+import { ProductController } from '../controllers/ProductController';
 
 /**
  * Create a new OpenAPIHono instance for product routes
@@ -73,6 +74,18 @@ const ProductSchema = z.object({
     timeAgo: z.string().openapi({ example: '2 days ago' })
   })).optional().openapi({ 
     description: 'Product\'s reviews'
+  }),
+  
+  // Seller ID (required, identifies who added this product)
+  sellerId: z.number().openapi({
+    example: 1,
+    description: 'ID of the seller who added this product'
+  }),
+  
+  // Creation timestamp (auto-generated)
+  createdAt: z.string().datetime().optional().openapi({
+    example: new Date().toISOString(),
+    description: 'Timestamp when the product was created'
   }),
 });
 
@@ -149,67 +162,6 @@ const UpdateProductSchema = z.object({
   }),
 });
 
-// Mock data for products (in a real app, this would be a database)
-let products: Array<{
-  id: number;
-  name: string;
-  description: string;
-  price: string;
-  originalPrice?: string;
-  imageUrl: string;
-  reviews: Array<{
-    id: number;
-    title: string;
-    reviewText: string;
-    rating: number;
-    timeAgo: string;
-  }>;
-  sellerId: number; // ID of the seller who added this product
-}> = [
-  {
-    id: 1,
-    name: 'Stylish Headphones',
-    description: 'For immersive audio',
-    price: '$49.99',
-    originalPrice: '$60.00',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMDDt1s-XFmFZSH0ueZa_h2OY0-wSr0PwaY4s6z7CWYwY15RQ84AFwOUPae2BDOXI73lUD5rch6jWyiRaX4V84CzDJNkS3ZrCKWSrXRRGo1kJXmnoyVW2LqNBZ62Uf7k5j3ekVHTTDd6a5cxMqwDbZ1UGyXbMrEAX8U-B1hVJpAuVefrbzAd3ewrAojReuO9pG2MmbKxoYD4oiedLQvR5H7RKR-8vKdVE0NJSNpysXDQ4BgY0CwHSmFB99DMdnU6fIGsftaer72icT',
-    reviews: [
-      {
-        id: 1,
-        title: 'Absolutely beautiful!',
-        reviewText: "The quality is amazing, and the sound is so immersive. It's the perfect size and looks even better in person.",
-        rating: 5,
-        timeAgo: '2 days ago',
-      },
-      {
-        id: 2,
-        title: 'Great headphones, but a bit tight.',
-        reviewText: "I love the design and the material. It's a bit tight at first, but I'm sure it will loosen up with use. Very happy with my purchase.",
-        rating: 4,
-        timeAgo: '1 week ago',
-      },
-    ],
-    sellerId: 2,
-  },
-  {
-    id: 2,
-    name: 'Wireless Earbuds',
-    description: 'Compact and convenient',
-    price: '$79.99',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAU7U_kS6_gA60CXLu3bQedKs7gieDR-Od4nf01tYU1wiMTn7rnT9gQjZJrXCWSbd3qSnnAb4ohNgEe6Rqkme_SFVx3pdpdg7dDl2RXverxSCbNfl06zi79wznmywgEy2tjT0vzBqLgdBrNAeOzxMZTVrYva74Y2ClHL8Nm9HUM4xqsf_MkIdsQAJntvJyEyYwBki7Vsq1huMtI8DDohIKbLItAlgtMAfQNC14jLnulQjuc74GOglQOVmneWnEV6ieRiEQrTXOZM_Sr',
-    reviews: [
-      {
-        id: 1,
-        title: 'Fantastic sound!',
-        reviewText: "These earbuds have incredible sound quality for their size. The battery life is also impressive.",
-        rating: 5,
-        timeAgo: '5 days ago',
-      },
-    ],
-    sellerId: 2,
-  },
-];
-
 /**
  * Route: GET /api/products
  * Description: Retrieve all products from the database
@@ -244,10 +196,7 @@ const getAllProductsRoute = createRoute({
 });
 
 // Register the route
-productRoutes.openapi(getAllProductsRoute, async (c) => {
-  // Return all products
-  return c.json(products);
-});
+productRoutes.openapi(getAllProductsRoute, ProductController.getAllProducts);
 
 /**
  * Route: GET /api/products/:id
@@ -315,17 +264,7 @@ const getProductByIdRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-productRoutes.openapi(getProductByIdRoute, verifyToken, async (c) => {
-  const id = Number(c.req.param('id'));
-  
-  const product = products.find(p => p.id === id);
-  
-  if (!product) {
-    return c.json({ error: 'Product not found' }, 404);
-  }
-  
-  return c.json(product);
-});
+productRoutes.openapi(getProductByIdRoute, verifyToken, ProductController.getProductById);
 
 /**
  * Route: POST /api/products
@@ -372,29 +311,7 @@ const createProductRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-productRoutes.openapi(createProductRoute, verifyToken, async (c) => {
-  const body = c.req.valid('json') as {
-    name: string;
-    description: string;
-    price: string;
-    originalPrice?: string;
-    imageUrl: string;
-  };
-  
-  // Get the user from context to set sellerId
-  const user = c.get('user');
-  
-  const newProduct = {
-    id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-    ...body,
-    reviews: [],
-    sellerId: user.userId,
-  };
-  
-  products.push(newProduct);
-  
-  return c.json(newProduct, 201);
-});
+productRoutes.openapi(createProductRoute, verifyToken, ProductController.createProduct);
 
 /**
  * Route: PUT /api/products/:id
@@ -470,32 +387,7 @@ const updateProductRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-productRoutes.openapi(updateProductRoute, verifyToken, async (c) => {
-  const id = Number(c.req.param('id'));
-  const body = c.req.valid('json') as {
-    name?: string;
-    description?: string;
-    price?: string;
-    originalPrice?: string;
-    imageUrl?: string;
-  };
-  
-  const index = products.findIndex(p => p.id === id);
-  
-  if (index === -1) {
-    return c.json({ error: 'Product not found' }, 404);
-  }
-  
-  // Check if the user is the seller of this product
-  const user = c.get('user');
-  if (products[index].sellerId !== user.userId) {
-    return c.json({ error: 'You can only update products you created' }, 403);
-  }
-  
-  products[index] = { ...products[index], ...body };
-  
-  return c.json(products[index]);
-});
+productRoutes.openapi(updateProductRoute, verifyToken, ProductController.updateProduct);
 
 /**
  * Route: DELETE /api/products/:id
@@ -569,28 +461,7 @@ const deleteProductRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-productRoutes.openapi(deleteProductRoute, verifyToken, async (c) => {
-  const id = Number(c.req.param('id'));
-  
-  const index = products.findIndex(p => p.id === id);
-  
-  if (index === -1) {
-    return c.json({ error: 'Product not found' }, 404);
-  }
-  
-  // Check if the user is the seller of this product
-  const user = c.get('user');
-  if (products[index].sellerId !== user.userId) {
-    return c.json({ error: 'You can only delete products you created' }, 403);
-  }
-  
-  const deletedProduct = products.splice(index, 1)[0];
-  
-  return c.json({ 
-    message: 'Product deleted successfully', 
-    product: deletedProduct 
-  });
-});
+productRoutes.openapi(deleteProductRoute, verifyToken, ProductController.deleteProduct);
 
 /**
  * Route: GET /api/products/seller/:sellerId
@@ -640,18 +511,7 @@ const getSellerProductsRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-productRoutes.openapi(getSellerProductsRoute, verifyToken, async (c) => {
-  const sellerId = Number(c.req.param('sellerId'));
-  const user = c.get('user');
-  
-  // Check if the requesting user is the seller or an admin
-  if (user.userId !== sellerId) {
-    return c.json({ error: 'Access denied' }, 403);
-  }
-  
-  const sellerProducts = products.filter(p => p.sellerId === sellerId);
-  return c.json(sellerProducts);
-});
+productRoutes.openapi(getSellerProductsRoute, verifyToken, ProductController.getSellerProducts);
 
 // Export the configured routes for use in the main application
 export { productRoutes };

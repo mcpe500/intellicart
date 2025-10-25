@@ -114,7 +114,7 @@ const LoginUserSchema = z.object({
  * 
  * Request:
  * - Method: POST
- * - Path: /auth/register
+ * - Path: /register (relative to /api/auth)
  * - Parameters: None
  * - Query: None
  * - Body: User registration object (validated against RegisterUserSchema)
@@ -126,7 +126,7 @@ const LoginUserSchema = z.object({
  */
 const registerRoute = createRoute({
   method: 'post',
-  path: '/auth/register',
+  path: '/register',
   // Validate request body
   request: {
     body: {
@@ -180,7 +180,7 @@ authRoutes.openapi(registerRoute, AuthController.register);
  * 
  * Request:
  * - Method: POST
- * - Path: /auth/login
+ * - Path: /login (relative to /api/auth)
  * - Parameters: None
  * - Query: None
  * - Body: Login credentials object (validated against LoginUserSchema)
@@ -192,7 +192,7 @@ authRoutes.openapi(registerRoute, AuthController.register);
  */
 const loginRoute = createRoute({
   method: 'post',
-  path: '/auth/login',
+  path: '/login',
   // Validate request body
   request: {
     body: {
@@ -246,7 +246,7 @@ authRoutes.openapi(loginRoute, AuthController.login);
  * 
  * Request:
  * - Method: GET
- * - Path: /auth/me
+ * - Path: /me (relative to /api/auth)
  * - Headers: Authorization: Bearer <token>
  * - Parameters: None
  * - Query: None
@@ -259,7 +259,7 @@ authRoutes.openapi(loginRoute, AuthController.login);
  */
 const getCurrentUserRoute = createRoute({
   method: 'get',
-  path: '/auth/me',
+  path: '/me',
   // Documentation for possible responses
   responses: {
     200: {
@@ -296,7 +296,7 @@ authRoutes.openapi(getCurrentUserRoute, verifyToken, AuthController.getCurrentUs
  * 
  * Request:
  * - Method: POST
- * - Path: /auth/logout
+ * - Path: /logout (relative to /api/auth)
  * - Headers: Authorization: Bearer <token>
  * - Parameters: None
  * - Query: None
@@ -309,7 +309,7 @@ authRoutes.openapi(getCurrentUserRoute, verifyToken, AuthController.getCurrentUs
  */
 const logoutRoute = createRoute({
   method: 'post',
-  path: '/auth/logout',
+  path: '/logout',
   // Documentation for possible responses
   responses: {
     200: {
@@ -350,7 +350,7 @@ authRoutes.openapi(logoutRoute, AuthController.logout);
  * 
  * Request:
  * - Method: POST
- * - Path: /auth/verify
+ * - Path: /verify (relative to /api/auth)
  * - Headers: Authorization: Bearer <token>
  * - Parameters: None
  * - Query: None
@@ -363,7 +363,7 @@ authRoutes.openapi(logoutRoute, AuthController.logout);
  */
 const verifyTokenRoute = createRoute({
   method: 'post',
-  path: '/auth/verify',
+  path: '/verify',
   // Documentation for possible responses
   responses: {
     200: {

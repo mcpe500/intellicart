@@ -3,9 +3,19 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ProductApiService {
-  static const String _baseUrl = 'http://localhost:3000/api/products'; // Update with your actual backend URL
+  static String? _baseUrl;
+
+  static Future<String> getBaseUrl() async {
+    if (_baseUrl == null) {
+      await dotenv.load(fileName: ".env");
+      final apiBaseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
+      _baseUrl = '$apiBaseUrl/api/products';
+    }
+    return _baseUrl!;
+  }
 
   // Helper method to get headers with authorization token
   Future<Map<String, String>> _getHeaders() async {
@@ -23,8 +33,9 @@ class ProductApiService {
 
   Future<List<Product>> getProducts() async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.get(
-        Uri.parse('$_baseUrl/products'),
+        Uri.parse(baseUrl),
         headers: await _getHeaders(),
       );
 
@@ -41,8 +52,9 @@ class ProductApiService {
 
   Future<Product> addProduct(Product product) async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.post(
-        Uri.parse('$_baseUrl/products'),
+        Uri.parse(baseUrl),
         headers: await _getHeaders(),
         body: jsonEncode(product.toJson()),
       );
@@ -60,8 +72,9 @@ class ProductApiService {
 
   Future<Product> updateProduct(Product product) async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.put(
-        Uri.parse('$_baseUrl/products/${product.id}'),
+        Uri.parse('$baseUrl/${product.id}'),
         headers: await _getHeaders(),
         body: jsonEncode(product.toJson()),
       );
@@ -79,8 +92,9 @@ class ProductApiService {
 
   Future<void> deleteProduct(String productId) async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.delete(
-        Uri.parse('$_baseUrl/products/$productId'),
+        Uri.parse('$baseUrl/$productId'),
         headers: await _getHeaders(),
       );
 
@@ -94,8 +108,9 @@ class ProductApiService {
 
   Future<List<Product>> getSellerProducts(String sellerId) async {
     try {
+      final baseUrl = await getBaseUrl();
       final response = await http.get(
-        Uri.parse('$_baseUrl/products/seller/$sellerId'),
+        Uri.parse('$baseUrl/seller/$sellerId'),
         headers: await _getHeaders(),
       );
 

@@ -181,7 +181,7 @@ class _HomePageContent extends StatelessWidget {
                     const SizedBox(height: 12.0),
                     _buildProductGrid(
                       context,
-                      products: products.sublist(0, 2),
+                      products: products.length >= 2 ? products.sublist(0, 2) : products,
                       warmOrange700: warmOrange700,
                     ),
                     const SizedBox(height: 24.0),
@@ -204,7 +204,7 @@ class _HomePageContent extends StatelessWidget {
                     const SizedBox(height: 12.0),
                     _buildProductGrid(
                       context,
-                      products: products.sublist(2),
+                      products: products.length > 2 ? products.sublist(2) : [],
                       warmOrange700: warmOrange700,
                     ),
                   ],

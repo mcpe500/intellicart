@@ -8,6 +8,7 @@ class Product {
   final String price;
   final String? originalPrice; // For the strikethrough price, can be null
   final String imageUrl;
+  final String? sellerId; // ID of the seller who added this product
   final List<Review> reviews; // A list of reviews for the product
 
   Product({
@@ -17,6 +18,7 @@ class Product {
     required this.price,
     this.originalPrice, // Make it optional
     required this.imageUrl,
+    this.sellerId, // Make it optional
     required this.reviews, // Make it required
   });
 
@@ -28,6 +30,7 @@ class Product {
       price: json['price'] ?? '',
       originalPrice: json['originalPrice'],
       imageUrl: json['imageUrl'] ?? '',
+      sellerId: json['sellerId'],
       reviews: (json['reviews'] as List<dynamic>?)
               ?.map((review) => Review.fromJson(review))
               .toList() ?? [],
@@ -42,6 +45,7 @@ class Product {
       'price': price,
       'originalPrice': originalPrice,
       'imageUrl': imageUrl,
+      'sellerId': sellerId,
       'reviews': reviews.map((review) => review.toJson()).toList(),
     };
   }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/presentation/bloc/seller/seller_product_bloc.dart';
 import 'package:intellicart/presentation/screens/seller/seller_add_edit_product_page.dart';
+import 'package:intellicart/data/repositories/app_repository_impl.dart';
 
 class SellerProductListPage extends StatelessWidget {
   const SellerProductListPage({super.key});
@@ -14,7 +15,9 @@ class SellerProductListPage extends StatelessWidget {
     const Color accentColor = Color(0xFFD97706);
 
     return BlocProvider(
-      create: (context) => SellerProductBloc()..add(LoadSellerProducts()),
+      create: (context) => SellerProductBloc(
+        RepositoryProvider.of<AppRepositoryImpl>(context),
+      )..add(LoadSellerProducts()),
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
@@ -73,10 +76,7 @@ class SellerProductListPage extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) => BlocProvider.value(
-                                    value: BlocProvider.of<SellerProductBloc>(context),
-                                    child: SellerAddEditProductPage(product: product),
-                                  ),
+                                  builder: (_) => SellerAddEditProductPage(product: product),
                                 ),
                               );
                             },
@@ -107,10 +107,7 @@ class SellerProductListPage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => BlocProvider.value(
-                  value: BlocProvider.of<SellerProductBloc>(context),
-                  child: const SellerAddEditProductPage(),
-                ),
+                builder: (_) => const SellerAddEditProductPage(),
               ),
             );
           },

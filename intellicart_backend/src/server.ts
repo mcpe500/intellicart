@@ -23,6 +23,9 @@ import { serve } from '@hono/node-server';
 // This contains all routes, middleware, and configuration
 import app from './index';
 
+// Import the database manager
+import { dbManager } from './database/Config';
+
 /**
  * Determine the port number for the server
  * Uses the PORT environment variable if available, otherwise defaults to 3000
@@ -30,20 +33,24 @@ import app from './index';
  */
 const port = Number(process.env.PORT) || 3000;
 
-// Log a startup message to indicate the server is running
-console.log(`Intellicart API Server is running on port ${port}`);
-
-/**
- * Start the HTTP server with the configured port and Hono application
- * 
- * The server configuration includes:
- * - fetch: The main application handler from Hono
- * - port: The port number determined above
- */
-serve({
-  // Use the Hono application's fetch handler
-  fetch: app.fetch,
-  
-  // Use the configured port number
-  port,
-});
+// Initialize the database when the server starts
+dbManager.initialize()
+  .then(() => {
+    console.log('Database initialized successfully');
+    
+    // Log a startup message to indicate the server is running
+    console.log(`Intellicart API Server is running on port ${port}`);
+    
+    // Start the HTTP server with the configured port and Hono application
+    serve({
+      // Use the Hono application's fetch handler
+      fetch: app.fetch,
+      
+      // Use the configured port number
+      port,
+    });
+  })
+  .catch(error => {
+    console.error('Failed to initialize database:', error);
+    process.exit(1); // Exit the process if database initialization fails
+  });

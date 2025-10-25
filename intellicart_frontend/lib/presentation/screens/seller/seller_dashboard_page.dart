@@ -2,10 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
+import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
+import 'package:intellicart/presentation/screens/auth_wrapper.dart';
 import 'package:intellicart/presentation/screens/buyer/ecommerce_home_page.dart';
 import 'package:intellicart/presentation/screens/seller/seller_order_management_page.dart';
 import 'package:intellicart/presentation/screens/seller/seller_product_list_page.dart';
-import 'package:intellicart/main.dart'; // Import main to access AppInitializer or MyApp
+import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 
 class SellerDashboardPage extends StatelessWidget {
   const SellerDashboardPage({super.key});
@@ -33,14 +35,14 @@ class SellerDashboardPage extends StatelessWidget {
             icon: const Icon(Icons.logout, color: accentColor),
             tooltip: 'Switch to Buyer Mode',
             onPressed: () {
-              // Dispatch event to change mode back to buyer
+              // Dispatch logout event to the AuthBloc
+              context.read<AuthBloc>().add(const AuthLogoutRequested());
+              // Reset app mode to buyer
               context.read<AppModeBloc>().add(const SetAppMode(AppMode.buyer));
-              // Navigate back to the Buyer Home Page, replacing all other routes
+              // Navigate back to the entry point, which will be handled by AuthWrapper
               Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                  builder: (context) => const AppInitializer(), // Go back to the app entry
-                ),
-                (Route<dynamic> route) => false,
+                MaterialPageRoute(builder: (context) => const AuthWrapper()),
+                (route) => false,
               );
             },
           ),

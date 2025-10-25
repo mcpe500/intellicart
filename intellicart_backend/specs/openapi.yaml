@@ -1,0 +1,1523 @@
+openapi: "3.1.0"
+info:
+  title: "Intellicart API"
+  version: "1.0.0"
+  description: "Auto-generated API documentation with Zod + Hono"
+components:
+  schemas:
+  parameters:
+paths:
+  /api/auth/register:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                email:
+                  type: "string"
+                  format: "email"
+                  description: "User's email address (required, must be valid format)"
+                  example: "john@example.com"
+                password:
+                  type: "string"
+                  minLength: 6
+                  description: "User's password (required, minimum 6 characters)"
+                  example: "password123"
+                name:
+                  type: "string"
+                  minLength: 1
+                  description: "User's full name (required, minimum 1 character)"
+                  example: "John Doe"
+                role:
+                  type: "string"
+                  description: "User's role (buyer or seller, defaults to buyer if not provided)"
+                  example: "buyer"
+              required:
+                - "email"
+                - "password"
+                - "name"
+      responses:
+        201:
+          description: "User registered successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  user:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "number"
+                        description: "Unique identifier for the user (auto-generated)"
+                        example: 1
+                      email:
+                        type: "string"
+                        format: "email"
+                        description: "User's email address (must be valid email format)"
+                        example: "john@example.com"
+                      name:
+                        type: "string"
+                        description: "User's full name"
+                        example: "John Doe"
+                      role:
+                        type: "string"
+                        description: "User's role (buyer or seller)"
+                        example: "buyer"
+                      createdAt:
+                        type: "string"
+                        format: "date-time"
+                        description: "Timestamp when the user was created"
+                        example: "2025-10-25T14:48:19.934Z"
+                    required:
+                      - "id"
+                      - "email"
+                      - "name"
+                      - "role"
+                      - "createdAt"
+                  token:
+                    type: "string"
+                    description: "Authentication token to be used in subsequent requests"
+                    example: "jwt-token-here"
+                required:
+                  - "user"
+                  - "token"
+        409:
+          description: "User with this email already exists"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "User with this email already exists"
+                required:
+                  - "error"
+  /api/auth/login:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                email:
+                  type: "string"
+                  format: "email"
+                  description: "User's email address (required, must be valid format)"
+                  example: "john@example.com"
+                password:
+                  type: "string"
+                  description: "User's password (required)"
+                  example: "password123"
+              required:
+                - "email"
+                - "password"
+      responses:
+        200:
+          description: "Login successful"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  user:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "number"
+                        description: "Unique identifier for the user (auto-generated)"
+                        example: 1
+                      email:
+                        type: "string"
+                        format: "email"
+                        description: "User's email address (must be valid email format)"
+                        example: "john@example.com"
+                      name:
+                        type: "string"
+                        description: "User's full name"
+                        example: "John Doe"
+                      role:
+                        type: "string"
+                        description: "User's role (buyer or seller)"
+                        example: "buyer"
+                      createdAt:
+                        type: "string"
+                        format: "date-time"
+                        description: "Timestamp when the user was created"
+                        example: "2025-10-25T14:48:19.934Z"
+                    required:
+                      - "id"
+                      - "email"
+                      - "name"
+                      - "role"
+                      - "createdAt"
+                  token:
+                    type: "string"
+                    description: "Authentication token to be used in subsequent requests"
+                    example: "jwt-token-here"
+                required:
+                  - "user"
+                  - "token"
+        401:
+          description: "Invalid email or password"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "Invalid email or password"
+                required:
+                  - "error"
+  /api/auth/me:
+    get:
+      responses:
+        200:
+          description: "Current user profile retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the user (auto-generated)"
+                    example: 1
+                  email:
+                    type: "string"
+                    format: "email"
+                    description: "User's email address (must be valid email format)"
+                    example: "john@example.com"
+                  name:
+                    type: "string"
+                    description: "User's full name"
+                    example: "John Doe"
+                  role:
+                    type: "string"
+                    description: "User's role (buyer or seller)"
+                    example: "buyer"
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the user was created"
+                    example: "2025-10-25T14:48:19.934Z"
+                required:
+                  - "id"
+                  - "email"
+                  - "name"
+                  - "role"
+                  - "createdAt"
+        401:
+          description: "Unauthorized - Invalid or missing token"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "Unauthorized"
+                required:
+                  - "error"
+  /api/auth/logout:
+    post:
+      responses:
+        200:
+          description: "Successfully logged out"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: "Confirmation message"
+                    example: "Successfully logged out"
+                required:
+                  - "message"
+        400:
+          description: "No token provided"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "No token provided"
+                required:
+                  - "error"
+  /api/auth/verify:
+    post:
+      responses:
+        200:
+          description: "Token validation result"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  valid:
+                    type: "boolean"
+                    description: "Whether the token is valid"
+                    example: true
+                  user:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "number"
+                        description: "User ID"
+                        example: 1
+                      email:
+                        type: "string"
+                        format: "email"
+                        description: "User email"
+                        example: "user@example.com"
+                    required:
+                      - "id"
+                      - "email"
+                    description: "User information (only included if token is valid)"
+                required:
+                  - "valid"
+        400:
+          description: "No token provided"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  valid:
+                    type: "boolean"
+                    enum:
+                      - false
+                required:
+                  - "valid"
+        401:
+          description: "Invalid or expired token"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  valid:
+                    type: "boolean"
+                    enum:
+                      - false
+                required:
+                  - "valid"
+  /api/products:
+    get:
+      responses:
+        200:
+          description: "Returns all products in the system"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "number"
+                      description: "Unique identifier for the product (auto-generated)"
+                      example: 1
+                    name:
+                      type: "string"
+                      description: "Product's name"
+                      example: "Wireless Headphones"
+                    description:
+                      type: "string"
+                      description: "Product's description"
+                      example: "High-quality wireless headphones with noise cancellation"
+                    price:
+                      type: "string"
+                      description: "Product's price"
+                      example: "$99.99"
+                    originalPrice:
+                      type: "string"
+                      description: "Product's original price (optional, for discount display)"
+                      example: "$129.99"
+                    imageUrl:
+                      type: "string"
+                      format: "uri"
+                      description: "Product's image URL"
+                      example: "https://example.com/product-image.jpg"
+                    reviews:
+                      type: "array"
+                      items:
+                        type: "object"
+                        properties:
+                          id:
+                            type: "number"
+                            example: 1
+                          title:
+                            type: "string"
+                            example: "Great product!"
+                          reviewText:
+                            type: "string"
+                            example: "This product is amazing!"
+                          rating:
+                            type: "number"
+                            minimum: 1
+                            maximum: 5
+                            example: 5
+                          timeAgo:
+                            type: "string"
+                            example: "2 days ago"
+                        required:
+                          - "id"
+                          - "title"
+                          - "reviewText"
+                          - "rating"
+                          - "timeAgo"
+                      description: "Product's reviews"
+                    sellerId:
+                      type: "number"
+                      description: "ID of the seller who added this product"
+                      example: 1
+                    createdAt:
+                      type: "string"
+                      format: "date-time"
+                      description: "Timestamp when the product was created"
+                      example: "2025-10-25T14:48:19.935Z"
+                  required:
+                    - "id"
+                    - "name"
+                    - "description"
+                    - "price"
+                    - "imageUrl"
+                    - "sellerId"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  minLength: 1
+                  description: "Product's name (required, minimum 1 character)"
+                  example: "Wireless Headphones"
+                description:
+                  type: "string"
+                  minLength: 1
+                  description: "Product's description (required)"
+                  example: "High-quality wireless headphones with noise cancellation"
+                price:
+                  type: "string"
+                  minLength: 1
+                  description: "Product's price (required)"
+                  example: "$99.99"
+                originalPrice:
+                  type: "string"
+                  description: "Product's original price (optional, for discount display)"
+                  example: "$129.99"
+                imageUrl:
+                  type: "string"
+                  format: "uri"
+                  description: "Product's image URL (required, must be valid URL)"
+                  example: "https://example.com/product-image.jpg"
+              required:
+                - "name"
+                - "description"
+                - "price"
+                - "imageUrl"
+      responses:
+        201:
+          description: "Product created successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the product (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "Product's name"
+                    example: "Wireless Headphones"
+                  description:
+                    type: "string"
+                    description: "Product's description"
+                    example: "High-quality wireless headphones with noise cancellation"
+                  price:
+                    type: "string"
+                    description: "Product's price"
+                    example: "$99.99"
+                  originalPrice:
+                    type: "string"
+                    description: "Product's original price (optional, for discount display)"
+                    example: "$129.99"
+                  imageUrl:
+                    type: "string"
+                    format: "uri"
+                    description: "Product's image URL"
+                    example: "https://example.com/product-image.jpg"
+                  reviews:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        id:
+                          type: "number"
+                          example: 1
+                        title:
+                          type: "string"
+                          example: "Great product!"
+                        reviewText:
+                          type: "string"
+                          example: "This product is amazing!"
+                        rating:
+                          type: "number"
+                          minimum: 1
+                          maximum: 5
+                          example: 5
+                        timeAgo:
+                          type: "string"
+                          example: "2 days ago"
+                      required:
+                        - "id"
+                        - "title"
+                        - "reviewText"
+                        - "rating"
+                        - "timeAgo"
+                    description: "Product's reviews"
+                  sellerId:
+                    type: "number"
+                    description: "ID of the seller who added this product"
+                    example: 1
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the product was created"
+                    example: "2025-10-25T14:48:19.935Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "description"
+                  - "price"
+                  - "imageUrl"
+                  - "sellerId"
+  /api/products/{id}:
+    get:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the product to retrieve"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      responses:
+        200:
+          description: "Returns the requested product by ID"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the product (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "Product's name"
+                    example: "Wireless Headphones"
+                  description:
+                    type: "string"
+                    description: "Product's description"
+                    example: "High-quality wireless headphones with noise cancellation"
+                  price:
+                    type: "string"
+                    description: "Product's price"
+                    example: "$99.99"
+                  originalPrice:
+                    type: "string"
+                    description: "Product's original price (optional, for discount display)"
+                    example: "$129.99"
+                  imageUrl:
+                    type: "string"
+                    format: "uri"
+                    description: "Product's image URL"
+                    example: "https://example.com/product-image.jpg"
+                  reviews:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        id:
+                          type: "number"
+                          example: 1
+                        title:
+                          type: "string"
+                          example: "Great product!"
+                        reviewText:
+                          type: "string"
+                          example: "This product is amazing!"
+                        rating:
+                          type: "number"
+                          minimum: 1
+                          maximum: 5
+                          example: 5
+                        timeAgo:
+                          type: "string"
+                          example: "2 days ago"
+                      required:
+                        - "id"
+                        - "title"
+                        - "reviewText"
+                        - "rating"
+                        - "timeAgo"
+                    description: "Product's reviews"
+                  sellerId:
+                    type: "number"
+                    description: "ID of the seller who added this product"
+                    example: 1
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the product was created"
+                    example: "2025-10-25T14:48:19.935Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "description"
+                  - "price"
+                  - "imageUrl"
+                  - "sellerId"
+        404:
+          description: "Product with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "Product not found"
+                required:
+                  - "error"
+    put:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the product to update"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  minLength: 1
+                  description: "Product's name (optional, minimum 1 character if provided)"
+                  example: "Wireless Headphones"
+                description:
+                  type: "string"
+                  description: "Product's description (optional)"
+                  example: "High-quality wireless headphones with noise cancellation"
+                price:
+                  type: "string"
+                  description: "Product's price (optional)"
+                  example: "$99.99"
+                originalPrice:
+                  type: "string"
+                  description: "Product's original price (optional, for discount display)"
+                  example: "$129.99"
+                imageUrl:
+                  type: "string"
+                  format: "uri"
+                  description: "Product's image URL (optional, must be valid URL if provided)"
+                  example: "https://example.com/product-image.jpg"
+      responses:
+        200:
+          description: "Product updated successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the product (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "Product's name"
+                    example: "Wireless Headphones"
+                  description:
+                    type: "string"
+                    description: "Product's description"
+                    example: "High-quality wireless headphones with noise cancellation"
+                  price:
+                    type: "string"
+                    description: "Product's price"
+                    example: "$99.99"
+                  originalPrice:
+                    type: "string"
+                    description: "Product's original price (optional, for discount display)"
+                    example: "$129.99"
+                  imageUrl:
+                    type: "string"
+                    format: "uri"
+                    description: "Product's image URL"
+                    example: "https://example.com/product-image.jpg"
+                  reviews:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        id:
+                          type: "number"
+                          example: 1
+                        title:
+                          type: "string"
+                          example: "Great product!"
+                        reviewText:
+                          type: "string"
+                          example: "This product is amazing!"
+                        rating:
+                          type: "number"
+                          minimum: 1
+                          maximum: 5
+                          example: 5
+                        timeAgo:
+                          type: "string"
+                          example: "2 days ago"
+                      required:
+                        - "id"
+                        - "title"
+                        - "reviewText"
+                        - "rating"
+                        - "timeAgo"
+                    description: "Product's reviews"
+                  sellerId:
+                    type: "number"
+                    description: "ID of the seller who added this product"
+                    example: 1
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the product was created"
+                    example: "2025-10-25T14:48:19.935Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "description"
+                  - "price"
+                  - "imageUrl"
+                  - "sellerId"
+        404:
+          description: "Product with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "Product not found"
+                required:
+                  - "error"
+    delete:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the product to delete"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      responses:
+        200:
+          description: "Product deleted successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: "Confirmation message"
+                    example: "Product deleted successfully"
+                  product:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "number"
+                        description: "Unique identifier for the product (auto-generated)"
+                        example: 1
+                      name:
+                        type: "string"
+                        description: "Product's name"
+                        example: "Wireless Headphones"
+                      description:
+                        type: "string"
+                        description: "Product's description"
+                        example: "High-quality wireless headphones with noise cancellation"
+                      price:
+                        type: "string"
+                        description: "Product's price"
+                        example: "$99.99"
+                      originalPrice:
+                        type: "string"
+                        description: "Product's original price (optional, for discount display)"
+                        example: "$129.99"
+                      imageUrl:
+                        type: "string"
+                        format: "uri"
+                        description: "Product's image URL"
+                        example: "https://example.com/product-image.jpg"
+                      reviews:
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            id:
+                              type: "number"
+                              example: 1
+                            title:
+                              type: "string"
+                              example: "Great product!"
+                            reviewText:
+                              type: "string"
+                              example: "This product is amazing!"
+                            rating:
+                              type: "number"
+                              minimum: 1
+                              maximum: 5
+                              example: 5
+                            timeAgo:
+                              type: "string"
+                              example: "2 days ago"
+                          required:
+                            - "id"
+                            - "title"
+                            - "reviewText"
+                            - "rating"
+                            - "timeAgo"
+                        description: "Product's reviews"
+                      sellerId:
+                        type: "number"
+                        description: "ID of the seller who added this product"
+                        example: 1
+                      createdAt:
+                        type: "string"
+                        format: "date-time"
+                        description: "Timestamp when the product was created"
+                        example: "2025-10-25T14:48:19.935Z"
+                    required:
+                      - "id"
+                      - "name"
+                      - "description"
+                      - "price"
+                      - "imageUrl"
+                      - "sellerId"
+                required:
+                  - "message"
+                  - "product"
+        404:
+          description: "Product with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "Product not found"
+                required:
+                  - "error"
+  /api/products/seller/{sellerId}:
+    get:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the seller"
+          example: 1
+        required: true
+        name: "sellerId"
+        in: "path"
+      responses:
+        200:
+          description: "Returns all products created by the specified seller"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "number"
+                      description: "Unique identifier for the product (auto-generated)"
+                      example: 1
+                    name:
+                      type: "string"
+                      description: "Product's name"
+                      example: "Wireless Headphones"
+                    description:
+                      type: "string"
+                      description: "Product's description"
+                      example: "High-quality wireless headphones with noise cancellation"
+                    price:
+                      type: "string"
+                      description: "Product's price"
+                      example: "$99.99"
+                    originalPrice:
+                      type: "string"
+                      description: "Product's original price (optional, for discount display)"
+                      example: "$129.99"
+                    imageUrl:
+                      type: "string"
+                      format: "uri"
+                      description: "Product's image URL"
+                      example: "https://example.com/product-image.jpg"
+                    reviews:
+                      type: "array"
+                      items:
+                        type: "object"
+                        properties:
+                          id:
+                            type: "number"
+                            example: 1
+                          title:
+                            type: "string"
+                            example: "Great product!"
+                          reviewText:
+                            type: "string"
+                            example: "This product is amazing!"
+                          rating:
+                            type: "number"
+                            minimum: 1
+                            maximum: 5
+                            example: 5
+                          timeAgo:
+                            type: "string"
+                            example: "2 days ago"
+                        required:
+                          - "id"
+                          - "title"
+                          - "reviewText"
+                          - "rating"
+                          - "timeAgo"
+                      description: "Product's reviews"
+                    sellerId:
+                      type: "number"
+                      description: "ID of the seller who added this product"
+                      example: 1
+                    createdAt:
+                      type: "string"
+                      format: "date-time"
+                      description: "Timestamp when the product was created"
+                      example: "2025-10-25T14:48:19.935Z"
+                  required:
+                    - "id"
+                    - "name"
+                    - "description"
+                    - "price"
+                    - "imageUrl"
+                    - "sellerId"
+  /api/orders:
+    get:
+      responses:
+        200:
+          description: "Returns all orders for the authenticated seller"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "number"
+                      description: "Unique identifier for the order (auto-generated)"
+                      example: 1
+                    customerName:
+                      type: "string"
+                      description: "Customer's name"
+                      example: "John Doe"
+                    items:
+                      type: "array"
+                      items:
+                        type: "object"
+                        properties:
+                          id:
+                            type: "number"
+                            example: 1
+                          name:
+                            type: "string"
+                            example: "Wireless Headphones"
+                          description:
+                            type: "string"
+                            example: "High-quality wireless headphones"
+                          price:
+                            type: "string"
+                            example: "$99.99"
+                          originalPrice:
+                            type: "string"
+                            example: "$129.99"
+                          imageUrl:
+                            type: "string"
+                            format: "uri"
+                            example: "https://example.com/image.jpg"
+                          reviews:
+                            type: "array"
+                            items:
+                              type: "object"
+                              properties:
+                                id:
+                                  type: "number"
+                                  example: 1
+                                title:
+                                  type: "string"
+                                  example: "Great product!"
+                                reviewText:
+                                  type: "string"
+                                  example: "This product is amazing!"
+                                rating:
+                                  type: "number"
+                                  minimum: 1
+                                  maximum: 5
+                                  example: 5
+                                timeAgo:
+                                  type: "string"
+                                  example: "2 days ago"
+                              required:
+                                - "id"
+                                - "title"
+                                - "reviewText"
+                                - "rating"
+                                - "timeAgo"
+                            description: "Product's reviews"
+                          sellerId:
+                            type: "number"
+                            example: 1
+                        required:
+                          - "id"
+                          - "name"
+                          - "description"
+                          - "price"
+                          - "imageUrl"
+                          - "sellerId"
+                      description: "Order's items"
+                    total:
+                      type: "number"
+                      description: "Order's total amount"
+                      example: 129.98
+                    status:
+                      type: "string"
+                      description: "Order's status (e.g., Pending, Shipped, Delivered)"
+                      example: "Delivered"
+                    orderDate:
+                      type: "string"
+                      format: "date-time"
+                      description: "Order's creation date"
+                      example: "2025-10-25T14:48:19.936Z"
+                    sellerId:
+                      type: "number"
+                      description: "ID of the seller associated with this order"
+                      example: 1
+                    createdAt:
+                      type: "string"
+                      format: "date-time"
+                      description: "Timestamp when the order was created"
+                      example: "2025-10-25T14:48:19.936Z"
+                  required:
+                    - "id"
+                    - "customerName"
+                    - "items"
+                    - "total"
+                    - "status"
+                    - "orderDate"
+                    - "sellerId"
+  /api/orders/{id}/status:
+    put:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the order to update"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                status:
+                  type: "string"
+                  description: "New status for the order (e.g., Pending, Shipped, Delivered)"
+                  example: "Shipped"
+              required:
+                - "status"
+      responses:
+        200:
+          description: "Order status updated successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the order (auto-generated)"
+                    example: 1
+                  customerName:
+                    type: "string"
+                    description: "Customer's name"
+                    example: "John Doe"
+                  items:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        id:
+                          type: "number"
+                          example: 1
+                        name:
+                          type: "string"
+                          example: "Wireless Headphones"
+                        description:
+                          type: "string"
+                          example: "High-quality wireless headphones"
+                        price:
+                          type: "string"
+                          example: "$99.99"
+                        originalPrice:
+                          type: "string"
+                          example: "$129.99"
+                        imageUrl:
+                          type: "string"
+                          format: "uri"
+                          example: "https://example.com/image.jpg"
+                        reviews:
+                          type: "array"
+                          items:
+                            type: "object"
+                            properties:
+                              id:
+                                type: "number"
+                                example: 1
+                              title:
+                                type: "string"
+                                example: "Great product!"
+                              reviewText:
+                                type: "string"
+                                example: "This product is amazing!"
+                              rating:
+                                type: "number"
+                                minimum: 1
+                                maximum: 5
+                                example: 5
+                              timeAgo:
+                                type: "string"
+                                example: "2 days ago"
+                            required:
+                              - "id"
+                              - "title"
+                              - "reviewText"
+                              - "rating"
+                              - "timeAgo"
+                          description: "Product's reviews"
+                        sellerId:
+                          type: "number"
+                          example: 1
+                      required:
+                        - "id"
+                        - "name"
+                        - "description"
+                        - "price"
+                        - "imageUrl"
+                        - "sellerId"
+                    description: "Order's items"
+                  total:
+                    type: "number"
+                    description: "Order's total amount"
+                    example: 129.98
+                  status:
+                    type: "string"
+                    description: "Order's status (e.g., Pending, Shipped, Delivered)"
+                    example: "Delivered"
+                  orderDate:
+                    type: "string"
+                    format: "date-time"
+                    description: "Order's creation date"
+                    example: "2025-10-25T14:48:19.936Z"
+                  sellerId:
+                    type: "number"
+                    description: "ID of the seller associated with this order"
+                    example: 1
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the order was created"
+                    example: "2025-10-25T14:48:19.936Z"
+                required:
+                  - "id"
+                  - "customerName"
+                  - "items"
+                  - "total"
+                  - "status"
+                  - "orderDate"
+                  - "sellerId"
+        404:
+          description: "Order with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "Order not found"
+                required:
+                  - "error"
+  /api/users/users:
+    get:
+      responses:
+        200:
+          description: "Returns all users in the system"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    id:
+                      type: "number"
+                      description: "Unique identifier for the user (auto-generated)"
+                      example: 1
+                    name:
+                      type: "string"
+                      description: "User's full name"
+                      example: "John Doe"
+                    email:
+                      type: "string"
+                      format: "email"
+                      description: "User's email address (must be valid email format)"
+                      example: "john@example.com"
+                    age:
+                      type: "number"
+                      minimum: 0
+                      description: "User's age (optional, minimum value: 0)"
+                      example: 30
+                    createdAt:
+                      type: "string"
+                      format: "date-time"
+                      description: "Timestamp when the user was created"
+                      example: "2025-10-25T14:48:19.930Z"
+                  required:
+                    - "id"
+                    - "name"
+                    - "email"
+                    - "createdAt"
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  minLength: 1
+                  description: "User's full name (required, minimum 1 character)"
+                  example: "John Doe"
+                email:
+                  type: "string"
+                  format: "email"
+                  description: "User's email address (required, must be valid format)"
+                  example: "john@example.com"
+                age:
+                  type: "number"
+                  minimum: 0
+                  description: "User's age (optional, minimum value: 0)"
+                  example: 30
+              required:
+                - "name"
+                - "email"
+      responses:
+        201:
+          description: "User created successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the user (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "User's full name"
+                    example: "John Doe"
+                  email:
+                    type: "string"
+                    format: "email"
+                    description: "User's email address (must be valid email format)"
+                    example: "john@example.com"
+                  age:
+                    type: "number"
+                    minimum: 0
+                    description: "User's age (optional, minimum value: 0)"
+                    example: 30
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the user was created"
+                    example: "2025-10-25T14:48:19.930Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "email"
+                  - "createdAt"
+  /api/users/users/{id}:
+    get:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the user to retrieve"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      responses:
+        200:
+          description: "Returns the requested user by ID"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the user (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "User's full name"
+                    example: "John Doe"
+                  email:
+                    type: "string"
+                    format: "email"
+                    description: "User's email address (must be valid email format)"
+                    example: "john@example.com"
+                  age:
+                    type: "number"
+                    minimum: 0
+                    description: "User's age (optional, minimum value: 0)"
+                    example: 30
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the user was created"
+                    example: "2025-10-25T14:48:19.930Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "email"
+                  - "createdAt"
+        404:
+          description: "User with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "User not found"
+                required:
+                  - "error"
+    put:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the user to update"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                  minLength: 1
+                  description: "User's full name (optional, minimum 1 character if provided)"
+                  example: "John Doe"
+                email:
+                  type: "string"
+                  format: "email"
+                  description: "User's email address (optional, must be valid format if provided)"
+                  example: "john@example.com"
+                age:
+                  type: "number"
+                  minimum: 0
+                  description: "User's age (optional, minimum value: 0 if provided)"
+                  example: 30
+      responses:
+        200:
+          description: "User updated successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the user (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "User's full name"
+                    example: "John Doe"
+                  email:
+                    type: "string"
+                    format: "email"
+                    description: "User's email address (must be valid email format)"
+                    example: "john@example.com"
+                  age:
+                    type: "number"
+                    minimum: 0
+                    description: "User's age (optional, minimum value: 0)"
+                    example: 30
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the user was created"
+                    example: "2025-10-25T14:48:19.930Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "email"
+                  - "createdAt"
+        404:
+          description: "User with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "User not found"
+                required:
+                  - "error"
+    delete:
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the user to delete"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      responses:
+        200:
+          description: "User deleted successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: "Confirmation message"
+                    example: "User deleted successfully"
+                  user:
+                    type: "object"
+                    properties:
+                      id:
+                        type: "number"
+                        description: "Unique identifier for the user (auto-generated)"
+                        example: 1
+                      name:
+                        type: "string"
+                        description: "User's full name"
+                        example: "John Doe"
+                      email:
+                        type: "string"
+                        format: "email"
+                        description: "User's email address (must be valid email format)"
+                        example: "john@example.com"
+                      age:
+                        type: "number"
+                        minimum: 0
+                        description: "User's age (optional, minimum value: 0)"
+                        example: 30
+                      createdAt:
+                        type: "string"
+                        format: "date-time"
+                        description: "Timestamp when the user was created"
+                        example: "2025-10-25T14:48:19.930Z"
+                    required:
+                      - "id"
+                      - "name"
+                      - "email"
+                      - "createdAt"
+                required:
+                  - "message"
+                  - "user"
+        404:
+          description: "User with the specified ID was not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    description: "Error message explaining why the request failed"
+                    example: "User not found"
+                required:
+                  - "error"
