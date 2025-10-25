@@ -1,72 +1,59 @@
 // lib/data/datasources/api_service.dart
-import 'package:intellicart/data/datasources/mock_backend.dart';
+import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
+import 'package:intellicart/data/datasources/product/product_api_service.dart';
+import 'package:intellicart/data/datasources/order/order_api_service.dart';
+import 'package:intellicart/data/datasources/user_api_service.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/order.dart';
 
 class ApiService {
-  final MockBackend _mockBackend = MockBackend();
+  final AuthApiService _authService = AuthApiService();
+  final ProductApiService _productService = ProductApiService();
+  final OrderApiService _orderService = OrderApiService();
+  final UserApiService _userService = UserApiService();
 
   // --- AUTHENTICATION METHODS ---
   Future<User?> login(String email, String password) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.login(email, password);
+    return await _authService.login(email, password);
   }
 
   Future<User> register(String email, String password, String name, String role) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.register(email, password, name, role);
+    return await _authService.register(email, password, name, role);
   }
 
   // --- PRODUCT METHODS ---
   Future<List<Product>> getProducts() async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.fetchProducts();
+    return await _productService.getProducts();
   }
 
   Future<Product> addProduct(Product product) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.addProduct(product);
+    return await _productService.addProduct(product);
   }
 
   Future<Product> updateProduct(Product product) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.updateProduct(product);
+    return await _productService.updateProduct(product);
   }
 
   Future<void> deleteProduct(Product product) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.deleteProduct(product);
+    return await _productService.deleteProduct(product.id ?? '');
   }
 
   Future<List<Product>> getSellerProducts(String sellerId) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.fetchSellerProducts(sellerId);
+    return await _productService.getSellerProducts(sellerId);
   }
 
   // --- ORDER METHODS ---
   Future<List<Order>> getSellerOrders() async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.fetchSellerOrders();
+    return await _orderService.getSellerOrders();
   }
 
   Future<void> updateOrderStatus(String orderId, String status) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.updateOrderStatus(orderId, status);
+    return await _orderService.updateOrderStatus(orderId, status);
   }
 
+  // --- USER METHODS ---
   Future<User?> getUserById(String userId) async {
-    // In a real app, this would make an HTTP request to a backend API
-    // Here, it just calls the mock backend
-    return await _mockBackend.getUserById(userId);
+    return await _userService.getUserById(userId);
   }
 }

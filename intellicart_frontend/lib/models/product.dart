@@ -2,6 +2,7 @@
 import 'package:intellicart/models/review.dart'; // Import the new Review model
 
 class Product {
+  final dynamic id;  // Can be int or String depending on backend
   final String name;
   final String description;
   final String price;
@@ -10,6 +11,7 @@ class Product {
   final List<Review> reviews; // A list of reviews for the product
 
   Product({
+    this.id,
     required this.name,
     required this.description,
     required this.price,
@@ -17,4 +19,30 @@ class Product {
     required this.imageUrl,
     required this.reviews, // Make it required
   });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    return Product(
+      id: json['id'],
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      price: json['price'] ?? '',
+      originalPrice: json['originalPrice'],
+      imageUrl: json['imageUrl'] ?? '',
+      reviews: (json['reviews'] as List<dynamic>?)
+              ?.map((review) => Review.fromJson(review))
+              .toList() ?? [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'description': description,
+      'price': price,
+      'originalPrice': originalPrice,
+      'imageUrl': imageUrl,
+      'reviews': reviews.map((review) => review.toJson()).toList(),
+    };
+  }
 }

@@ -17,6 +17,9 @@
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { swaggerUI } from '@hono/swagger-ui';
 import { userRoutes } from './routes/userRoutes';
+import { authRoutes } from './routes/authRoutes';
+import { productRoutes } from './routes/productRoutes';
+import { orderRoutes } from './routes/orderRoutes';
 
 /**
  * Create the main application instance using OpenAPIHono
@@ -25,7 +28,38 @@ import { userRoutes } from './routes/userRoutes';
 const app = new OpenAPIHono();
 
 /**
- * Register all user-related routes under the '/api' prefix
+ * Register all authentication-related routes under the '/api/auth' prefix
+ * This creates endpoints such as:
+ * - POST /api/auth/register
+ * - POST /api/auth/login
+ * - GET /api/auth/me
+ * - POST /api/auth/logout
+ * - POST /api/auth/verify
+ */
+app.route('/api/auth', authRoutes);
+
+/**
+ * Register all product-related routes under the '/api/products' prefix
+ * This creates endpoints such as:
+ * - GET /api/products
+ * - POST /api/products
+ * - GET /api/products/:id
+ * - PUT /api/products/:id
+ * - DELETE /api/products/:id
+ * - GET /api/products/seller/:sellerId
+ */
+app.route('/api/products', productRoutes);
+
+/**
+ * Register all order-related routes under the '/api/orders' prefix
+ * This creates endpoints such as:
+ * - GET /api/orders
+ * - PUT /api/orders/:id/status
+ */
+app.route('/api/orders', orderRoutes);
+
+/**
+ * Register all user-related routes under the '/api/users' prefix
  * This creates endpoints such as:
  * - GET /api/users
  * - POST /api/users
@@ -33,7 +67,7 @@ const app = new OpenAPIHono();
  * - PUT /api/users/:id
  * - DELETE /api/users/:id
  */
-app.route('/api', userRoutes);
+app.route('/api/users', userRoutes);
 
 /**
  * Root endpoint for API health check and information

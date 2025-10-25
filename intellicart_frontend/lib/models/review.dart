@@ -11,4 +11,22 @@ class Review {
     required this.rating,
     required this.timeAgo,
   });
+
+  factory Review.fromJson(Map<String, dynamic> json) {
+    return Review(
+      title: json['title'] ?? '',
+      reviewText: json['reviewText'] ?? '',
+      rating: json['rating'] ?? 0,
+      timeAgo: json['timeAgo'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'reviewText': reviewText,
+      'rating': rating,
+      'timeAgo': timeAgo,
+    };
+  }
 }

@@ -1,12 +1,12 @@
 // lib/models/user.dart
 class User {
-  final String id;
+  final dynamic id;  // Can be int or String depending on backend
   final String email;
   final String name;
   final String role; // 'buyer' or 'seller'
 
   User({
-    required this.id,
+    this.id,
     required this.email,
     required this.name,
     required this.role,
@@ -14,7 +14,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] ?? '',
+      id: json['id'],
       email: json['email'] ?? '',
       name: json['name'] ?? '',
       role: json['role'] ?? 'buyer',
