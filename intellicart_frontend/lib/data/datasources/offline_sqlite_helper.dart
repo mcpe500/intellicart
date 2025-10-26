@@ -211,41 +211,42 @@ class OfflineDatabaseHelper {
   // --- Product Methods ---
   Future<void> insertProducts(List<Product> products) async {
     final db = await database;
-    Batch batch = db.batch();
     
-    // Clear existing products to avoid duplicates on sync
-    batch.delete('products');
-    batch.delete('reviews'); // Also clear reviews since they're linked
-    
-    for (var product in products) {
-      // Insert product
-      int productId = await db.insert('products', {
-        'external_id': product.id?.toString(),
-        'name': product.name,
-        'description': product.description,
-        'price': product.price,
-        'original_price': product.originalPrice,
-        'image_url': product.imageUrl,
-        'seller_id': product.sellerId,
-        'created_at': DateTime.now().toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String(),
-        'is_synced': 1, // These come from backend, so they're synced
-        'sync_status': 'synced',
-      });
+    // Wrap in a transaction to ensure consistency
+    await db.transaction((txn) async {
+      // Clear existing products and reviews to avoid duplicates on sync
+      await txn.delete('reviews');
+      await txn.delete('products');
       
-      // Insert reviews
-      for (var review in product.reviews) {
-        batch.insert('reviews', {
-          'product_id': productId,
-          'title': review.title,
-          'review_text': review.reviewText,
-          'rating': review.rating,
-          'time_ago': review.timeAgo,
+      // Insert all products and their reviews
+      for (var product in products) {
+        // Insert product individually to get its local ID
+        int localProductId = await txn.insert('products', {
+          'external_id': product.id?.toString(),
+          'name': product.name,
+          'description': product.description,
+          'price': product.price,
+          'original_price': product.originalPrice,
+          'image_url': product.imageUrl,
+          'seller_id': product.sellerId,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'is_synced': 1, // These come from backend, so they're synced
+          'sync_status': 'synced',
         });
+        
+        // Insert all reviews for this product
+        for (var review in product.reviews) {
+          await txn.insert('reviews', {
+            'product_id': localProductId,
+            'title': review.title,
+            'review_text': review.reviewText,
+            'rating': review.rating,
+            'time_ago': review.timeAgo,
+          });
+        }
       }
-    }
-    
-    await batch.commit();
+    });
   }
 
   Future<void> insertProduct(Product product, {bool isLocal = true}) async {

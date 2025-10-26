@@ -4,25 +4,33 @@
       "id": 1,
       "name": "Admin User",
       "email": "admin@intellicart.com",
-      "password": "$2b$10$oA2SCPZRnxJ57u72H6/fIeK0pnHRh.wPnLj8cMc0f9eQNaPGrnF3O",
+      "password": "$2b$10$.EvBmwnHiOCO8hhMPHsEyO5zbUNZ2pjyG5RR5TKlDuom1uo6TRFLu",
       "role": "admin",
-      "createdAt": "2025-10-26T05:14:10.369Z"
+      "createdAt": "2025-10-26T05:13:04.388Z"
     },
     {
-      "id": 2,
+      "id": 1,
       "name": "Seller User",
       "email": "seller@intellicart.com",
-      "password": "$2b$10$oA2SCPZRnxJ57u72H6/fIeK0pnHRh.wPnLj8cMc0f9eQNaPGrnF3O",
+      "password": "$2b$10$.EvBmwnHiOCO8hhMPHsEyO5zbUNZ2pjyG5RR5TKlDuom1uo6TRFLu",
       "role": "seller",
-      "createdAt": "2025-10-26T05:14:10.372Z"
+      "createdAt": "2025-10-26T05:13:04.389Z"
     },
     {
-      "id": 3,
+      "id": 1,
       "name": "Buyer User",
       "email": "buyer@intellicart.com",
-      "password": "$2b$10$oA2SCPZRnxJ57u72H6/fIeK0pnHRh.wPnLj8cMc0f9eQNaPGrnF3O",
+      "password": "$2b$10$.EvBmwnHiOCO8hhMPHsEyO5zbUNZ2pjyG5RR5TKlDuom1uo6TRFLu",
       "role": "buyer",
-      "createdAt": "2025-10-26T05:14:10.372Z"
+      "createdAt": "2025-10-26T05:13:04.389Z"
+    },
+    {
+      "email": "a@gmail.com",
+      "password": "$2b$10$Mjmz4Oo/JgJhByieyuE3X.7XRtOLKw26ilYqEHpmyNhHdYbHtVfh6",
+      "name": "a",
+      "role": "buyer",
+      "createdAt": "2025-10-26T05:15:55.838Z",
+      "id": 2
     }
   ],
   "ids": [],
@@ -51,10 +59,10 @@
           "timeAgo": "1 week ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 2,
+      "id": 1,
       "name": "Smart Fitness Watch",
       "description": "Advanced fitness tracking watch with heart rate monitor, GPS, sleep tracking, and smartphone notifications. Water resistant up to 50 meters.",
       "price": "149.99",
@@ -77,10 +85,10 @@
           "timeAgo": "1 week ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 3,
+      "id": 1,
       "name": "Professional Coffee Maker",
       "description": "Premium espresso machine with built-in grinder, milk frother, and programmable settings. Creates café-quality coffee at home.",
       "price": "299.99",
@@ -103,10 +111,10 @@
           "timeAgo": "2 weeks ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 4,
+      "id": 1,
       "name": "Gaming Mechanical Keyboard",
       "description": "RGB backlit mechanical keyboard with blue switches, programmable macro keys, and durable construction. Perfect for gaming enthusiasts.",
       "price": "79.99",
@@ -129,10 +137,10 @@
           "timeAgo": "4 days ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 5,
+      "id": 1,
       "name": "Ergonomic Office Chair",
       "description": "Comfortable ergonomic office chair with lumbar support, adjustable height, and breathable mesh back. Reduces back pain during long work sessions.",
       "price": "199.99",
@@ -155,10 +163,10 @@
           "timeAgo": "2 weeks ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 6,
+      "id": 1,
       "name": "4K Ultra HD Smart TV",
       "description": "55-inch 4K Ultra HD Smart TV with HDR, smart streaming apps, and voice control. Provides stunning picture quality and immersive viewing experience.",
       "price": "499.99",
@@ -181,10 +189,10 @@
           "timeAgo": "1 week ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 7,
+      "id": 1,
       "name": "Professional DSLR Camera",
       "description": "24.2 MP DSLR camera with 4K video, built-in WiFi, and 45-point autofocus system. Perfect for photography enthusiasts and professionals.",
       "price": "599.99",
@@ -207,10 +215,10 @@
           "timeAgo": "5 days ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     },
     {
-      "id": 8,
+      "id": 1,
       "name": "Stainless Steel Cookware Set",
       "description": "10-piece professional cookware set with stainless steel construction, even heat distribution, and oven safe up to 500°F. Perfect for home chefs.",
       "price": "149.99",
@@ -233,7 +241,7 @@
           "timeAgo": "1 week ago"
         }
       ],
-      "createdAt": "2025-10-26T05:14:10.380Z"
+      "createdAt": "2025-10-26T05:13:04.391Z"
     }
   ]
 }
