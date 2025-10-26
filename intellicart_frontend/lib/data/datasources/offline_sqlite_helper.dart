@@ -24,7 +24,7 @@ class OfflineDatabaseHelper {
     String path = join(await getDatabasesPath(), 'intellicart_offline.db');
     return await openDatabase(
       path,
-      version: 2, // Increased version to reflect schema changes
+      version: 3, // Increased version to clean up any old duplicate data
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -47,7 +47,7 @@ class OfflineDatabaseHelper {
     await db.execute('''
       CREATE TABLE products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        external_id TEXT UNIQUE, -- For sync with backend
+        external_id TEXT, -- For sync with backend, UNIQUE constraint added in version 3
         name TEXT NOT NULL,
         description TEXT,
         price TEXT NOT NULL,
@@ -78,7 +78,7 @@ class OfflineDatabaseHelper {
     await db.execute('''
       CREATE TABLE orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        external_id TEXT UNIQUE, -- For sync with backend
+        external_id TEXT, -- For sync with backend, UNIQUE constraint added in version 3
         customer_name TEXT NOT NULL,
         total REAL NOT NULL,
         status TEXT DEFAULT 'pending',
