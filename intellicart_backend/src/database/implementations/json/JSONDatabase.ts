@@ -112,8 +112,8 @@ export class JSONDatabase implements DatabaseInterface<any> {
       this.data[tableName] = [];
     }
 
-    // Generate a new ID if not provided
-    const newId = this.generateId();
+    // Generate a new ID only if not provided in the data
+    const newId = data.id || this.generateId(tableName);
     const record = { ...data, id: newId };
     
     this.data[tableName].push(record);
@@ -215,8 +215,8 @@ export class JSONDatabase implements DatabaseInterface<any> {
    * @function generateId
    * @returns {number} A unique ID
    */
-  private generateId(): number {
-    const table = this.data['ids'] = this.data['ids'] || [];
+  private generateId(tableName: string): number {
+    const table = this.data[tableName] || [];
     const maxId = Math.max(0, ...table.map(item => parseInt(item.id) || 0));
     return maxId + 1;
   }
