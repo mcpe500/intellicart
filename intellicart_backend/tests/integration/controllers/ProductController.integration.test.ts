@@ -1,17 +1,14 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { Hono } from 'hono';
 import { ProductController } from '../../../src/controllers/ProductController';
 import { dbManager } from '../../../src/database/Config';
-import { logger } from '../../../src/utils/logger';
 
 // Mock logger to avoid console output during tests
-vi.mock('../../../src/utils/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
-}));
+const mockedLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 // Create a test app with product routes
 const app = new Hono();
@@ -28,7 +25,7 @@ app.get('/products', (c) => ProductController.getAllProducts(c));
 
 app.get('/products/:id', (c) => {
   (c.req as any).param = (name: string) => {
-    if (name === 'id') return c.req.path.split('/')[2]; // Extract ID from path
+    if (name === 'id') return c.req.path.split('/').pop(); // Extract ID from path
   };
   return ProductController.getProductById(c);
 });
@@ -52,7 +49,7 @@ app.post('/products', async (c) => {
 app.put('/products/:id', async (c) => {
   const body = await c.req.json();
   (c.req as any).param = (name: string) => {
-    if (name === 'id') return c.req.path.split('/')[3]; // Extract ID from path
+    if (name === 'id') return c.req.path.split('/').pop(); // Extract ID from path
   };
   (c.req as any).valid = () => body;
   // Mock user context 
@@ -70,7 +67,7 @@ app.put('/products/:id', async (c) => {
 
 app.delete('/products/:id', (c) => {
   (c.req as any).param = (name: string) => {
-    if (name === 'id') return c.req.path.split('/')[2]; // Extract ID from path
+    if (name === 'id') return c.req.path.split('/').pop(); // Extract ID from path
   };
   // Mock user context 
   (c as any).set = (key: string, value: any) => {
@@ -87,7 +84,7 @@ app.delete('/products/:id', (c) => {
 
 app.get('/products/seller/:sellerId', (c) => {
   (c.req as any).param = (name: string) => {
-    if (name === 'sellerId') return c.req.path.split('/')[3]; // Extract seller ID from path
+    if (name === 'sellerId') return c.req.path.split('/').pop(); // Extract seller ID from path
   };
   // Mock user context 
   (c as any).set = (key: string, value: any) => {
@@ -98,8 +95,8 @@ app.get('/products/seller/:sellerId', (c) => {
     return (c as any)._context?.[key];
   };
   // Set a mock user with ID matching seller ID
-  const sellerId = c.req.path.split('/')[3];
-  (c as any).set('user', { userId: parseInt(sellerId) });
+  const sellerId = c.req.path.split('/').pop();
+  (c as any).set('user', { userId: parseInt(sellerId || '1') });
   return ProductController.getSellerProducts(c);
 });
 
@@ -108,7 +105,7 @@ describe('Product Integration Tests', () => {
   
   beforeAll(async () => {
     // Setup test database - using memory database for tests
-    await dbManager.init();
+    await dbManager.initialize();
   });
 
   afterAll(async () => {

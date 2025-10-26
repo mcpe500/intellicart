@@ -1,18 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { Hono } from 'hono';
 import { UserController } from '../../../src/controllers/UserController';
 import { AuthController } from '../../../src/controllers/authController';
 import { dbManager } from '../../../src/database/Config';
-import { logger } from '../../../src/utils/logger';
 
 // Mock logger to avoid console output during tests
-vi.mock('../../../src/utils/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
-}));
+const mockedLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 // Create a test app with user routes
 const app = new Hono();
@@ -62,7 +59,18 @@ describe('User Integration Tests', () => {
   
   beforeAll(async () => {
     // Setup test database - using memory database for tests
-    await dbManager.init();
+    await dbManager.initialize();
+    
+    // Clean up any existing test users before running tests
+    const db = dbManager.getDatabase();
+    try {
+      const existingUser = await db.findOne('users', { email: 'integration-test-user@example.com' });
+      if (existingUser && existingUser.id) {
+        await db.delete('users', existingUser.id);
+      }
+    } catch (e) {
+      // If the approach doesn't work, proceed with tests as is
+    }
   });
 
   afterAll(async () => {
@@ -90,7 +98,7 @@ describe('User Integration Tests', () => {
       },
       body: JSON.stringify({
         name: 'Integration Test User',
-        email: 'integration-test@example.com',
+        email: 'integration-test-user@example.com',
         age: 30
       }),
     });
@@ -100,7 +108,7 @@ describe('User Integration Tests', () => {
     const responseBody = await response.json();
     expect(responseBody).toBeDefined();
     expect(responseBody.name).toBe('Integration Test User');
-    expect(responseBody.email).toBe('integration-test@example.com');
+    expect(responseBody.email).toBe('integration-test-user@example.com');
     expect(responseBody.age).toBe(30);
     testUserId = responseBody.id;
   });
@@ -132,7 +140,7 @@ describe('User Integration Tests', () => {
     expect(responseBody).toBeDefined();
     expect(responseBody.id).toBe(testUserId);
     expect(responseBody.name).toBe('Integration Test User');
-    expect(responseBody.email).toBe('integration-test@example.com');
+    expect(responseBody.email).toBe('integration-test-user@example.com');
   });
 
   it('should return 404 when retrieving non-existent user', async () => {

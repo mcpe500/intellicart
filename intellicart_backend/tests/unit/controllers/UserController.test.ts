@@ -1,18 +1,23 @@
-import { describe, it, expect, beforeEach, vi, MockedFunction } from 'bun:test';
+import { describe, it, expect, beforeEach, vi } from 'bun:test';
 import { UserController } from '../../../src/controllers/UserController';
 import { Context } from 'hono';
 import { dbManager } from '../../../src/database/Config';
 
-// Mock dependencies
-vi.mock('../../../src/database/Config', () => ({
-  dbManager: {
-    getDatabase: vi.fn()
-  }
-}));
+// Mock the database methods
+const mockDatabaseMethods = {
+  findAll: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+  findOne: vi.fn(),
+};
+
+// Keep a reference to the original getDatabase function to mock it
+const originalGetDatabase = dbManager.getDatabase;
 
 describe('UserController', () => {
   let mockContext: Context;
-  let mockDatabase: any;
 
   beforeEach(() => {
     // Reset all mocks
@@ -23,21 +28,13 @@ describe('UserController', () => {
       req: {
         param: vi.fn(),
         valid: vi.fn(),
+        json: vi.fn(), // Add the missing json method
       },
       json: vi.fn(),
     } as unknown as Context;
     
-    // Setup mock database
-    mockDatabase = {
-      findAll: vi.fn(),
-      findById: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      findOne: vi.fn(),
-    };
-    
-    (dbManager.getDatabase as MockedFunction<any>).mockReturnValue(mockDatabase);
+    // Mock the database
+    vi.spyOn(dbManager, 'getDatabase').mockReturnValue(mockDatabaseMethods);
   });
 
   describe('getAllUsers', () => {
@@ -48,19 +45,19 @@ describe('UserController', () => {
         { id: 2, name: 'Jane Smith', email: 'jane@example.com', createdAt: '2023-01-02T00:00:00.000Z' }
       ];
       
-      mockDatabase.findAll.mockResolvedValue(mockUsers);
+      mockDatabaseMethods.findAll.mockResolvedValue(mockUsers);
       
       // Act
       await UserController.getAllUsers(mockContext);
       
       // Assert
-      expect(mockDatabase.findAll).toHaveBeenCalledWith('users');
+      expect(mockDatabaseMethods.findAll).toHaveBeenCalledWith('users');
       expect(mockContext.json).toHaveBeenCalledWith(mockUsers);
     });
 
     it('should return 500 if there is an error retrieving users', async () => {
       // Arrange
-      mockDatabase.findAll.mockRejectedValue(new Error('Database error'));
+      mockDatabaseMethods.findAll.mockRejectedValue(new Error('Database error'));
       
       // Act
       await UserController.getAllUsers(mockContext);
@@ -84,22 +81,22 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z' 
       };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      mockDatabase.findById.mockResolvedValue(mockUser);
+      (mockContext.req.param as any).mockReturnValue('1');
+      mockDatabaseMethods.findById.mockResolvedValue(mockUser);
       
       // Act
       await UserController.getUserById(mockContext);
       
       // Assert
       expect(mockContext.req.param).toHaveBeenCalledWith('id');
-      expect(mockDatabase.findById).toHaveBeenCalledWith('users', 1);
+      expect(mockDatabaseMethods.findById).toHaveBeenCalledWith('users', 1);
       expect(mockContext.json).toHaveBeenCalledWith(mockUser);
     });
 
     it('should return 404 if user is not found', async () => {
       // Arrange
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('999');
-      mockDatabase.findById.mockResolvedValue(null);
+      (mockContext.req.param as any).mockReturnValue('999');
+      mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
       await UserController.getUserById(mockContext);
@@ -113,8 +110,8 @@ describe('UserController', () => {
 
     it('should return 500 if there is an error retrieving user', async () => {
       // Arrange
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      mockDatabase.findById.mockRejectedValue(new Error('Database error'));
+      (mockContext.req.param as any).mockReturnValue('1');
+      mockDatabaseMethods.findById.mockRejectedValue(new Error('Database error'));
       
       // Act
       await UserController.getUserById(mockContext);
@@ -144,16 +141,16 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z'
       };
       
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue(mockReqBody);
-      mockDatabase.findOne.mockResolvedValue(null); // No existing user with same email
-      mockDatabase.create.mockResolvedValue(mockCreatedUser);
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findOne.mockResolvedValue(null); // No existing user with same email
+      mockDatabaseMethods.create.mockResolvedValue(mockCreatedUser);
       
       // Act
       await UserController.createUser(mockContext);
       
       // Assert
-      expect(mockDatabase.findOne).toHaveBeenCalledWith('users', { email: 'john@example.com' });
-      expect(mockDatabase.create).toHaveBeenCalledWith({
+      expect(mockDatabaseMethods.findOne).toHaveBeenCalledWith('users', { email: 'john@example.com' });
+      expect(mockDatabaseMethods.create).toHaveBeenCalledWith('users', {
         name: 'John Doe',
         email: 'john@example.com',
         age: 30,
@@ -170,8 +167,8 @@ describe('UserController', () => {
         age: 30
       };
       
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue(mockReqBody);
-      mockDatabase.findOne.mockResolvedValue({ id: 1, email: 'john@example.com' }); // Existing user
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findOne.mockResolvedValue({ id: 1, email: 'john@example.com' }); // Existing user
       
       // Act
       await UserController.createUser(mockContext);
@@ -191,9 +188,9 @@ describe('UserController', () => {
         age: 30
       };
       
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue(mockReqBody);
-      mockDatabase.findOne.mockResolvedValue(null);
-      mockDatabase.create.mockRejectedValue(new Error('Database error'));
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findOne.mockResolvedValue(null);
+      mockDatabaseMethods.create.mockRejectedValue(new Error('Database error'));
       
       // Act
       await UserController.createUser(mockContext);
@@ -230,24 +227,24 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z'
       };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue(mockReqBody);
-      mockDatabase.findById.mockResolvedValue(mockExistingUser);
-      mockDatabase.update.mockResolvedValue(mockUpdatedUser);
+      (mockContext.req.param as any).mockReturnValue('1');
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findById.mockResolvedValue(mockExistingUser);
+      mockDatabaseMethods.update.mockResolvedValue(mockUpdatedUser);
       
       // Act
       await UserController.updateUser(mockContext);
       
       // Assert
-      expect(mockDatabase.findById).toHaveBeenCalledWith('users', 1);
-      expect(mockDatabase.update).toHaveBeenCalledWith('users', 1, { name: 'John Doe Updated', age: 31 });
+      expect(mockDatabaseMethods.findById).toHaveBeenCalledWith('users', 1);
+      expect(mockDatabaseMethods.update).toHaveBeenCalledWith('users', 1, { name: 'John Doe Updated', age: 31 });
       expect(mockContext.json).toHaveBeenCalledWith(mockUpdatedUser);
     });
 
     it('should return 404 if user to update does not exist', async () => {
       // Arrange
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('999');
-      mockDatabase.findById.mockResolvedValue(null);
+      (mockContext.req.param as any).mockReturnValue('999');
+      mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
       await UserController.updateUser(mockContext);
@@ -274,10 +271,10 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z'
       };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue(mockReqBody);
-      mockDatabase.findById.mockResolvedValue(mockExistingUser);
-      mockDatabase.findOne.mockResolvedValue({ id: 2, email: 'existing@example.com' }); // Another user with same email
+      (mockContext.req.param as any).mockReturnValue('1');
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findById.mockResolvedValue(mockExistingUser);
+      mockDatabaseMethods.findOne.mockResolvedValue({ id: 2, email: 'existing@example.com' }); // Another user with same email
       
       // Act
       await UserController.updateUser(mockContext);
@@ -303,10 +300,10 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z'
       };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue(mockReqBody);
-      mockDatabase.findById.mockResolvedValue(mockExistingUser);
-      mockDatabase.update.mockRejectedValue(new Error('Database error'));
+      (mockContext.req.param as any).mockReturnValue('1');
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findById.mockResolvedValue(mockExistingUser);
+      mockDatabaseMethods.update.mockRejectedValue(new Error('Database error'));
       
       // Act
       await UserController.updateUser(mockContext);
@@ -330,16 +327,16 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z'
       };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      mockDatabase.findById.mockResolvedValue(mockUser);
-      mockDatabase.delete.mockResolvedValue(true);
+      (mockContext.req.param as any).mockReturnValue('1');
+      mockDatabaseMethods.findById.mockResolvedValue(mockUser);
+      mockDatabaseMethods.delete.mockResolvedValue(true);
       
       // Act
       await UserController.deleteUser(mockContext);
       
       // Assert
-      expect(mockDatabase.findById).toHaveBeenCalledWith('users', 1);
-      expect(mockDatabase.delete).toHaveBeenCalledWith('users', 1);
+      expect(mockDatabaseMethods.findById).toHaveBeenCalledWith('users', 1);
+      expect(mockDatabaseMethods.delete).toHaveBeenCalledWith('users', 1);
       expect(mockContext.json).toHaveBeenCalledWith({
         message: 'User deleted successfully',
         user: mockUser
@@ -348,8 +345,8 @@ describe('UserController', () => {
 
     it('should return 404 if user to delete does not exist', async () => {
       // Arrange
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('999');
-      mockDatabase.findById.mockResolvedValue(null);
+      (mockContext.req.param as any).mockReturnValue('999');
+      mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
       await UserController.deleteUser(mockContext);
@@ -371,9 +368,9 @@ describe('UserController', () => {
         createdAt: '2023-01-01T00:00:00.000Z'
       };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      mockDatabase.findById.mockResolvedValue(mockUser);
-      mockDatabase.delete.mockResolvedValue(false); // Failed to delete
+      (mockContext.req.param as any).mockReturnValue('1');
+      mockDatabaseMethods.findById.mockResolvedValue(mockUser);
+      mockDatabaseMethods.delete.mockResolvedValue(false); // Failed to delete
       
       // Act
       await UserController.deleteUser(mockContext);

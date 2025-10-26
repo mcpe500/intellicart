@@ -1,18 +1,8 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { Hono } from 'hono';
 import { AuthController } from '../../../src/controllers/authController';
 import { UserController } from '../../../src/controllers/UserController';
 import { dbManager } from '../../../src/database/Config';
-import { logger } from '../../../src/utils/logger';
-
-// Mock logger to avoid console output during tests
-vi.mock('../../../src/utils/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
-}));
 
 // Create a test app with auth routes
 const app = new Hono();
@@ -52,16 +42,45 @@ app.post('/verify', (c) => {
 describe('Auth Integration Tests', () => {
   beforeAll(async () => {
     // Setup test database - using memory database for tests
-    await dbManager.init();
+    await dbManager.initialize();
+    
+    // Clean up any existing test users before running tests
+    const db = dbManager.getDatabase();
+    if (db.findAll && typeof db.findAll === 'function' && db.delete && typeof db.delete === 'function') {
+      try {
+        const allUsers = await db.findAll('users');
+        const testUsers = allUsers.filter(user => 
+          user.email === 'integration-test-unique@example.com' || 
+          user.email === 'integration-test2-unique@example.com'
+        );
+        
+        for (const user of testUsers) {
+          if (user.id) {
+            await db.delete('users', user.id);
+          }
+        }
+      } catch (e) {
+        // If the approach doesn't work, proceed with tests as is
+      }
+    }
   });
 
   afterAll(async () => {
     // Clean up test database
     const db = dbManager.getDatabase();
-    if (db.delete && typeof db.delete === 'function') {
+    if (db.findOne && typeof db.findOne === 'function' && db.delete && typeof db.delete === 'function') {
       try {
-        await db.delete('users', { email: 'test@example.com' });
-        await db.delete('users', { email: 'test2@example.com' });
+        // Find and delete first test user
+        const firstUser = await db.findOne('users', { email: 'integration-test-unique@example.com' });
+        if (firstUser && firstUser.id) {
+          await db.delete('users', firstUser.id);
+        }
+        
+        // Find and delete second test user
+        const secondUser = await db.findOne('users', { email: 'integration-test2-unique@example.com' });
+        if (secondUser && secondUser.id) {
+          await db.delete('users', secondUser.id);
+        }
       } catch (e) {
         // Database might not support this operation in test mode
       }
@@ -78,9 +97,9 @@ describe('Auth Integration Tests', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test@example.com',
+        email: 'integration-test-unique@example.com',
         password: 'password123',
-        name: 'Test User',
+        name: 'Integration Test User',
         role: 'buyer'
       }),
     });
@@ -89,8 +108,8 @@ describe('Auth Integration Tests', () => {
     
     const responseBody = await response.json();
     expect(responseBody.user).toBeDefined();
-    expect(responseBody.user.email).toBe('test@example.com');
-    expect(responseBody.user.name).toBe('Test User');
+    expect(responseBody.user.email).toBe('integration-test-unique@example.com');
+    expect(responseBody.user.name).toBe('Integration Test User');
     expect(responseBody.token).toBeDefined();
   });
 
@@ -101,7 +120,7 @@ describe('Auth Integration Tests', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test@example.com',
+        email: 'integration-test-unique@example.com',
         password: 'password123'
       }),
     });
@@ -110,7 +129,7 @@ describe('Auth Integration Tests', () => {
     
     const responseBody = await response.json();
     expect(responseBody.user).toBeDefined();
-    expect(responseBody.user.email).toBe('test@example.com');
+    expect(responseBody.user.email).toBe('integration-test-unique@example.com');
     expect(responseBody.token).toBeDefined();
   });
 
@@ -121,7 +140,7 @@ describe('Auth Integration Tests', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test@example.com',
+        email: 'integration-test-unique@example.com',
         password: 'wrongpassword'
       }),
     });
@@ -164,9 +183,9 @@ describe('Auth Integration Tests', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test2@example.com',
+        email: 'integration-test2-unique@example.com',
         password: 'password123',
-        name: 'Test User 2'
+        name: 'Integration Test User 2'
         // no role provided, should default to 'buyer'
       }),
     });
@@ -175,6 +194,7 @@ describe('Auth Integration Tests', () => {
     
     const responseBody = await response.json();
     expect(responseBody.user).toBeDefined();
+    expect(responseBody.user.name).toBe('Integration Test User 2');
     expect(responseBody.user.role).toBe('buyer');
   });
 
@@ -185,7 +205,7 @@ describe('Auth Integration Tests', () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'test@example.com', // already exists from previous test
+        email: 'integration-test-unique@example.com', // already exists from previous test
         password: 'password123',
         name: 'Another User'
       }),

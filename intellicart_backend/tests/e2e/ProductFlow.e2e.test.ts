@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { Hono } from 'hono';
-import { AuthController } from '../../../src/controllers/authController';
-import { ProductController } from '../../../src/controllers/ProductController';
-import { dbManager } from '../../../src/database/Config';
+import { AuthController } from '../../src/controllers/authController';
+import { ProductController } from '../../src/controllers/ProductController';
+import { dbManager } from '../../src/database/Config';
 
 // Create a test app to simulate the full server
 const app = new Hono();
@@ -78,7 +78,7 @@ describe('Complete Product Management Flow E2E Tests', () => {
 
   beforeAll(async () => {
     // Setup test database
-    await dbManager.init();
+    await dbManager.initialize();
   });
 
   afterAll(async () => {

@@ -217,7 +217,7 @@ export const ReviewSchema = z
  */
 const getAllProductsRoute = createRoute({
   method: "get",
-  path: "", // Full path for the route
+  path: "", // Path relative to the route prefix '/api/products' -> '/api/products'
   tags: ["Products"], // Add tags for grouping in Swagger UI
   // Documentation for the successful response
   responses: {
@@ -233,14 +233,8 @@ const getAllProductsRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
-productRoutes.openapi(getAllProductsRoute);
-
-// Register the actual route handling using standard Hono methods
-productRoutes.get(
-  getAllProductsRoute.path, // Use path from the route definition
-  ProductHandler.getAllProducts, // Actual handler
-);
+// Register both OpenAPI spec and the handler
+productRoutes.openapi(getAllProductsRoute, ProductHandler.getAllProducts);
 
 /**
  * Route: GET /api/products/:id
@@ -308,15 +302,8 @@ const getProductByIdRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
-productRoutes.openapi(getProductByIdRoute);
-
-// Register the actual route handling using standard Hono methods
-productRoutes.get(
-  getProductByIdRoute.path,
-  zValidator("param", getProductByIdRoute.request.params), // Explicit validator
-  ProductHandler.getProductById, // Actual handler
-);
+// Register both OpenAPI spec and the handler
+productRoutes.openapi(getProductByIdRoute, zValidator("param", getProductByIdRoute.request.params), ProductHandler.getProductById);
 
 /**
  * Route: POST /api/products
@@ -364,19 +351,11 @@ const createProductRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
-productRoutes.openapi(createProductRoute);
-
-// Register the actual route handling using standard Hono methods
-productRoutes.post(
-  createProductRoute.path,
-  zValidator(
-    "json",
-    createProductRoute.request.body.content["application/json"].schema,
-  ), // Explicit validator
-  verifyToken, // Authentication middleware
-  ProductHandler.createProduct, // Actual handler
-);
+// Register both OpenAPI spec and the handler
+productRoutes.openapi(createProductRoute, zValidator(
+  "json",
+  createProductRoute.request.body.content["application/json"].schema,
+), verifyToken, ProductHandler.createProduct);
 
 /**
  * Route: PUT /api/products/:id
@@ -453,20 +432,11 @@ const updateProductRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
-productRoutes.openapi(updateProductRoute);
-
-// Register the actual route handling using standard Hono methods
-productRoutes.put(
-  updateProductRoute.path,
-  zValidator("param", updateProductRoute.request.params), // Explicit param validator
-  zValidator(
-    "json",
-    updateProductRoute.request.body.content["application/json"].schema,
-  ), // Explicit body validator
-  verifyToken, // Authentication middleware
-  ProductHandler.updateProduct, // Actual handler
-);
+// Register both OpenAPI spec and the handler
+productRoutes.openapi(updateProductRoute, zValidator("param", updateProductRoute.request.params), zValidator(
+  "json",
+  updateProductRoute.request.body.content["application/json"].schema,
+), verifyToken, ProductHandler.updateProduct);
 
 /**
  * Route: DELETE /api/products/:id
@@ -541,16 +511,8 @@ const deleteProductRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
-productRoutes.openapi(deleteProductRoute);
-
-// Register the actual route handling using standard Hono methods
-productRoutes.delete(
-  deleteProductRoute.path,
-  zValidator("param", deleteProductRoute.request.params), // Explicit validator
-  verifyToken, // Authentication middleware
-  ProductHandler.deleteProduct, // Actual handler
-);
+// Register both OpenAPI spec and the handler
+productRoutes.openapi(deleteProductRoute, zValidator("param", deleteProductRoute.request.params), verifyToken, ProductHandler.deleteProduct);
 
 /**
  * Route: GET /api/products/seller/:sellerId
@@ -601,16 +563,8 @@ const getSellerProductsRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
-productRoutes.openapi(getSellerProductsRoute);
-
-// Register the actual route handling using standard Hono methods
-productRoutes.get(
-  getSellerProductsRoute.path,
-  zValidator("param", getSellerProductsRoute.request.params), // Explicit validator
-  verifyToken, // Authentication middleware
-  ProductHandler.getSellerProducts, // Actual handler
-);
+// Register both OpenAPI spec and the handler
+productRoutes.openapi(getSellerProductsRoute, zValidator("param", getSellerProductsRoute.request.params), verifyToken, ProductHandler.getSellerProducts);
 
 /**
  * Route: POST /api/products/:id/reviews
@@ -684,19 +638,17 @@ const addReviewRoute = createRoute({
   },
 });
 
-// Register just for OpenAPI documentation generation
+// Register for OpenAPI documentation and route with authentication
+// Split into documentation and actual routing to ensure proper middleware execution
 productRoutes.openapi(addReviewRoute);
 
-// Register the actual route handling using standard Hono methods
+// Apply the same pattern as other working authenticated routes
 productRoutes.post(
   addReviewRoute.path,
-  zValidator("param", addReviewRoute.request.params), // Validate path param
-  zValidator(
-    "json",
-    addReviewRoute.request.body.content["application/json"].schema,
-  ), // Validate request body
-  verifyToken, // Require authentication to add a review
-  ProductHandler.addReview, // Use the new handler method
+  verifyToken, // Authentication first
+  zValidator("param", addReviewRoute.request.params), // Parameter validation
+  zValidator("json", addReviewRoute.request.body.content["application/json"].schema), // Body validation 
+  ProductHandler.addReview // Handler last
 );
 
 // Export the configured routes for use in the main application

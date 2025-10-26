@@ -1,18 +1,24 @@
-import { describe, it, expect, beforeEach, vi, MockedFunction } from 'bun:test';
+import { describe, it, expect, beforeEach, vi } from 'bun:test';
 import { OrderController } from '../../../src/controllers/OrderController';
 import { Context } from 'hono';
 import { dbManager } from '../../../src/database/Config';
 
-// Mock dependencies
-vi.mock('../../../src/database/Config', () => ({
-  dbManager: {
-    getDatabase: vi.fn()
-  }
-}));
+// Mock the database methods
+const mockDatabaseMethods = {
+  findAll: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  delete: vi.fn(),
+  findBy: vi.fn(),
+  findOne: vi.fn(),
+};
+
+// Keep a reference to the original getDatabase function to mock it
+const originalGetDatabase = dbManager.getDatabase;
 
 describe('OrderController', () => {
   let mockContext: Context;
-  let mockDatabase: any;
 
   beforeEach(() => {
     // Reset all mocks
@@ -23,23 +29,14 @@ describe('OrderController', () => {
       req: {
         param: vi.fn(),
         valid: vi.fn(),
+        json: vi.fn(async () => ({})), // Add the missing json method that returns a promise
       },
       json: vi.fn(),
       get: vi.fn(),
     } as unknown as Context;
     
-    // Setup mock database
-    mockDatabase = {
-      findAll: vi.fn(),
-      findById: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      findBy: vi.fn(),
-      findOne: vi.fn(),
-    };
-    
-    (dbManager.getDatabase as MockedFunction<any>).mockReturnValue(mockDatabase);
+    // Mock the database
+    vi.spyOn(dbManager, 'getDatabase').mockReturnValue(mockDatabaseMethods);
   });
 
   describe('getSellerOrders', () => {
@@ -52,15 +49,15 @@ describe('OrderController', () => {
       
       const mockUser = { userId: 1 };
       
-      (mockContext.get as MockedFunction<any>).mockReturnValue(mockUser);
-      mockDatabase.findBy.mockResolvedValue(mockOrders);
+      (mockContext.get as any).mockReturnValue(mockUser);
+      mockDatabaseMethods.findBy.mockResolvedValue(mockOrders);
       
       // Act
       await OrderController.getSellerOrders(mockContext);
       
       // Assert
       expect(mockContext.get).toHaveBeenCalledWith('user');
-      expect(mockDatabase.findBy).toHaveBeenCalledWith('orders', { sellerId: 1 });
+      expect(mockDatabaseMethods.findBy).toHaveBeenCalledWith('orders', { sellerId: 1 });
       expect(mockContext.json).toHaveBeenCalledWith(mockOrders);
     });
 
@@ -68,8 +65,8 @@ describe('OrderController', () => {
       // Arrange
       const mockUser = { userId: 1 };
       
-      (mockContext.get as MockedFunction<any>).mockReturnValue(mockUser);
-      mockDatabase.findBy.mockRejectedValue(new Error('Database error'));
+      (mockContext.get as any).mockReturnValue(mockUser);
+      mockDatabaseMethods.findBy.mockRejectedValue(new Error('Database error'));
       
       // Act
       await OrderController.getSellerOrders(mockContext);
@@ -103,27 +100,31 @@ describe('OrderController', () => {
       
       const mockUser = { userId: 1 };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue({ status: 'shipped' });
-      (mockContext.get as MockedFunction<any>).mockReturnValue(mockUser);
-      mockDatabase.findById.mockResolvedValue(mockExistingOrder);
-      mockDatabase.update.mockResolvedValue(mockUpdatedOrder);
+      (mockContext.req.param as any).mockReturnValue('1');
+      const mockReqBody = { status: 'shipped' };
+      (mockContext.req.valid as any).mockReturnValue(mockReqBody);
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      (mockContext.get as any).mockReturnValue(mockUser);
+      mockDatabaseMethods.findById.mockResolvedValue(mockExistingOrder);
+      mockDatabaseMethods.update.mockResolvedValue(mockUpdatedOrder);
       
       // Act
       await OrderController.updateOrderStatus(mockContext);
       
       // Assert
-      expect(mockDatabase.findById).toHaveBeenCalledWith('orders', 1);
+      expect(mockDatabaseMethods.findById).toHaveBeenCalledWith('orders', 1);
       expect(mockContext.get).toHaveBeenCalledWith('user');
-      expect(mockDatabase.update).toHaveBeenCalledWith('orders', 1, { status: 'shipped' });
+      expect(mockDatabaseMethods.update).toHaveBeenCalledWith('orders', 1, { status: 'shipped' });
       expect(mockContext.json).toHaveBeenCalledWith(mockUpdatedOrder);
     });
 
     it('should return 404 if order to update does not exist', async () => {
       // Arrange
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('999');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue({ status: 'shipped' });
-      mockDatabase.findById.mockResolvedValue(null);
+      (mockContext.req.param as any).mockReturnValue('999');
+      const mockReqBody = { status: 'shipped' };
+      (mockContext.req.valid as any).mockReturnValue(mockReqBody);
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
       await OrderController.updateOrderStatus(mockContext);
@@ -147,10 +148,12 @@ describe('OrderController', () => {
       
       const mockUser = { userId: 1 }; // Different user
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue({ status: 'shipped' });
-      (mockContext.get as MockedFunction<any>).mockReturnValue(mockUser);
-      mockDatabase.findById.mockResolvedValue(mockExistingOrder);
+      (mockContext.req.param as any).mockReturnValue('1');
+      const mockReqBody = { status: 'shipped' };
+      (mockContext.req.valid as any).mockReturnValue(mockReqBody);
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      (mockContext.get as any).mockReturnValue(mockUser);
+      mockDatabaseMethods.findById.mockResolvedValue(mockExistingOrder);
       
       // Act
       await OrderController.updateOrderStatus(mockContext);
@@ -174,11 +177,13 @@ describe('OrderController', () => {
       
       const mockUser = { userId: 1 };
       
-      (mockContext.req.param as MockedFunction<any>).mockReturnValue('1');
-      (mockContext.req.valid as MockedFunction<any>).mockReturnValue({ status: 'shipped' });
-      (mockContext.get as MockedFunction<any>).mockReturnValue(mockUser);
-      mockDatabase.findById.mockResolvedValue(mockExistingOrder);
-      mockDatabase.update.mockRejectedValue(new Error('Database error'));
+      (mockContext.req.param as any).mockReturnValue('1');
+      const mockReqBody = { status: 'shipped' };
+      (mockContext.req.valid as any).mockReturnValue(mockReqBody);
+      (mockContext.req.json as any).mockResolvedValue(mockReqBody);
+      (mockContext.get as any).mockReturnValue(mockUser);
+      mockDatabaseMethods.findById.mockResolvedValue(mockExistingOrder);
+      mockDatabaseMethods.update.mockRejectedValue(new Error('Database error'));
       
       // Act
       await OrderController.updateOrderStatus(mockContext);

@@ -18,6 +18,7 @@
  * @version 1.0.0
  */
 
+import { Context } from 'hono';
 import { dbManager } from '../database/Config';
 
 export class ProductController {
@@ -30,14 +31,19 @@ export class ProductController {
    * @returns {Promise} JSON response containing array of all products
    * @route GET /api/products
    */
-  static async getAllProducts() {
-    const db = dbManager.getDatabase<any>();
-    const products = await db.findAll('products');
-    
-    // Log the product fetch with count
-    console.log(`[INFO] Fetching products: ${products.length} products retrieved`);
-    
-    return products;
+  static async getAllProducts(c: Context) {
+    try {
+      const db = dbManager.getDatabase<any>();
+      const products = await db.findAll('products');
+      
+      // Log the product fetch with count
+      console.log(`[INFO] Fetching products: ${products.length} products retrieved`);
+      
+      return c.json(products);
+    } catch (error) {
+      console.error('Error retrieving all products:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 
   /**
@@ -49,17 +55,22 @@ export class ProductController {
    * @returns {Promise} JSON response containing the product object or error if not found
    * @route GET /api/products/:id
    */
-  static async getProductById(id: number) {
-    const db = dbManager.getDatabase<any>();
-    const product = await db.findById('products', id);
-    
-    if (!product) {
-      const error = new Error('Product not found');
-      (error as any).status = 404;
-      throw error;
+  static async getProductById(c: Context) {
+    try {
+      const id = Number(c.req.param('id'));
+      
+      const db = dbManager.getDatabase<any>();
+      const product = await db.findById('products', id);
+      
+      if (!product) {
+        return c.json({ error: 'Product not found' }, 404);
+      }
+      
+      return c.json(product);
+    } catch (error) {
+      console.error('Error retrieving product by ID:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    return product;
   }
 
   /**
@@ -71,25 +82,34 @@ export class ProductController {
    * @returns {Promise} JSON response containing the created product object
    * @route POST /api/products
    */
-  static async createProduct(body: {
-    name: string;
-    description: string;
-    price: string;
-    originalPrice?: string;
-    imageUrl: string;
-  }, userId: number) {
-    const db = dbManager.getDatabase<any>();
-    
-    const newProduct = {
-      ...body,
-      reviews: [],
-      sellerId: userId,
-      createdAt: new Date().toISOString(),
-    };
-    
-    const createdProduct = await db.create('products', newProduct);
-    
-    return createdProduct;
+  static async createProduct(c: Context) {
+    try {
+      const body = await c.req.json() as {
+        name: string;
+        description: string;
+        price: string;
+        originalPrice?: string;
+        imageUrl: string;
+      };
+      
+      const user = c.get('user');
+      
+      const db = dbManager.getDatabase<any>();
+      
+      const newProduct = {
+        ...body,
+        reviews: [],
+        sellerId: user.userId,
+        createdAt: new Date().toISOString(),
+      };
+      
+      const createdProduct = await db.create('products', newProduct);
+      
+      return c.json(createdProduct, 201);
+    } catch (error) {
+      console.error('Error creating product:', error);
+      return c.json({ error: 'Internal server error' }, 500);
+    }
   }
 
   /**
@@ -101,40 +121,51 @@ export class ProductController {
    * @returns {Promise} JSON response containing the updated product object or error if not found
    * @route PUT /api/products/:id
    */
-  static async updateProduct(id: number, body: {
-    name?: string;
-    description?: string;
-    price?: string;
-    originalPrice?: string;
-    imageUrl?: string;
-    reviews?: any[]; // Allow reviews to be updated
-  }, userId: number) {
-    const db = dbManager.getDatabase<any>();
-    
-    // Check if product exists
-    const existingProduct = await db.findById('products', id);
-    if (!existingProduct) {
-      const error = new Error('Product not found');
-      (error as any).status = 404;
-      throw error;
+  static async updateProduct(c: Context) {
+    try {
+      const rawId = c.req.param('id');
+      const id = Number(rawId);
+      
+      // Validate that the ID is a number
+      if (isNaN(id) || id <= 0) {
+        return c.json({ error: 'Invalid product ID' }, 400);
+      }
+      
+      const body = await c.req.json() as {
+        name?: string;
+        description?: string;
+        price?: string;
+        originalPrice?: string;
+        imageUrl?: string;
+        reviews?: any[]; // Allow reviews to be updated
+      };
+      
+      const user = c.get('user');
+      
+      const db = dbManager.getDatabase<any>();
+      
+      // Check if product exists
+      const existingProduct = await db.findById('products', id);
+      if (!existingProduct) {
+        return c.json({ error: 'Product not found' }, 404);
+      }
+      
+      // Check if the user is the seller of this product
+      if (existingProduct.sellerId !== user.userId) {
+        return c.json({ error: 'You can only update products you created' }, 403);
+      }
+      
+      const updatedProduct = await db.update('products', id, body);
+      
+      if (!updatedProduct) {
+        return c.json({ error: 'Product not found' }, 404);
+      }
+      
+      return c.json(updatedProduct);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    // Check if the user is the seller of this product
-    if (existingProduct.sellerId !== userId) {
-      const error = new Error('You can only update products you created');
-      (error as any).status = 403;
-      throw error;
-    }
-    
-    const updatedProduct = await db.update('products', id, body);
-    
-    if (!updatedProduct) {
-      const error = new Error('Product not found');
-      (error as any).status = 404;
-      throw error;
-    }
-    
-    return updatedProduct;
   }
 
   /**
@@ -146,35 +177,38 @@ export class ProductController {
    * @returns {Promise} JSON response indicating success or error
    * @route DELETE /api/products/:id
    */
-  static async deleteProduct(id: number, userId: number) {
-    const db = dbManager.getDatabase<any>();
-    
-    const product = await db.findById('products', id);
-    
-    if (!product) {
-      const error = new Error('Product not found');
-      (error as any).status = 404;
-      throw error;
-    }
-    
-    // Check if the user is the seller of this product
-    if (product.sellerId !== userId) {
-      const error = new Error('You can only delete products you created');
-      (error as any).status = 403;
-      throw error;
-    }
-    
-    const deleted = await db.delete('products', id);
-    
-    if (deleted) {
-      return {
-        message: 'Product deleted successfully', 
-        product 
-      };
-    } else {
-      const error = new Error('Failed to delete product');
-      (error as any).status = 500;
-      throw error;
+  static async deleteProduct(c: Context) {
+    try {
+      const id = Number(c.req.param('id'));
+      
+      const user = c.get('user');
+      
+      const db = dbManager.getDatabase<any>();
+      
+      const product = await db.findById('products', id);
+      
+      if (!product) {
+        return c.json({ error: 'Product not found' }, 404);
+      }
+      
+      // Check if the user is the seller of this product
+      if (product.sellerId !== user.userId) {
+        return c.json({ error: 'You can only delete products you created' }, 403);
+      }
+      
+      const deleted = await db.delete('products', id);
+      
+      if (deleted) {
+        return c.json({
+          message: 'Product deleted successfully', 
+          product 
+        });
+      } else {
+        return c.json({ error: 'Failed to delete product' }, 500);
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
   }
 
@@ -187,18 +221,24 @@ export class ProductController {
    * @returns {Promise} JSON response containing array of products by seller
    * @route GET /api/products/seller/:sellerId
    */
-  static async getSellerProducts(sellerId: number, userId: number) {
-    // Check if the requesting user is the seller
-    if (userId !== sellerId) {
-      const error = new Error('Access denied');
-      (error as any).status = 403;
-      throw error;
+  static async getSellerProducts(c: Context) {
+    try {
+      const sellerId = Number(c.req.param('sellerId'));
+      const user = c.get('user');
+      
+      // Check if the requesting user is the seller
+      if (user.userId !== sellerId) {
+        return c.json({ error: 'Access denied' }, 403);
+      }
+      
+      const db = dbManager.getDatabase<any>();
+      const products = await db.findBy('products', { sellerId: sellerId });
+      
+      return c.json(products);
+    } catch (error) {
+      console.error('Error retrieving seller products:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-    
-    const db = dbManager.getDatabase<any>();
-    const products = await db.findBy('products', { sellerId: sellerId });
-    
-    return products;
   }
 
   /**
@@ -212,41 +252,46 @@ export class ProductController {
    * @returns {Promise<any>} The updated product object with the new review.
    * @throws {Error} Throws an error if the product is not found or on database error.
    */
-  static async addReviewToProduct(productId: number, reviewData: any, userId?: number): Promise<any> {
-    console.log(`[INFO] Attempting to add review to product ID: ${productId}`); // <-- ADD THIS LOG
-    const db = dbManager.getDatabase<any>();
+  static async addReviewToProduct(c: Context): Promise<any> {
+    try {
+      console.log(`[INFO] Attempting to add review to product`); 
+      const productId = Number(c.req.param('id'));
+      const reviewData = await c.req.json() as any;
+      const user = c.get('user');
+      
+      const db = dbManager.getDatabase<any>();
 
-    // 1. Find the product
-    const product = await db.findById('products', productId);
-    if (!product) {
-      console.error(`[ERROR] Product not found for ID: ${productId} during addReview`); // <-- ADD THIS LOG
-      const error = new Error('Product not found');
-      (error as any).status = 404;
-      throw error;
+      // 1. Find the product
+      const product = await db.findById('products', productId);
+      if (!product) {
+        console.error(`[ERROR] Product not found for ID: ${productId} during addReview`); 
+        return c.json({ error: 'Product not found' }, 404);
+      }
+
+      // 2. Prepare the new review object
+      const newReview = {
+        id: (product.reviews?.length || 0) + 1, // Simple ID generation for the review within the product
+        ...reviewData,
+        timeAgo: 'Just now', // Or generate a timestamp server-side
+        // userId: userId // Optionally add userId if you track who submitted
+      };
+
+      // 3. Add the new review to the product's reviews array
+      const updatedReviews = [...(product.reviews || []), newReview];
+
+      // 4. Update the product in the database with the new reviews array
+      const updatedProduct = await db.update('products', productId, { reviews: updatedReviews });
+
+      if (!updatedProduct) {
+        // This case should ideally not happen if findById succeeded, but handle defensively
+        return c.json({ error: 'Failed to update product with review' }, 500);
+      }
+
+      console.log(`[INFO] Added review to product ${productId}. New review count: ${updatedReviews.length}`); 
+      return c.json(updatedProduct); // Return the full updated product
+    } catch (error) {
+      console.error('Error adding review to product:', error);
+      return c.json({ error: 'Internal server error' }, 500);
     }
-
-    // 2. Prepare the new review object
-    const newReview = {
-      id: (product.reviews?.length || 0) + 1, // Simple ID generation for the review within the product
-      ...reviewData,
-      timeAgo: 'Just now', // Or generate a timestamp server-side
-      // userId: userId // Optionally add userId if you track who submitted
-    };
-
-    // 3. Add the new review to the product's reviews array
-    const updatedReviews = [...(product.reviews || []), newReview];
-
-    // 4. Update the product in the database with the new reviews array
-    const updatedProduct = await db.update('products', productId, { reviews: updatedReviews });
-
-    if (!updatedProduct) {
-      // This case should ideally not happen if findById succeeded, but handle defensively
-      const error = new Error('Failed to update product with review');
-      (error as any).status = 500;
-      throw error;
-    }
-
-    console.log(`[INFO] Added review to product ${productId}. New review count: ${updatedReviews.length}`); // Add log
-    return updatedProduct; // Return the full updated product
   }
 }

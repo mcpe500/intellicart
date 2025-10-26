@@ -1,17 +1,14 @@
-import { describe, it, expect, beforeAll, afterAll, vi } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { Hono } from 'hono';
 import { OrderController } from '../../../src/controllers/OrderController';
 import { dbManager } from '../../../src/database/Config';
-import { logger } from '../../../src/utils/logger';
 
 // Mock logger to avoid console output during tests
-vi.mock('../../../src/utils/logger', () => ({
-  logger: {
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-  }
-}));
+const mockedLogger = {
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 // Create a test app with order routes
 const app = new Hono();
@@ -41,7 +38,7 @@ app.get('/orders', (c) => {
 app.put('/orders/:id/status', async (c) => {
   const body = await c.req.json();
   (c.req as any).param = (name: string) => {
-    if (name === 'id') return c.req.path.split('/')[3]; // Extract ID from path
+    if (name === 'id') return c.req.path.split('/')[2]; // Extract ID from path for /orders/{id}/status
   };
   (c.req as any).valid = () => body;
   // Mock user context 
@@ -62,7 +59,7 @@ describe('Order Integration Tests', () => {
   
   beforeAll(async () => {
     // Setup test database - using memory database for tests
-    await dbManager.init();
+    await dbManager.initialize();
   });
 
   afterAll(async () => {

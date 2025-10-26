@@ -1,11 +1,10 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
 import { Hono } from 'hono';
-import { AuthController } from '../../../src/controllers/authController';
-import { UserController } from '../../../src/controllers/UserController';
-import { ProductController } from '../../../src/controllers/ProductController';
-import { OrderController } from '../../../src/controllers/OrderController';
-import { dbManager } from '../../../src/database/Config';
-import { logger } from '../../../src/utils/logger';
+import { AuthController } from '../../src/controllers/authController';
+import { UserController } from '../../src/controllers/UserController';
+import { ProductController } from '../../src/controllers/ProductController';
+import { OrderController } from '../../src/controllers/OrderController';
+import { dbManager } from '../../src/database/Config';
 
 // Create a test app to simulate the full server
 const app = new Hono();
@@ -89,7 +88,7 @@ describe('Complete Authentication Flow E2E Tests', () => {
 
   beforeAll(async () => {
     // Setup test database
-    await dbManager.init();
+    await dbManager.initialize();
   });
 
   afterAll(async () => {
