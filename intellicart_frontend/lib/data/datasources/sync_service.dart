@@ -4,6 +4,7 @@ import 'package:intellicart/data/datasources/api_service.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/user.dart';
+import 'package:intellicart/models/review.dart';
 import 'package:sqflite/sqflite.dart';
 
 class SyncService {
@@ -53,6 +54,24 @@ class SyncService {
         } catch (e) {
           print('Failed to sync order: ${e.toString()}');
           await _dbHelper.markOrderSyncFailed(order.id!);
+          success = false;
+        }
+      }
+
+      // Sync pending reviews
+      final reviewsToSync = await _dbHelper.getPendingReviews();
+      for (final reviewData in reviewsToSync) {
+        try {
+          final review = Review(
+            title: reviewData['title'],
+            reviewText: reviewData['review_text'],
+            rating: reviewData['rating'],
+            timeAgo: 'Just now', // This will be updated by the backend
+          );
+          await _apiService.productService.addReviewToProduct(reviewData['product_id'], review);
+          await _dbHelper.deletePendingReview(reviewData['id']);
+        } catch (e) {
+          print('Failed to sync review: ${e.toString()}');
           success = false;
         }
       }
@@ -147,11 +166,13 @@ class SyncService {
   Future<Map<String, dynamic>> getSyncStatus() async {
     final productsToSync = await _dbHelper.getProductsPendingSync();
     final ordersToSync = await _dbHelper.getOrdersPendingSync();
+    final reviewsToSync = await _dbHelper.getPendingReviews();
     final lastSyncTime = await _dbHelper.getLastSyncTime();
     
     return {
       'productsToSync': productsToSync.length,
       'ordersToSync': ordersToSync.length,
+      'reviewsToSync': reviewsToSync.length,
       'lastSyncTime': lastSyncTime,
     };
   }

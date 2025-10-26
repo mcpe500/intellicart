@@ -4,11 +4,42 @@ info:
   version: "1.0.0"
   description: "Auto-generated API documentation with Zod + Hono"
 components:
+  securitySchemes:
+    BearerAuth:
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
+      description: "Enter JWT token in format: Bearer <token>"
   schemas:
+    ReviewInput:
+      type: "object"
+      properties:
+        title:
+          type: "string"
+          minLength: 1
+          description: "Review title (required, minimum 1 character)"
+          example: "Great product!"
+        reviewText:
+          type: "string"
+          minLength: 1
+          description: "Review content (required, minimum 1 character)"
+          example: "This product is amazing!"
+        rating:
+          type: "integer"
+          minimum: 1
+          maximum: 5
+          description: "Rating from 1 to 5 (required)"
+          example: 5
+      required:
+        - "title"
+        - "reviewText"
+        - "rating"
   parameters:
 paths:
   /api/auth/register:
     post:
+      tags:
+        - "Authentication"
       requestBody:
         content:
           application/json:
@@ -70,7 +101,7 @@ paths:
                         type: "string"
                         format: "date-time"
                         description: "Timestamp when the user was created"
-                        example: "2025-10-25T14:48:19.934Z"
+                        example: "2025-10-26T07:55:38.224Z"
                     required:
                       - "id"
                       - "email"
@@ -99,6 +130,8 @@ paths:
                   - "error"
   /api/auth/login:
     post:
+      tags:
+        - "Authentication"
       requestBody:
         content:
           application/json:
@@ -149,7 +182,7 @@ paths:
                         type: "string"
                         format: "date-time"
                         description: "Timestamp when the user was created"
-                        example: "2025-10-25T14:48:19.934Z"
+                        example: "2025-10-26T07:55:38.224Z"
                     required:
                       - "id"
                       - "email"
@@ -178,6 +211,11 @@ paths:
                   - "error"
   /api/auth/me:
     get:
+      tags:
+        - "Authentication"
+      security:
+        - 
+        BearerAuth: []
       responses:
         200:
           description: "Current user profile retrieved successfully"
@@ -207,7 +245,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the user was created"
-                    example: "2025-10-25T14:48:19.934Z"
+                    example: "2025-10-26T07:55:38.224Z"
                 required:
                   - "id"
                   - "email"
@@ -229,6 +267,11 @@ paths:
                   - "error"
   /api/auth/logout:
     post:
+      tags:
+        - "Authentication"
+      security:
+        - 
+        BearerAuth: []
       responses:
         200:
           description: "Successfully logged out"
@@ -258,6 +301,8 @@ paths:
                   - "error"
   /api/auth/verify:
     post:
+      tags:
+        - "Authentication"
       responses:
         200:
           description: "Token validation result"
@@ -314,8 +359,10 @@ paths:
                       - false
                 required:
                   - "valid"
-  /api/products:
+  /api/products/:
     get:
+      tags:
+        - "Products"
       responses:
         200:
           description: "Returns all products in the system"
@@ -388,7 +435,7 @@ paths:
                       type: "string"
                       format: "date-time"
                       description: "Timestamp when the product was created"
-                      example: "2025-10-25T14:48:19.935Z"
+                      example: "2025-10-26T07:55:38.226Z"
                   required:
                     - "id"
                     - "name"
@@ -397,6 +444,11 @@ paths:
                     - "imageUrl"
                     - "sellerId"
     post:
+      tags:
+        - "Products"
+      security:
+        - 
+        BearerAuth: []
       requestBody:
         content:
           application/json:
@@ -502,7 +554,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the product was created"
-                    example: "2025-10-25T14:48:19.935Z"
+                    example: "2025-10-26T07:55:38.226Z"
                 required:
                   - "id"
                   - "name"
@@ -512,6 +564,8 @@ paths:
                   - "sellerId"
   /api/products/{id}:
     get:
+      tags:
+        - "Products"
       parameters:
         - 
         schema:
@@ -592,7 +646,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the product was created"
-                    example: "2025-10-25T14:48:19.935Z"
+                    example: "2025-10-26T07:55:38.226Z"
                 required:
                   - "id"
                   - "name"
@@ -614,6 +668,11 @@ paths:
                 required:
                   - "error"
     put:
+      tags:
+        - "Products"
+      security:
+        - 
+        BearerAuth: []
       parameters:
         - 
         schema:
@@ -652,6 +711,11 @@ paths:
                   format: "uri"
                   description: "Product's image URL (optional, must be valid URL if provided)"
                   example: "https://example.com/product-image.jpg"
+                reviews:
+                  type: "array"
+                  items:
+                    nullable: true
+                  description: "Product's reviews (optional)"
       responses:
         200:
           description: "Product updated successfully"
@@ -722,7 +786,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the product was created"
-                    example: "2025-10-25T14:48:19.935Z"
+                    example: "2025-10-26T07:55:38.226Z"
                 required:
                   - "id"
                   - "name"
@@ -744,6 +808,11 @@ paths:
                 required:
                   - "error"
     delete:
+      tags:
+        - "Products"
+      security:
+        - 
+        BearerAuth: []
       parameters:
         - 
         schema:
@@ -831,7 +900,7 @@ paths:
                         type: "string"
                         format: "date-time"
                         description: "Timestamp when the product was created"
-                        example: "2025-10-25T14:48:19.935Z"
+                        example: "2025-10-26T07:55:38.226Z"
                     required:
                       - "id"
                       - "name"
@@ -857,6 +926,11 @@ paths:
                   - "error"
   /api/products/seller/{sellerId}:
     get:
+      tags:
+        - "Products"
+      security:
+        - 
+        BearerAuth: []
       parameters:
         - 
         schema:
@@ -939,7 +1013,7 @@ paths:
                       type: "string"
                       format: "date-time"
                       description: "Timestamp when the product was created"
-                      example: "2025-10-25T14:48:19.935Z"
+                      example: "2025-10-26T07:55:38.226Z"
                   required:
                     - "id"
                     - "name"
@@ -947,8 +1021,128 @@ paths:
                     - "price"
                     - "imageUrl"
                     - "sellerId"
+  /api/products/{id}/reviews:
+    post:
+      tags:
+        - "Products"
+      security:
+        - 
+        BearerAuth: []
+      summary: "Add a review to a product"
+      parameters:
+        - 
+        schema:
+          type: "string"
+          pattern: "^\d+$"
+          description: "Unique identifier of the product to review"
+          example: 1
+        required: true
+        name: "id"
+        in: "path"
+      requestBody:
+        description: "Review data (title, text, rating)"
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewInput"
+      responses:
+        200:
+          description: "Review added successfully, returns the updated product"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  id:
+                    type: "number"
+                    description: "Unique identifier for the product (auto-generated)"
+                    example: 1
+                  name:
+                    type: "string"
+                    description: "Product's name"
+                    example: "Wireless Headphones"
+                  description:
+                    type: "string"
+                    description: "Product's description"
+                    example: "High-quality wireless headphones with noise cancellation"
+                  price:
+                    type: "string"
+                    description: "Product's price"
+                    example: "$99.99"
+                  originalPrice:
+                    type: "string"
+                    description: "Product's original price (optional, for discount display)"
+                    example: "$129.99"
+                  imageUrl:
+                    type: "string"
+                    format: "uri"
+                    description: "Product's image URL"
+                    example: "https://example.com/product-image.jpg"
+                  reviews:
+                    type: "array"
+                    items:
+                      type: "object"
+                      properties:
+                        id:
+                          type: "number"
+                          example: 1
+                        title:
+                          type: "string"
+                          example: "Great product!"
+                        reviewText:
+                          type: "string"
+                          example: "This product is amazing!"
+                        rating:
+                          type: "number"
+                          minimum: 1
+                          maximum: 5
+                          example: 5
+                        timeAgo:
+                          type: "string"
+                          example: "2 days ago"
+                      required:
+                        - "id"
+                        - "title"
+                        - "reviewText"
+                        - "rating"
+                        - "timeAgo"
+                    description: "Product's reviews"
+                  sellerId:
+                    type: "number"
+                    description: "ID of the seller who added this product"
+                    example: 1
+                  createdAt:
+                    type: "string"
+                    format: "date-time"
+                    description: "Timestamp when the product was created"
+                    example: "2025-10-26T07:55:38.226Z"
+                required:
+                  - "id"
+                  - "name"
+                  - "description"
+                  - "price"
+                  - "imageUrl"
+                  - "sellerId"
+        404:
+          description: "Product not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error:
+                    type: "string"
+                    example: "Product not found"
+                required:
+                  - "error"
   /api/orders:
     get:
+      tags:
+        - "Orders"
+      security:
+        - 
+        BearerAuth: []
       responses:
         200:
           description: "Returns all orders for the authenticated seller"
@@ -1043,7 +1237,7 @@ paths:
                       type: "string"
                       format: "date-time"
                       description: "Order's creation date"
-                      example: "2025-10-25T14:48:19.936Z"
+                      example: "2025-10-26T07:55:38.227Z"
                     sellerId:
                       type: "number"
                       description: "ID of the seller associated with this order"
@@ -1052,7 +1246,7 @@ paths:
                       type: "string"
                       format: "date-time"
                       description: "Timestamp when the order was created"
-                      example: "2025-10-25T14:48:19.936Z"
+                      example: "2025-10-26T07:55:38.227Z"
                   required:
                     - "id"
                     - "customerName"
@@ -1063,6 +1257,11 @@ paths:
                     - "sellerId"
   /api/orders/{id}/status:
     put:
+      tags:
+        - "Orders"
+      security:
+        - 
+        BearerAuth: []
       parameters:
         - 
         schema:
@@ -1177,7 +1376,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Order's creation date"
-                    example: "2025-10-25T14:48:19.936Z"
+                    example: "2025-10-26T07:55:38.227Z"
                   sellerId:
                     type: "number"
                     description: "ID of the seller associated with this order"
@@ -1186,7 +1385,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the order was created"
-                    example: "2025-10-25T14:48:19.936Z"
+                    example: "2025-10-26T07:55:38.227Z"
                 required:
                   - "id"
                   - "customerName"
@@ -1208,8 +1407,10 @@ paths:
                     example: "Order not found"
                 required:
                   - "error"
-  /api/users/users:
+  /api/users:
     get:
+      tags:
+        - "Users"
       responses:
         200:
           description: "Returns all users in the system"
@@ -1242,13 +1443,15 @@ paths:
                       type: "string"
                       format: "date-time"
                       description: "Timestamp when the user was created"
-                      example: "2025-10-25T14:48:19.930Z"
+                      example: "2025-10-26T07:55:38.222Z"
                   required:
                     - "id"
                     - "name"
                     - "email"
                     - "createdAt"
     post:
+      tags:
+        - "Users"
       requestBody:
         content:
           application/json:
@@ -1303,14 +1506,16 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the user was created"
-                    example: "2025-10-25T14:48:19.930Z"
+                    example: "2025-10-26T07:55:38.222Z"
                 required:
                   - "id"
                   - "name"
                   - "email"
                   - "createdAt"
-  /api/users/users/{id}:
+  /api/users/{id}:
     get:
+      tags:
+        - "Users"
       parameters:
         - 
         schema:
@@ -1351,7 +1556,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the user was created"
-                    example: "2025-10-25T14:48:19.930Z"
+                    example: "2025-10-26T07:55:38.222Z"
                 required:
                   - "id"
                   - "name"
@@ -1371,6 +1576,11 @@ paths:
                 required:
                   - "error"
     put:
+      tags:
+        - "Users"
+      security:
+        - 
+        BearerAuth: []
       parameters:
         - 
         schema:
@@ -1432,7 +1642,7 @@ paths:
                     type: "string"
                     format: "date-time"
                     description: "Timestamp when the user was created"
-                    example: "2025-10-25T14:48:19.930Z"
+                    example: "2025-10-26T07:55:38.222Z"
                 required:
                   - "id"
                   - "name"
@@ -1452,6 +1662,11 @@ paths:
                 required:
                   - "error"
     delete:
+      tags:
+        - "Users"
+      security:
+        - 
+        BearerAuth: []
       parameters:
         - 
         schema:
@@ -1499,7 +1714,7 @@ paths:
                         type: "string"
                         format: "date-time"
                         description: "Timestamp when the user was created"
-                        example: "2025-10-25T14:48:19.930Z"
+                        example: "2025-10-26T07:55:38.222Z"
                     required:
                       - "id"
                       - "name"

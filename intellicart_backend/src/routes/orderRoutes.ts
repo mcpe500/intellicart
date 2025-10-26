@@ -126,6 +126,8 @@ const UpdateOrderStatusSchema = z.object({
 const getSellerOrdersRoute = createRoute({
   method: 'get',
   path: '/',
+  tags: ['Orders'], // Add tags for grouping in Swagger UI
+  security: [{ BearerAuth: [] }], // Require authentication
   // Documentation for the successful response
   responses: {
     200: {
@@ -163,6 +165,8 @@ orderRoutes.openapi(getSellerOrdersRoute, verifyToken, OrderController.getSeller
 const updateOrderStatusRoute = createRoute({
   method: 'put',
   path: '/{id}/status',
+  tags: ['Orders'], // Add tags for grouping in Swagger UI
+  security: [{ BearerAuth: [] }], // Require authentication
   // Validate request parameters and body
   request: {
     params: z.object({

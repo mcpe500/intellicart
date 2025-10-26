@@ -5,6 +5,7 @@ import 'package:intellicart/data/repositories/app_repository_impl.dart';
 import 'package:intellicart/data/datasources/offline_first_api_service.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/screens/core/splash_screen.dart';
+import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/screens/auth_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -19,8 +20,15 @@ void main() async {
       create: (context) => OfflineFirstApiService(),
       child: RepositoryProvider(
         create: (context) => AppRepositoryImpl(context.read<OfflineFirstApiService>()),
-        child: BlocProvider(
-          create: (context) => AppModeBloc(repository: context.read<AppRepositoryImpl>())..add(LoadAppMode()),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => AppModeBloc(repository: context.read<AppRepositoryImpl>())..add(LoadAppMode()),
+            ),
+            BlocProvider(
+              create: (context) => ProductBloc(repository: context.read<AppRepositoryImpl>()),
+            ),
+          ],
           child: const MyApp(),
         ),
       ),

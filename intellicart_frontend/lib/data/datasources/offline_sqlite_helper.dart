@@ -24,7 +24,7 @@ class OfflineDatabaseHelper {
     String path = join(await getDatabasesPath(), 'intellicart_offline.db');
     return await openDatabase(
       path,
-      version: 3, // Increased version to clean up any old duplicate data
+      version: 4, // Increased version to clean up any old duplicate data
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -103,6 +103,19 @@ class OfflineDatabaseHelper {
         updated_at TEXT
       )
     ''');
+
+    // Pending reviews table for offline submissions
+    await db.execute('''
+      CREATE TABLE pending_reviews (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        review_text TEXT NOT NULL,
+        rating INTEGER NOT NULL,
+        user_id TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
     
     // Initialize app state
     await db.insert('app_state', {
@@ -126,6 +139,20 @@ class OfflineDatabaseHelper {
       await db.execute('ALTER TABLE orders ADD COLUMN external_id TEXT UNIQUE');
       await db.execute('ALTER TABLE orders ADD COLUMN is_synced INTEGER DEFAULT 0');
       await db.execute('ALTER TABLE orders ADD COLUMN sync_status TEXT DEFAULT "pending"');
+    }
+    if (oldVersion < 4) {
+      // Add pending_reviews table for version 4
+      await db.execute('''
+        CREATE TABLE pending_reviews (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          product_id TEXT NOT NULL,
+          title TEXT NOT NULL,
+          review_text TEXT NOT NULL,
+          rating INTEGER NOT NULL,
+          user_id TEXT NOT NULL,
+          created_at TEXT NOT NULL
+        )
+      ''');
     }
   }
 
@@ -458,6 +485,29 @@ class OfflineDatabaseHelper {
       where: 'id = ?',
       whereArgs: [localId],
     );
+  }
+
+  // --- Pending Review Methods ---
+  Future<void> addPendingReview(String productId, Review review, String userId) async {
+    final db = await database;
+    await db.insert('pending_reviews', {
+      'product_id': productId,
+      'title': review.title,
+      'review_text': review.reviewText,
+      'rating': review.rating,
+      'user_id': userId,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getPendingReviews() async {
+    final db = await database;
+    return await db.query('pending_reviews');
+  }
+
+  Future<void> deletePendingReview(int id) async {
+    final db = await database;
+    await db.delete('pending_reviews', where: 'id = ?', whereArgs: [id]);
   }
 
   // --- Order Methods ---

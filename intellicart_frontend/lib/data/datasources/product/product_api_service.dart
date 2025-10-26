@@ -131,46 +131,28 @@ class ProductApiService {
   Future<Product> addReviewToProduct(String productId, Review review) async {
     try {
       final baseUrl = await getBaseUrl();
-      
-      // First, get the current product to get its current reviews
-      print('Fetching product from API: $baseUrl/$productId'); // Debug log
-      final productResponse = await http.get(
-        Uri.parse('$baseUrl/$productId'),
+      print('Adding review to product via API: $baseUrl/$productId/reviews'); // Debug log
+
+      // Use POST to the new reviews endpoint
+      final response = await http.post(
+        Uri.parse('$baseUrl/$productId/reviews'), // Correct endpoint
         headers: await _getHeaders(),
-      );
-      
-      if (productResponse.statusCode != 200) {
-        throw Exception('Failed to fetch product for review: ${productResponse.body}');
-      }
-      
-      final Map<String, dynamic> productData = jsonDecode(productResponse.body);
-      final Product currentProduct = Product.fromJson(productData);
-      
-      // Add the new review to the existing reviews
-      final updatedReviews = [
-        ...currentProduct.reviews,
-        review,
-      ];
-      
-      print('Updating product with new review via API'); // Debug log
-      // Update the product with the new review
-      final updateResponse = await http.put(
-        Uri.parse('$baseUrl/$productId'),
-        headers: await _getHeaders(),
-        body: jsonEncode({
-          ...productData,
-          'reviews': updatedReviews.map((r) => r.toJson()).toList(),
-        }),
+        body: jsonEncode(review.toJson()), // Send only the review data
       );
 
-      if (updateResponse.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(updateResponse.body);
+      print('Add review response status: ${response.statusCode}'); // Debug log
+      print('Add review response body: ${response.body}'); // Debug log
+
+
+      if (response.statusCode == 200) { // Expect 200 OK now
+        final Map<String, dynamic> data = jsonDecode(response.body);
         print('Successfully added review, received updated product from API'); // Debug log
-        return Product.fromJson(data);
+        return Product.fromJson(data); // Backend returns the updated product
       } else {
-        throw Exception('Failed to add review to product: ${updateResponse.body}');
+        throw Exception('Failed to add review to product: ${response.body}');
       }
     } catch (e) {
+      print('Error in addReviewToProduct API call: $e'); // Enhanced error log
       throw Exception('Error adding review to product: $e');
     }
   }

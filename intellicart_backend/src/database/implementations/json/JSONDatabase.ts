@@ -75,6 +75,25 @@ export class JSONDatabase implements DatabaseInterface<any> {
   }
 
   /**
+   * Clear all data from a specific table (collection).
+   * @param tableName The name of the table to clear.
+   */
+  async clearTable(tableName: string): Promise<void> {
+    if (this.data[tableName]) {
+      this.data[tableName] = [];
+      console.log(`[INFO] Cleared table: ${tableName}`); // Add log
+      await this.saveData();
+    }
+  }
+
+  // Add a method to clear ALL data if needed, useful for seeding
+  async clearAllData(): Promise<void> {
+    console.log('[INFO] Clearing all data from JSON database...'); // Add log
+    this.data = {}; // Reset the entire data object
+    await this.saveData();
+  }
+
+  /**
    * Find all records of the specified type
    * 
    * @function findAll
@@ -95,8 +114,13 @@ export class JSONDatabase implements DatabaseInterface<any> {
    */
   async findById(tableName: string, id: number | string): Promise<any | null> {
     const table = this.data[tableName] || [];
-    const record = table.find(item => item.id == id); // Using == to match both string and number IDs
-    return record || null;
+    const records = table.filter(item => item.id == id); // Find ALL matching records
+
+    if (records.length > 1) {
+      console.warn(`[WARN] Duplicate ID found for id ${id} in table ${tableName}. Returning the first one.`);
+    }
+
+    return records.length > 0 ? records[0] : null; // Return the first match or null
   }
 
   /**
@@ -112,10 +136,21 @@ export class JSONDatabase implements DatabaseInterface<any> {
       this.data[tableName] = [];
     }
 
-    // Generate a new ID only if not provided in the data
-    const newId = data.id || this.generateId(tableName);
+    let newId: number | string;
+    if (data.id) {
+      // If ID is provided, check for duplicates
+      const existing = await this.findById(tableName, data.id);
+      if (existing) {
+        console.error(`[ERROR] Attempted to create record with duplicate ID ${data.id} in table ${tableName}.`);
+        throw new Error(`Record with ID ${data.id} already exists in ${tableName}.`);
+      }
+      newId = data.id;
+    } else {
+      // Generate a new ID if not provided
+      newId = this.generateId(tableName);
+    }
+
     const record = { ...data, id: newId };
-    
     this.data[tableName].push(record);
     await this.saveData();
     return record;

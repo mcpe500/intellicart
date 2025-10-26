@@ -127,6 +127,7 @@ const LoginUserSchema = z.object({
 const registerRoute = createRoute({
   method: 'post',
   path: '/register',
+  tags: ['Authentication'], // Add tags for grouping in Swagger UI
   // Validate request body
   request: {
     body: {
@@ -193,6 +194,7 @@ authRoutes.openapi(registerRoute, AuthController.register);
 const loginRoute = createRoute({
   method: 'post',
   path: '/login',
+  tags: ['Authentication'], // Add tags for grouping in Swagger UI
   // Validate request body
   request: {
     body: {
@@ -260,6 +262,8 @@ authRoutes.openapi(loginRoute, AuthController.login);
 const getCurrentUserRoute = createRoute({
   method: 'get',
   path: '/me',
+  tags: ['Authentication'], // Add tags for grouping in Swagger UI
+  security: [{ BearerAuth: [] }], // Require authentication
   // Documentation for possible responses
   responses: {
     200: {
@@ -310,6 +314,8 @@ authRoutes.openapi(getCurrentUserRoute, verifyToken, AuthController.getCurrentUs
 const logoutRoute = createRoute({
   method: 'post',
   path: '/logout',
+  tags: ['Authentication'], // Add tags for grouping in Swagger UI
+  security: [{ BearerAuth: [] }], // Require authentication
   // Documentation for possible responses
   responses: {
     200: {
@@ -364,6 +370,7 @@ authRoutes.openapi(logoutRoute, AuthController.logout);
 const verifyTokenRoute = createRoute({
   method: 'post',
   path: '/verify',
+  tags: ['Authentication'], // Add tags for grouping in Swagger UI
   // Documentation for possible responses
   responses: {
     200: {

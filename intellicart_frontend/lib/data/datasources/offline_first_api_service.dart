@@ -152,10 +152,24 @@ class OfflineFirstApiService {
       
       return updatedProduct;
     } catch (e) {
-      print('Online review submission failed, attempting local update: ${e.toString()}');
+      print('Online review submission failed, saving for later sync: ${e.toString()}');
       
-      // If online fails, we can't submit the review locally since it needs online verification
-      rethrow;
+      // If online fails, save the review locally for later synchronization
+      final userId = await _dbHelper.getCurrentUser();
+      if (userId != null) {
+        await _dbHelper.addPendingReview(productId, review, userId);
+      }
+      
+      // Even though it failed, we need to update the product locally to reflect the new review immediately in the UI
+      final product = await _dbHelper.getProductById(int.tryParse(productId) ?? 0);
+      if (product != null) {
+        final newReviews = [...product.reviews, review];
+        final updatedProduct = product.copyWith(reviews: newReviews);
+        await _dbHelper.updateProduct(updatedProduct);
+        return updatedProduct;
+      }
+
+      rethrow; // Rethrow if product not found locally
     }
   }
 

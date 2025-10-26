@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/widgets/shared/star_rating_input.dart';
+import 'package:intellicart/data/repositories/app_repository_impl.dart';
 
 class AddReviewPage extends StatefulWidget {
   final String productId; // Pass the product ID to associate the review
@@ -28,14 +29,16 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   void _submitReview() {
     if (_formKey.currentState!.validate() && _currentRating > 0) {
-      context.read<ProductBloc>().add(
-            AddReviewToProduct(
-              productId: widget.productId,
-              title: _titleController.text,
-              reviewText: _reviewController.text,
-              rating: _currentRating,
-            ),
-          );
+      // Use the provided ProductBloc if available, otherwise try to read from context
+      final productBloc = context.read<ProductBloc>();
+      productBloc.add(
+        AddReviewToProduct(
+          productId: widget.productId,
+          title: _titleController.text,
+          reviewText: _reviewController.text,
+          rating: _currentRating,
+        ),
+      );
     } else if (_currentRating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

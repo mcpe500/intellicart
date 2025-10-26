@@ -1,0 +1,275 @@
+backend logs:
+```
+
+[2025-10-26T07:19:02.536Z] [INFO] API Request Started | Context: {"method":"POST","url":"http://192.168.18.136:3000/api/auth/login","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:02.536Z"}
+[2025-10-26T07:19:02.541Z] [INFO] Login attempt received | Context: {"email":"a@gmail.com","userAgent":"Dart/3.9 (dart:io)"}
+[2025-10-26T07:19:02.607Z] [INFO] User logged in successfully | Context: {"userId":2,"email":"a@gmail.com"}
+[2025-10-26T07:19:02.609Z] [INFO] API Request Completed | Context: {"method":"POST","url":"http://192.168.18.136:3000/api/auth/login","statusCode":200,"responseTime":"75ms","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:02.609Z"}
+[2025-10-26T07:19:03.092Z] [INFO] API Request Started | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.092Z"}
+[2025-10-26T07:19:03.094Z] [INFO] API Request Completed | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","statusCode":404,"responseTime":"2ms","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.094Z"}
+[2025-10-26T07:19:03.097Z] [INFO] API Request Started | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.097Z"}
+[2025-10-26T07:19:03.097Z] [INFO] API Request Completed | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","statusCode":404,"responseTime":"0ms","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.097Z"}
+[2025-10-26T07:19:03.190Z] [INFO] API Request Started | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.190Z"}
+[2025-10-26T07:19:03.192Z] [INFO] API Request Completed | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","statusCode":404,"responseTime":"2ms","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.192Z"}
+[2025-10-26T07:19:03.194Z] [INFO] API Request Started | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.194Z"}
+[2025-10-26T07:19:03.194Z] [INFO] API Request Completed | Context: {"method":"GET","url":"http://192.168.18.136:3000/api/products","statusCode":404,"responseTime":"0ms","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T07:19:03.194Z"}
+```
+
+
+
+frontend logs:
+```
+PS D:\Data\VSCode\flutter\MMP\intellicart\intellicart_frontend> flutter run -d PBQGJ7PB89AEZ9BE
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 85.0.0 (92.0.0 available)
+  analyzer 7.7.1 (9.0.0 available)
+  bloc 8.1.4 (9.1.0 available)
+  build 3.0.2 (4.0.2 available)
+  build_daemon 4.0.4 (4.1.0 available)
+  build_resolvers 3.0.2 (3.0.4 available)
+  build_runner 2.7.0 (2.10.1 available)
+  build_runner_core 9.3.0 (9.3.2 available)
+  built_value 8.11.1 (8.12.0 available)
+  characters 1.4.0 (1.4.1 available)
+  code_builder 4.10.1 (4.11.0 available)
+  dart_style 3.1.1 (3.1.2 available)
+  flutter_bloc 8.1.6 (9.1.1 available)
+  flutter_dotenv 5.2.1 (6.0.0 available)
+  flutter_lints 5.0.0 (6.0.0 available)
+  leak_tracker 11.0.1 (11.0.2 available)
+  lints 5.1.1 (6.0.0 available)
+  material_color_utilities 0.11.1 (0.13.0 available)
+  meta 1.16.0 (1.17.0 available)
+  mockito 5.5.0 (5.5.1 available)
+  pool 1.5.1 (1.5.2 available)
+  shared_preferences_foundation 2.5.4 (2.5.5 available)
+  source_gen 3.1.0 (4.0.2 available)
+  test_api 0.7.6 (0.7.7 available)
+  watcher 1.1.3 (1.1.4 available)
+Got dependencies!
+25 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+Launching lib\main.dart on RMX3561 in debug mode...
+Running Gradle task 'assembleDebug'...                              3.0s
+√ Built build\app\outputs\flutter-apk\app-debug.apk
+Installing build\app\outputs\flutter-apk\app-debug.apk...           5.3s
+D/FlutterJNI(13733): Beginning load of flutter...
+D/FlutterJNI(13733): flutter (null) was loaded normally!
+I/flutter (13733): [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(62)] Using the Impeller rendering backend (Vulkan).
+I/Choreographer(13733): Skipped 154 frames!  The application may be doing too much work on its main thread.
+I/Quality (13733): Skipped: false 77 cost 1284.8635 refreshRate 16655309 bit true processName com.example.intellicart
+E/OplusBracketLog(13733): [OplusViewMirrorManager] updateHostViewRootIfNeeded, not support android.view.ViewRootImpl@f12784c
+I/SurfaceView(13733): 251455616 onAttachedToWindow
+D/ViewRootImplExtImpl(13733): wrapConfigInfoIntoFlags rotation=0, smallestScreenWidthDp=424, relayoutAsync=false, newFlags=27787264, title=com.example.intellicart/com.example.intellicart.MainActivity
+D/VRI[MainActivity](13733): relayoutWindow result, sizeChanged:true, surfaceControlChanged:true, transformHintChanged:true, mSurfaceSize:Point(1080, 2412), mLastSurfaceSize:Point(0, 0), mWidth:-1, mHeight:-1, requestedWidth:1080, requestedHeight:2412, transformHint:0, lastTransformHint:-2147483648, installOrientation:0, displayRotation:0, isSurfaceValid:true, attr.flag:-2122252032, useBlast:true, tmpFrames:ClientWindowFrames{frame=[0,0][1080,2412] display=[0,0][1080,2412] parentFrame=[0,0][0,0]}
+W/VRI[MainActivity](13733): updateBlastSurfaceIfNeeded, surfaceSize:Point(1080, 2412), lastSurfaceSize:Point(0, 0), format:-3, blastBufferQueue:null
+D/BufferQueueConsumer(13733): [](id:35a500000000,api:0,p:-1,c:13733) connect: controlledByApp=false
+D/ExtensionsLoader(13733): createInstance(64bit) : createExtendedFactory
+D/ExtensionsLoader(13733): Opened libSchedAssistExtImpl.so
+D/libMEOW (13733): meow new tls: 0xb40000724f37dc40
+D/libMEOW (13733): applied 1 plugins for [com.example.intellicart]:
+D/libMEOW (13733):   plugin 1: [libMEOW_gift.so]: 0xb400007351b63980
+D/libMEOW (13733): rebuild call chain: 0xb40000724f392f80
+E/OpenGLRenderer(13733): Unable to match the desired swap behavior.
+D/BufferQueueConsumer(13733): [](id:35a500000001,api:0,p:-1,c:13733) connect: controlledByApp=false
+I/SurfaceView(13733): 251455616 visibleChanged -- surfaceCreated
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 38
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 0
+E/gralloc4(13733): Invalid base format! req_base_format = 0x0, req_format = 0x38, type = 0x0
+E/gralloc4(13733): ERROR: Unrecognized and/or unsupported format 0x38 and usage 0xb00
+E/Gralloc4(13733): isSupported(1, 1, 56, 1, ...) failed with 5
+E/GraphicBufferAllocator(13733): Failed to allocate (4 x 4) layerCount 1 format 56 usage b00: 5
+E/AHardwareBuffer(13733): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -5), handle=0x0
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 3b
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 0
+E/gralloc4(13733): Invalid base format! req_base_format = 0x0, req_format = 0x3b, type = 0x0
+E/gralloc4(13733): ERROR: Unrecognized and/or unsupported format 0x3b and usage 0xb00
+E/Gralloc4(13733): isSupported(1, 1, 59, 1, ...) failed with 5
+E/GraphicBufferAllocator(13733): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 5
+E/AHardwareBuffer(13733): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -5), handle=0x0
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 38
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 0
+E/gralloc4(13733): Invalid base format! req_base_format = 0x0, req_format = 0x38, type = 0x0
+E/gralloc4(13733): ERROR: Unrecognized and/or unsupported format 0x38 and usage 0xb00
+E/Gralloc4(13733): isSupported(1, 1, 56, 1, ...) failed with 5
+E/GraphicBufferAllocator(13733): Failed to allocate (4 x 4) layerCount 1 format 56 usage b00: 5
+E/AHardwareBuffer(13733): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -5), handle=0x0
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 3b
+E/gralloc4(13733): ERROR: Format allocation info not found for format: 0
+E/gralloc4(13733): Invalid base format! req_base_format = 0x0, req_format = 0x3b, type = 0x0
+E/gralloc4(13733): ERROR: Unrecognized and/or unsupported format 0x3b and usage 0xb00
+E/Gralloc4(13733): isSupported(1, 1, 59, 1, ...) failed with 5
+E/GraphicBufferAllocator(13733): Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 5
+E/AHardwareBuffer(13733): GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -5), handle=0x0
+D/MAGT_SYNC_FRAME(13733): MAGT Sync: MAGT is not supported. Disabling Sync.
+I/ple.intellicart(13733): Compiler allocated 6115KB to compile void android.view.ViewRootImpl.performTraversals()
+D/SurfaceView(13733): 251455616 handleSyncNoBuffer
+D/ViewRootImplExtImpl(13733): setMaxDequeuedBufferCount: 2
+Syncing files to device RMX3561...                               1,030ms
+
+Flutter run key commands.
+r Hot reload.
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on RMX3561 is available at: http://127.0.0.1:57387/fzRklnnWyWk=/
+The Flutter DevTools debugger and profiler on RMX3561 is available at: http://127.0.0.1:9100?uri=http://127.0.0.1:57387/fzRklnnWyWk=/
+W/libc    (13733): Access denied finding property "persist.vendor.debug.gpud.enable"
+D/BLASTBufferQueue(13733): [SurfaceView[com.example.intellicart/com.example.intellicart.MainActivity]#1](f:0,a:1) acquireNextBufferLocked size=1080x2300 mFrameNumber=1 applyTransaction=true mTimestamp=22266410522634(auto) mPendingTransactions.size=0 graphicBufferId=58982785875982 transform=0
+D/SurfaceView(13733): 251455616 finishedDrawing
+D/SurfaceView(13733): 251455616 performDrawFinished mAttachedToWindow true
+I/Choreographer(13733): Skipped 87 frames!  The application may be doing too much work on its main thread.
+I/Quality (13733): Skipped: false 87 cost 1460.5695 refreshRate 16652885 bit true processName com.example.intellicart
+D/ViewRootImplExtImpl(13733): wrapConfigInfoIntoFlags rotation=0, smallestScreenWidthDp=424, relayoutAsync=false, newFlags=27787264, title=com.example.intellicart/com.example.intellicart.MainActivity
+D/VRI[MainActivity](13733): relayoutWindow result, sizeChanged:false, surfaceControlChanged:false, transformHintChanged:false, mSurfaceSize:Point(1080, 2412), mLastSurfaceSize:Point(1080, 2412), mWidth:1080, mHeight:2412, requestedWidth:1080, requestedHeight:2412, transformHint:0, lastTransformHint:0, installOrientation:0, displayRotation:0, isSurfaceValid:true, attr.flag:-2122252032, useBlast:true, tmpFrames:ClientWindowFrames{frame=[0,0][1080,2412] display=[0,0][1080,2412] parentFrame=[0,0][0,0]}
+W/VRI[MainActivity](13733): updateBlastSurfaceIfNeeded, surfaceSize:Point(1080, 2412), lastSurfaceSize:Point(1080, 2412), format:-3, blastBufferQueue:android.graphics.BLASTBufferQueue@a1e2de5
+I/SurfaceControl(13733):  setExtendedRangeBrightness sc=Surface(name=com.example.intellicart/com.example.intellicart.MainActivity)/@0x6c2ab6b,currentBufferRatio=1.0,desiredRatio=1.0
+D/SurfaceView(13733): 251455616 dispatchDraw mDrawFinished true isAboveParent false (mPrivateFlags & PFLAG_SKIP_DRAW) 128
+D/SurfaceView(13733): 251455616 clearSurfaceViewPort mCornerRadius 0.0
+I/Quality (13733): GetResourcesInfo:335690923,total
+I/mali    (13733): [DebugProp] GPU Debug-Mechanism Disable !
+D/BLASTBufferQueue(13733): [VRI[MainActivity]#0](f:0,a:1) acquireNextBufferLocked size=1080x2412 mFrameNumber=1 applyTransaction=true mTimestamp=22267084316172(auto) mPendingTransactions.size=0 graphicBufferId=58982785875989 transform=0
+D/VRI[MainActivity](13733): Received frameCommittedCallback lastAttemptedDrawFrameNum=1 didProduceBuffer=true syncBuffer=false
+D/VRI[MainActivity](13733): draw finished.
+D/VRI[MainActivity](13733): reportDrawFinished
+W/VRI[MainActivity](13733): handleResized, msg:5, frameChanged:false, configChanged:false, displayChanged:false, attachedFrameChanged:false, compatScaleChanged:false, pendingDragResizing=false
+I/OpenGLRenderer(13733): Davey! duration=1640ms; Flags=1, FrameTimelineVsyncId=3127485, IntendedVsync=22265451719337, Vsync=22266900520332, InputEventId=0, HandleInputStart=22266912928172, AnimationStart=22266912932480, PerformTraversalsStart=22266912934326, DrawStart=22266945874326, FrameDeadline=22265468319337, FrameInterval=22266912288787, FrameStartTime=16652885, SyncQueued=22266949838249, SyncStart=22266950082941, IssueDrawCommandsStart=22266951240095, SwapBuffers=22267082011480, FrameCompleted=22267092581403, DequeueBufferDuration=11136077, QueueBufferDuration=1964000, GpuCompleted=22267092581403, SwapBuffersCompleted=22267086742557, DisplayPresentTime=0, CommandSubmissionCompleted=22267082011480,
+D/VRI[MainActivity](13733): onFocusEvent true
+I/Quality (13733): Skipped: false 16 cost 277.34378 refreshRate 16652755 bit true processName com.example.intellicart
+D/VRI[MainActivity](13733): Received frameCommittedCallback lastAttemptedDrawFrameNum=2 didProduceBuffer=true syncBuffer=false
+D/VRI[MainActivity](13733): draw finished.
+D/VRI[MainActivity](13733): reportDrawFinished
+D/OplusScrollToTopManager(13733): com.example.intellicart/com.example.intellicart.MainActivity,This DecorView@ebf0bc6[MainActivity] change focus to true
+D/OplusInputMethodManagerInternal(13733): get inputMethodManager extension: com.android.internal.view.IInputMethodManager$Stub$Proxy@909455b
+D/ViewRootImplExtImpl(13733): the up motion event handled by client, just return
+I/Quality (13733): Skipped: false 3 cost 65.32163 refreshRate 16650408 bit true processName com.example.intellicart
+I/ImeTracker(13733): com.example.intellicart:bcc41216: onRequestShow at ORIGIN_CLIENT_SHOW_SOFT_INPUT reason SHOW_SOFT_INPUT
+D/InputMethodManager(13733): showSoftInput() view=io.flutter.embedding.android.FlutterView{79cb5a4 VFE...... .F....ID 0,0-1080,2300 #1 aid=1073741824 viewInfo = } flags=0 reason=SHOW_SOFT_INPUT
+I/Quality (13733): Skipped: false 2 cost 38.443447 refreshRate 16650898 bit true processName com.example.intellicart
+W/VRI[MainActivity](13733): handleResized abandoned!
+D/InsetsController(13733): show(ime(), fromIme=true)
+D/OplusWindowManager(13733): get WMS extension: android.os.BinderProxy@fc18810
+W/VRI[MainActivity](13733): handleResized abandoned!
+I/ImeTracker(13733): com.example.intellicart:bcc41216: onShown
+D/ProfileInstaller(13733): Installing profile for com.example.intellicart
+D/ViewRootImplExtImpl(13733): the up motion event handled by client, just return
+I/ImeTracker(13733): com.example.intellicart:4f5ed0cd: onRequestShow at ORIGIN_CLIENT_SHOW_SOFT_INPUT reason SHOW_SOFT_INPUT
+D/InputMethodManager(13733): showSoftInput() view=io.flutter.embedding.android.FlutterView{79cb5a4 VFE...... .F...... 0,0-1080,2300 #1 aid=1073741824 viewInfo = } flags=0 reason=SHOW_SOFT_INPUT
+I/Quality (13733): Skipped: false 1 cost 29.028639 refreshRate 16650629 bit true processName com.example.intellicart
+D/InsetsController(13733): show(ime(), fromIme=true)
+I/ImeTracker(13733): com.example.intellicart:4f5ed0cd: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+D/ViewRootImplExtImpl(13733): the up motion event handled by client, just return
+I/flutter (13733): AuthBloc _onLogin called with email: a@gmail.com
+I/flutter (13733): AuthApiService.login called with email: a@gmail.com
+I/flutter (13733): Login API Base URL: http://192.168.18.136:3000/api/auth
+I/Quality (13733): Skipped: false 5 cost 84.91389 refreshRate 16651342 bit true processName com.example.intellicart
+I/ImeTracker(13733): com.example.intellicart:76d6a1ef: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT
+W/WindowOnBackDispatcher(13733): sendCancelIfRunning: isInProgress=falsecallback=ImeCallback=ImeOnBackInvokedCallback@182454340 Callback=android.window.IOnBackInvokedCallback$Stub$Proxy@4c5457d
+W/VRI[MainActivity](13733): handleResized abandoned!
+I/flutter (13733): Login response status: 200
+I/flutter (13733): Login response body: {"user":{"email":"a@gmail.com","name":"a","role":"buyer","createdAt":"2025-10-26T05:15:55.838Z","id":2},"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImVtYWlsIjoiYUBnbWFpbC5jb20iLCJpYXQiOjE3NjE0NjMxNDIsImV4cCI6MTc2MTU0OTU0Mn0.Dn-lxN7JB7LoHWF08VVNmZiv5A49_cRPskZVKwn3mOc"}
+I/Quality (13733): Skipped: true 1 cost 30.25612 refreshRate 16650901 bit true processName com.example.intellicart
+I/flutter (13733): Login successful, user: a, token stored
+I/flutter (13733): AuthBloc login successful, user: a
+I/Quality (13733): Skipped: true 7 cost 125.3154 refreshRate 16650566 bit true processName com.example.intellicart
+I/ImeTracker(13733): com.example.intellicart:dfc7b8d6: onRequestHide at ORIGIN_CLIENT_HIDE_SOFT_INPUT reason HIDE_SOFT_INPUT_BY_INSETS_API
+I/ImeTracker(13733): com.example.intellicart:76d6a1ef: onHidden
+I/ple.intellicart(13733): NativeAlloc concurrent mark compact GC freed 8970KB AllocSpace bytes, 6(220KB) LOS objects, 66% free, 3090KB/9234KB, paused 711us,1.758ms total 151.427ms
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~1tgAXz7hpt70l49lyIBrew==/com.google.android.marvin.talkback-tkyMPtgqI-YTQA7vKgOj4Q==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~1tgAXz7hpt70l49lyIBrew==/com.google.android.marvin.talkback-tkyMPtgqI-YTQA7vKgOj4Q==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aLK-DI7mJ2nPt6nvkm7Xeg==/ai.perplexity.app.android-NLmy2ENdqWq8XaCeUFTOYA==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aLK-DI7mJ2nPt6nvkm7Xeg==/ai.perplexity.app.android-NLmy2ENdqWq8XaCeUFTOYA==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aLK-DI7mJ2nPt6nvkm7Xeg==/ai.perplexity.app.android-NLmy2ENdqWq8XaCeUFTOYA==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/split_vassonic.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~ofqfCLypwr65GjEWqlUHew==/cn.wps.moffice_eng-1HlqpFGK5EnQIpNuKtKtxw==/split_vassonic.config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ExoPlayerDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ExoPlayerDF.config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ExoPlayerDF.config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_FASOpenCVDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_FASOpenCVDF.config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_LMCODModelDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_LMCODModelDF.config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_OCRCoreDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_OCRCoreDF.config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_PDFEditFontsDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ScanSDKDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ScanSDKDF.config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ScanSDKDF.config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_ScanSDKDF.config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_VADYamnetDF.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_VADYamnetDF.config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~LeQvgWPN688LYvy-CuhrmA==/com.adobe.reader-5FdWWI8dTbkehs1vhdhTTw==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Yo83qFJHtEcP_5vHSxmBWg==/com.anthropic.claude-hnSW6xSRKki9AORmiwckjQ==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Yo83qFJHtEcP_5vHSxmBWg==/com.anthropic.claude-hnSW6xSRKki9AORmiwckjQ==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Yo83qFJHtEcP_5vHSxmBWg==/com.anthropic.claude-hnSW6xSRKki9AORmiwckjQ==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Yo83qFJHtEcP_5vHSxmBWg==/com.anthropic.claude-hnSW6xSRKki9AORmiwckjQ==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Yo83qFJHtEcP_5vHSxmBWg==/com.anthropic.claude-hnSW6xSRKki9AORmiwckjQ==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/OppoNote2/OppoNote2.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~oRLgzD5CB7-BbmVoVFnl-A==/com.duckduckgo.mobile.android-8lcwg6yZODVtnNWkuYyUNQ==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~oRLgzD5CB7-BbmVoVFnl-A==/com.duckduckgo.mobile.android-8lcwg6yZODVtnNWkuYyUNQ==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~oRLgzD5CB7-BbmVoVFnl-A==/com.duckduckgo.mobile.android-8lcwg6yZODVtnNWkuYyUNQ==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~oRLgzD5CB7-BbmVoVFnl-A==/com.duckduckgo.mobile.android-8lcwg6yZODVtnNWkuYyUNQ==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~oRLgzD5CB7-BbmVoVFnl-A==/com.duckduckgo.mobile.android-8lcwg6yZODVtnNWkuYyUNQ==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~aGyLt0_n6jRPWWzngyn8aQ==/com.ichi2.anki-Dl4jX0pYlU9swUNg-YfWKQ==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~16FBe0jagXjuS_gAO96n9w==/com.microsoft.designer-mRzmsipaBAhUuT2ZEBQKOg==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~16FBe0jagXjuS_gAO96n9w==/com.microsoft.designer-mRzmsipaBAhUuT2ZEBQKOg==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~16FBe0jagXjuS_gAO96n9w==/com.microsoft.designer-mRzmsipaBAhUuT2ZEBQKOg==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~16FBe0jagXjuS_gAO96n9w==/com.microsoft.designer-mRzmsipaBAhUuT2ZEBQKOg==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~16FBe0jagXjuS_gAO96n9w==/com.microsoft.designer-mRzmsipaBAhUuT2ZEBQKOg==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~GcWA3tJx_y5yxH2r-DxtRQ==/com.microsoft.emmx-w67Qp2U08DhUh7WUHuR_9Q==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Q_Y3JEkFXJCBNFi7sLspkA==/com.microsoft.emmx.dev-IvFaQkktcbp4QR9ieNtKgg==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Q_Y3JEkFXJCBNFi7sLspkA==/com.microsoft.emmx.dev-IvFaQkktcbp4QR9ieNtKgg==/split_chrome.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Q_Y3JEkFXJCBNFi7sLspkA==/com.microsoft.emmx.dev-IvFaQkktcbp4QR9ieNtKgg==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~Q_Y3JEkFXJCBNFi7sLspkA==/com.microsoft.emmx.dev-IvFaQkktcbp4QR9ieNtKgg==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~7nSLihaBD5_EtyPqzBNg_w==/com.openai.chatgpt-mo5IlKzdoJ3lO8l8apQZhQ==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~7nSLihaBD5_EtyPqzBNg_w==/com.openai.chatgpt-mo5IlKzdoJ3lO8l8apQZhQ==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~7nSLihaBD5_EtyPqzBNg_w==/com.openai.chatgpt-mo5IlKzdoJ3lO8l8apQZhQ==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~7nSLihaBD5_EtyPqzBNg_w==/com.openai.chatgpt-mo5IlKzdoJ3lO8l8apQZhQ==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~7nSLihaBD5_EtyPqzBNg_w==/com.openai.chatgpt-mo5IlKzdoJ3lO8l8apQZhQ==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_config.id.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_config.xxhdpi.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_pangle_ads.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_pangle_ads.config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_pangle_ads.config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~vdFy1BBpxduAXQOak6xPWg==/com.opera.browser-5HvzCVWfktmY-gVB6ZsxmQ==/split_pangle_ads.config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~KoGfC2CnZghLtrA4eamUQA==/com.you.browser-f47-KQYQUNIRjVviRdc2nQ==/base.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~KoGfC2CnZghLtrA4eamUQA==/com.you.browser-f47-KQYQUNIRjVviRdc2nQ==/split_config.arm64_v8a.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~KoGfC2CnZghLtrA4eamUQA==/com.you.browser-f47-KQYQUNIRjVviRdc2nQ==/split_config.en.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~KoGfC2CnZghLtrA4eamUQA==/com.you.browser-f47-KQYQUNIRjVviRdc2nQ==/split_config.in.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~KoGfC2CnZghLtrA4eamUQA==/com.you.browser-f47-KQYQUNIRjVviRdc2nQ==/split_config.ms.apk' with 1 weak references
+W/ple.intellicart(13733): ApkAssets: Deleting an ApkAssets object '<empty> and /data/app/~~KoGfC2CnZghLtrA4eamUQA==/com.you.browser-f47-KQYQUNIRjVviRdc2nQ==/split_config.xxhdpi.apk' with 1 weak references
+W/System  (13733): A resource failed to call MemoryIntArray.close.
+I/flutter (13733): Making API call to fetch products: http://192.168.18.136:3000/api/products
+I/flutter (13733): Making API call to fetch products: http://192.168.18.136:3000/api/products
+I/flutter (13733): Sync from backend error: Exception: Error loading products: Exception: Failed to load products: 404 Not Found
+I/flutter (13733): Sync from backend error: Exception: Error loading products: Exception: Failed to load products: 404 Not Found
+I/flutter (13733): Making API call to fetch products: http://192.168.18.136:3000/api/products
+I/flutter (13733): Making API call to fetch products: http://192.168.18.136:3000/api/products
+I/flutter (13733): Sync from backend error: Exception: Error loading products: Exception: Failed to load products: 404 Not Found
+I/flutter (13733): Sync from backend error: Exception: Error loading products: Exception: Failed to load products: 404 Not Found
+W/VRI[MainActivity](13733): handleResized abandoned!
+```
+
+plaese fix this
+from the file i sent
+please make sure the code is best practice, best quality, code quality, and follow the existing code patterns already being used.
+please FIX THE ERRORs
+please think serrch and why it causes error and how to fix it.
+please make sure the code is best practice, best quality, code quality, and follow the existing code patterns already being used.

@@ -53,4 +53,26 @@ class Product {
       'reviews': reviews.map((review) => review.toJson()).toList(),
     };
   }
+
+  Product copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? price,
+    String? originalPrice,
+    String? imageUrl,
+    String? sellerId,
+    List<Review>? reviews,
+  }) {
+    return Product(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      originalPrice: originalPrice ?? this.originalPrice,
+      imageUrl: imageUrl ?? this.imageUrl,
+      sellerId: sellerId ?? this.sellerId,
+      reviews: reviews ?? this.reviews,
+    );
+  }
 }

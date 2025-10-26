@@ -114,7 +114,7 @@ const UpdateUserSchema = z.object({
  * 
  * Request:
  * - Method: GET
- * - Path: /users
+ * - Path: / (relative to /api/users)
  * - Parameters: None
  * - Query: None
  * - Body: None
@@ -126,7 +126,8 @@ const UpdateUserSchema = z.object({
  */
 const getAllUsersRoute = createRoute({
   method: 'get',
-  path: '/users',
+  path: '/',
+  tags: ['Users'], // Add tags for grouping in Swagger UI
   // Documentation for the successful response
   responses: {
     200: {
@@ -150,7 +151,7 @@ userRoutes.openapi(getAllUsersRoute, UserController.getAllUsers);
  * 
  * Request:
  * - Method: GET
- * - Path: /users/{id}
+ * - Path: /{id}
  * - Parameters: id (number, required)
  * - Query: None
  * - Body: None
@@ -166,7 +167,8 @@ userRoutes.openapi(getAllUsersRoute, UserController.getAllUsers);
  */
 const getUserByIdRoute = createRoute({
   method: 'get',
-  path: '/users/{id}',
+  path: '/{id}',
+  tags: ['Users'], // Add tags for grouping in Swagger UI
   // Validate request parameters
   request: {
     params: z.object({
@@ -218,7 +220,7 @@ userRoutes.openapi(getUserByIdRoute, UserController.getUserById);
  * 
  * Request:
  * - Method: POST
- * - Path: /users
+ * - Path: / (relative to /api/users)
  * - Parameters: None
  * - Query: None
  * - Body: User creation object (validated against CreateUserSchema)
@@ -230,7 +232,9 @@ userRoutes.openapi(getUserByIdRoute, UserController.getUserById);
  */
 const createUserRoute = createRoute({
   method: 'post',
-  path: '/users',
+  path: '/',
+  tags: ['Users'], // Add tags for grouping in Swagger UI
+  // Note: This endpoint does not require authentication as it's for creating new users
   // Validate request body
   request: {
     body: {
@@ -265,7 +269,7 @@ userRoutes.openapi(createUserRoute, UserController.createUser);
  * 
  * Request:
  * - Method: PUT
- * - Path: /users/{id}
+ * - Path: /{id}
  * - Parameters: id (number, required)
  * - Query: None
  * - Body: User update object (validated against UpdateUserSchema)
@@ -281,7 +285,9 @@ userRoutes.openapi(createUserRoute, UserController.createUser);
  */
 const updateUserRoute = createRoute({
   method: 'put',
-  path: '/users/{id}',
+  path: '/{id}',
+  tags: ['Users'], // Add tags for grouping in Swagger UI
+  security: [{ BearerAuth: [] }], // Require authentication
   // Validate request parameters and body
   request: {
     params: z.object({
@@ -341,7 +347,7 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
  * 
  * Request:
  * - Method: DELETE
- * - Path: /users/{id}
+ * - Path: /{id}
  * - Parameters: id (number, required)
  * - Query: None
  * - Body: None
@@ -357,7 +363,9 @@ userRoutes.openapi(updateUserRoute, UserController.updateUser);
  */
 const deleteUserRoute = createRoute({
   method: 'delete',
-  path: '/users/{id}',
+  path: '/{id}',
+  tags: ['Users'], // Add tags for grouping in Swagger UI
+  security: [{ BearerAuth: [] }], // Require authentication
   // Validate request parameters
   request: {
     params: z.object({

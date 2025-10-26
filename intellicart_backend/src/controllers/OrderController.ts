@@ -52,8 +52,16 @@ export class OrderController {
    */
   static async updateOrderStatus(c: Context) {
     try {
-      const id = Number(c.req.param('id'));
-      const { status } = c.req.valid('json') as { status: string };
+      const rawId = c.req.param('id');
+      const id = Number(rawId);
+      
+      // Validate that the ID is a number
+      if (isNaN(id) || id <= 0) {
+        return c.json({ error: 'Invalid order ID' }, 400);
+      }
+      
+      const body = await c.req.json() as { status: string };
+      const { status } = body;
       const user = c.get('user');
       
       const db = dbManager.getDatabase<any>();

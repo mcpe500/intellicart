@@ -56,7 +56,7 @@ export class AuthController {
    */
   static async register(c: Context) {
     try {
-      const body = c.req.valid('json') as {
+      const body = await c.req.json() as {
         email: string;
         password: string;
         name: string;
@@ -152,7 +152,7 @@ export class AuthController {
    */
   static async login(c: Context) {
     try {
-      const body = c.req.valid('json') as {
+      const body = await c.req.json() as {
         email: string;
         password: string;
       };

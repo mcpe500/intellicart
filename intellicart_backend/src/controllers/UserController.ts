@@ -121,7 +121,7 @@ export class UserController {
    */
   static async createUser(c: Context) {
     try {
-      const body = c.req.valid('json') as {
+      const body = await c.req.json() as {
         name: string;
         email: string;
         age?: number;
@@ -180,9 +180,15 @@ export class UserController {
    */
   static async updateUser(c: Context) {
     try {
-      const id = Number(c.req.param('id'));
+      const rawId = c.req.param('id');
+      const id = Number(rawId);
       
-      const body = c.req.valid('json') as {
+      // Validate that the ID is a number
+      if (isNaN(id) || id <= 0) {
+        return c.json({ error: 'Invalid user ID' }, 400);
+      }
+      
+      const body = await c.req.json() as {
         name?: string;
         email?: string;
         age?: number;
