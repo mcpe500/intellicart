@@ -4,6 +4,7 @@ import 'package:intellicart/data/datasources/api_service.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/user.dart';
+import 'package:sqflite/sqflite.dart';
 
 class SyncService {
   final OfflineDatabaseHelper _dbHelper = OfflineDatabaseHelper();
@@ -83,7 +84,19 @@ class SyncService {
       
       // Fetch and update products
       final products = await _apiService.getProducts();
-      await _dbHelper.insertProducts(products);
+      try {
+        await _dbHelper.insertProducts(products);
+      } catch (e) {
+        // Check if this is a unique constraint error by examining the error message
+        if (e.toString().contains('UNIQUE constraint failed') && e.toString().contains('products.external_id')) {
+          print('Unique constraint error detected, clearing database and retrying sync...');
+          // Clear the local database and try again
+          await _clearLocalDatabase();
+          await _dbHelper.insertProducts(products);
+        } else {
+          rethrow;
+        }
+      }
       
       // If user is a seller, fetch seller-specific data
       if (await _dbHelper.getAppMode() == 'seller') {
@@ -98,6 +111,13 @@ class SyncService {
       print('Sync from backend error: ${e.toString()}');
       return false;
     }
+  }
+  
+  // Helper method to clear local database completely
+  Future<void> _clearLocalDatabase() async {
+    print('Clearing local database completely to resolve constraint issues...');
+    // Clear all data - this should force a clean sync
+    await _dbHelper.insertProducts([]); // This will clear all products and reviews
   }
   
   // Perform full bidirectional sync
