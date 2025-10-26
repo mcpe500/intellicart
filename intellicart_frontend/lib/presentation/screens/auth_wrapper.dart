@@ -7,10 +7,11 @@ import 'package:intellicart/data/repositories/app_repository_impl.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
+import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/screens/buyer/ecommerce_home_page.dart';
 import 'package:intellicart/presentation/screens/core/splash_screen.dart';
 import 'package:intellicart/presentation/screens/seller/seller_dashboard_page.dart';
-import 'package:intellicart/presentation/screens/auth/auth_screen.dart';
+import 'package:intellicart/presentation/screens/core/login_page.dart';
 
 class AuthWrapper extends StatelessWidget {
   const AuthWrapper({super.key});
@@ -24,12 +25,12 @@ class AuthWrapper extends StatelessWidget {
           if (state is AuthAuthenticated) {
             return const MainApp();
           } else if (state is AuthUnauthenticated || state is AuthInitial) {
-            return const AuthScreen();
+            return const LoginPage();
           } else if (state is AuthLoading) {
             return const SplashScreen();
           } else {
-            // Handle error state by showing the auth screen
-            return const AuthScreen();
+            // Handle error state by showing the login page
+            return const LoginPage();
           }
         },
       ),
@@ -45,59 +46,21 @@ class MainApp extends StatefulWidget {
 }
 
 class _MainAppState extends State<MainApp> {
-  List<Product> _products = [];
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadProducts();
-  }
-
-  Future<void> _loadProducts() async {
-    try {
-      final apiService = ApiService();
-      final productsFromApi = await apiService.getProducts();
-
-      final repository = AppRepositoryImpl();
-      await repository.insertProducts(productsFromApi);
-
-      if (mounted) {
-        setState(() {
-          _products = productsFromApi;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        // Handle error - maybe show a message or retry
-        print('Error loading products: $e');
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
-
-    // After loading products, use the AppModeBloc to decide which page to show
-    return BlocBuilder<AppModeBloc, AppModeState>(
-      builder: (context, state) {
-        if (state.mode == AppMode.seller) {
-          return const SellerDashboardPage();
-        }
-        // Default to Buyer mode
-        return EcommerceHomePage(products: _products);
-      },
+    return BlocProvider(
+      create: (context) =>
+          ProductBloc(repository: context.read<AppRepositoryImpl>())
+            ..add(LoadProducts()),
+      child: BlocBuilder<AppModeBloc, AppModeState>(
+        builder: (context, state) {
+          if (state.mode == AppMode.seller) {
+            return const SellerDashboardPage();
+          }
+          // Default to Buyer mode
+          return const EcommerceHomePage();
+        },
+      ),
     );
   }
 }

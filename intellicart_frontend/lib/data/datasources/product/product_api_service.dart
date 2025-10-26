@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intellicart/models/product.dart';
+import 'package:intellicart/models/review.dart';
 import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -34,12 +35,14 @@ class ProductApiService {
   Future<List<Product>> getProducts() async {
     try {
       final baseUrl = await getBaseUrl();
+      print('Making API call to fetch products: $baseUrl'); // Debug log
       final response = await http.get(
         Uri.parse(baseUrl),
         headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
+        print('Successfully received ${jsonDecode(response.body).length} products from API'); // Debug log
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => Product.fromJson(json)).toList();
       } else {
@@ -122,6 +125,53 @@ class ProductApiService {
       }
     } catch (e) {
       throw Exception('Error loading seller products: $e');
+    }
+  }
+
+  Future<Product> addReviewToProduct(String productId, Review review) async {
+    try {
+      final baseUrl = await getBaseUrl();
+      
+      // First, get the current product to get its current reviews
+      print('Fetching product from API: $baseUrl/$productId'); // Debug log
+      final productResponse = await http.get(
+        Uri.parse('$baseUrl/$productId'),
+        headers: await _getHeaders(),
+      );
+      
+      if (productResponse.statusCode != 200) {
+        throw Exception('Failed to fetch product for review: ${productResponse.body}');
+      }
+      
+      final Map<String, dynamic> productData = jsonDecode(productResponse.body);
+      final Product currentProduct = Product.fromJson(productData);
+      
+      // Add the new review to the existing reviews
+      final updatedReviews = [
+        ...currentProduct.reviews,
+        review,
+      ];
+      
+      print('Updating product with new review via API'); // Debug log
+      // Update the product with the new review
+      final updateResponse = await http.put(
+        Uri.parse('$baseUrl/$productId'),
+        headers: await _getHeaders(),
+        body: jsonEncode({
+          ...productData,
+          'reviews': updatedReviews.map((r) => r.toJson()).toList(),
+        }),
+      );
+
+      if (updateResponse.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(updateResponse.body);
+        print('Successfully added review, received updated product from API'); // Debug log
+        return Product.fromJson(data);
+      } else {
+        throw Exception('Failed to add review to product: ${updateResponse.body}');
+      }
+    } catch (e) {
+      throw Exception('Error adding review to product: $e');
     }
   }
 }

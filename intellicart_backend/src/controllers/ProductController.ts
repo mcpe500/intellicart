@@ -35,6 +35,10 @@ export class ProductController {
     try {
       const db = dbManager.getDatabase<any>();
       const products = await db.findAll('products');
+      
+      // Log the product fetch with count
+      console.log(`[INFO] Fetching products: ${products.length} products retrieved`);
+      
       return c.json(products);
     } catch (error) {
       console.error('Error retrieving all products:', error);

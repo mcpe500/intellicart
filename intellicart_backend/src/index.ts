@@ -20,12 +20,16 @@ import { userRoutes } from './routes/userRoutes';
 import { authRoutes } from './routes/authRoutes';
 import { productRoutes } from './routes/productRoutes';
 import { orderRoutes } from './routes/orderRoutes';
+import { loggingMiddleware } from './middleware/loggingMiddleware';
 
 /**
  * Create the main application instance using OpenAPIHono
  * This allows automatic OpenAPI documentation generation from Zod schemas
  */
 const app = new OpenAPIHono();
+
+// Add logging middleware to log all requests
+app.use('*', loggingMiddleware);
 
 /**
  * Register all authentication-related routes under the '/api/auth' prefix

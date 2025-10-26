@@ -2,6 +2,7 @@
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/user.dart';
+import 'package:intellicart/models/review.dart';
 import 'package:intellicart/data/repositories/app_repository.dart';
 import 'package:intellicart/data/datasources/offline_first_api_service.dart';
 import 'package:intellicart/data/datasources/offline_sqlite_helper.dart';
@@ -149,6 +150,16 @@ class AppRepositoryImpl implements AppRepository {
       // Fallback to direct database operation if no API service provided
       final dbHelper = OfflineDatabaseHelper();
       await dbHelper.markProductAsSynced(localId, backendId);
+    }
+  }
+
+  @override
+  Future<Product> addReviewToProduct(String productId, Review review) async {
+    if (_apiService != null) {
+      return await _apiService!.addReviewToProduct(productId, review);
+    } else {
+      // For offline implementation, we would need more complex handling
+      throw Exception("API service is required for adding reviews");
     }
   }
 

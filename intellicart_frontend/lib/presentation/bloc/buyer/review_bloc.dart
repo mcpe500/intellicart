@@ -2,6 +2,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intellicart/models/review.dart';
+import 'package:intellicart/data/repositories/app_repository_impl.dart';
+import 'package:intellicart/data/datasources/api_service.dart';
 
 // --- EVENTS ---
 abstract class ReviewEvent extends Equatable {
@@ -54,7 +56,9 @@ class ReviewSubmitFailure extends ReviewState {
 
 // --- BLOC ---
 class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
-  ReviewBloc() : super(ReviewInitial()) {
+  final ApiService apiService;
+
+  ReviewBloc({required this.apiService}) : super(ReviewInitial()) {
     on<SubmitReview>(_onSubmitReview);
   }
 
@@ -64,11 +68,12 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
   ) async {
     emit(ReviewSubmitting());
     try {
-      // Simulate network/database call
-      await Future.delayed(const Duration(seconds: 2));
-
-      // In a real app, you would save this to SQLite or Firebase
-      // and get the saved review back.
+      // In a real implementation, you'd have an endpoint to submit a review
+      // For now, we'll update the product by adding the review to it
+      // This requires updating the existing product with the new review
+      
+      // For this implementation, let's dispatch an event to the product bloc
+      // to update the review on the product
       final newReview = Review(
         title: event.title,
         reviewText: event.reviewText,

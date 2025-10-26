@@ -12,6 +12,9 @@ class ApiService {
   final ProductApiService _productService = ProductApiService();
   final OrderApiService _orderService = OrderApiService();
   final UserApiService _userService = UserApiService();
+  
+  // Public getter for product service to be used by offline services
+  ProductApiService get productService => _productService;
 
   // --- AUTHENTICATION METHODS ---
   Future<User?> login(String email, String password) async {

@@ -1,16 +1,18 @@
 // lib/screens/ecommerce_home_page.dart (UPDATED)
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/models/product.dart';
+import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/screens/buyer/ecommerce_search_page.dart';
 import 'package:intellicart/presentation/screens/buyer/product_details_page.dart';
 import 'package:intellicart/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
 import 'package:intellicart/presentation/screens/buyer/cart_page.dart'; // Import the new CartPage
 import 'package:intellicart/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
+import 'package:intellicart/features/product/presentation/widgets/product_grid.dart';
+import 'package:intellicart/features/product/presentation/widgets/product_card.dart';
 
 class EcommerceHomePage extends StatefulWidget {
-  final List<Product> products;
-
-  const EcommerceHomePage({super.key, required this.products});
+  const EcommerceHomePage({super.key});
 
   @override
   State<EcommerceHomePage> createState() => _EcommerceHomePageState();
@@ -26,8 +28,8 @@ class _EcommerceHomePageState extends State<EcommerceHomePage> {
   void initState() {
     super.initState();
     _pages = [
-      // Index 0: Home Content
-      _HomePageContent(products: widget.products),
+      // Index 0: Home Content - Will be wrapped in BlocProvider
+      const _HomePageContent(),
       // Index 1: Categories (using the search page for now)
       const EcommerceSearchPage(),
       // Index 2: Cart
@@ -94,18 +96,60 @@ class _EcommerceHomePageState extends State<EcommerceHomePage> {
   }
 }
 
-// ---- HELPER WIDGET FOR HOME PAGE CONTENT ----
-// We extract the original body of the home page into its own widget
-// to keep the code clean.
+// ---- HOME PAGE CONTENT WITH BLoC ----
 class _HomePageContent extends StatelessWidget {
-  const _HomePageContent({
-    required this.products,
-  });
-
-  final List<Product> products;
+  const _HomePageContent();
 
   @override
   Widget build(BuildContext context) {
+    return BlocBuilder<ProductBloc, ProductState>(
+      builder: (context, state) {
+        if (state is ProductLoading) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        } else if (state is ProductError) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${state.message}',
+                    style: const TextStyle(fontSize: 16, color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<ProductBloc>().add(LoadProducts());
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else if (state is ProductLoaded) {
+          return _buildHomePageContent(context, state.products);
+        } else {
+          // Initial state, load products
+          context.read<ProductBloc>().add(LoadProducts());
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+  Widget _buildHomePageContent(BuildContext context, List<Product> products) {
     const Color warmOrange100 = Color(0xFFFFF4E6);
     const Color warmOrange500 = Color(0xFFFF9800);
     const Color warmOrange700 = Color(0xFFF57C00);
@@ -179,10 +223,8 @@ class _HomePageContent extends StatelessWidget {
                       style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold, color: warmGray800),
                     ),
                     const SizedBox(height: 12.0),
-                    _buildProductGrid(
-                      context,
+                    ProductGrid(
                       products: products.length >= 2 ? products.sublist(0, 2) : products,
-                      warmOrange700: warmOrange700,
                     ),
                     const SizedBox(height: 24.0),
                     Row(
@@ -202,11 +244,10 @@ class _HomePageContent extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12.0),
-                    _buildProductGrid(
-                      context,
-                      products: products.length > 2 ? products.sublist(2) : [],
-                      warmOrange700: warmOrange700,
-                    ),
+                    if (products.length > 2) 
+                      ProductGrid(
+                        products: products.sublist(2),
+                      ),
                   ],
                 ),
               ),
@@ -214,27 +255,6 @@ class _HomePageContent extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildProductGrid(BuildContext context, {required List<Product> products, required Color warmOrange700}) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16.0,
-        mainAxisSpacing: 16.0,
-        childAspectRatio: 0.75,
-      ),
-      itemCount: products.length,
-      itemBuilder: (context, index) {
-        final product = products[index];
-        return _ProductCard(
-          product: product,
-          warmOrange700: warmOrange700,
-        );
-      },
     );
   }
 }

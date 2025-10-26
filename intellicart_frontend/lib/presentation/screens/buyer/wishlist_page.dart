@@ -29,15 +29,15 @@ class _WishlistPageState extends State<WishlistPage> {
       imageUrl: 'https://placehold.co/400x400/5E5E5E/FFFFFF?text=Headphones',
       reviews: [],
     ),
-     Product(
-        name: 'Stylish Headphones',
-        description: 'For immersive audio',
-        price: '\$49.99',
-        originalPrice: '\$60.00',
-        imageUrl:
-            'https://lh3.googleusercontent.com/aida-public/AB6AXuDMDDt1s-XFmFZSH0ueZa_h2OY0-wSr0PwaY4s6z7CWYwY15RQ84AFwOUPae2BDOXI73lUD5rch6jWyiRaX4V84CzDJNkS3ZrCKWSrXRRGo1kJXmnoyVW2LqNBZ62Uf7k5j3ekVHTTDd6a5cxMqwDbZ1UGyXbMrEAX8U-B1hVJpAuVefrbzAd3ewrAojReuO9pG2MmbKxoYD4oiedLQvR5H7RKR-8vKdVE0NJSNpysXDQ4BgY0CwHSmFB99DMdnU6fIGsftaer72icT',
-        reviews: [],
-      ),
+    Product(
+      name: 'Stylish Headphones',
+      description: 'For immersive audio',
+      price: '\$49.99',
+      originalPrice: '\$60.00',
+      imageUrl:
+          'https://lh3.googleusercontent.com/aida-public/AB6AXuDMDDt1s-XFmFZSH0ueZa_h2OY0-wSr0PwaY4s6z7CWYwY15RQ84AFwOUPae2BDOXI73lUD5rch6jWyiRaX4V84CzDJNkS3ZrCKWSrXRRGo1kJXmnoyVW2LqNBZ62Uf7k5j3ekVHTTDd6a5cxMqwDbZ1UGyXbMrEAX8U-B1hVJpAuVefrbzAd3ewrAojReuO9pG2MmbKxoYD4oiedLQvR5H7RKR-8vKdVE0NJSNpysXDQ4BgY0CwHSmFB99DMdnU6fIGsftaer72icT',
+      reviews: [],
+    ),
   ];
 
   @override
@@ -70,7 +70,11 @@ class _WishlistPageState extends State<WishlistPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.favorite_border, size: 80, color: Colors.grey[400]),
+                  Icon(
+                    Icons.favorite_border,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     'Your wishlist is empty.',
@@ -88,7 +92,8 @@ class _WishlistPageState extends State<WishlistPage> {
                   margin: const EdgeInsets.only(bottom: 16),
                   elevation: 2,
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: ListTile(
@@ -110,18 +115,21 @@ class _WishlistPageState extends State<WishlistPage> {
                       subtitle: Text(
                         product.price,
                         style: const TextStyle(
-                            color: accentColor,
-                            fontWeight: FontWeight.w600),
+                          color: accentColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                           IconButton(
-                            icon: const Icon(Icons.shopping_cart_outlined,
-                                color: primaryTextColor),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.shopping_cart_outlined,
+                              color: primaryTextColor,
+                            ),
                             tooltip: 'Add to Cart',
                             onPressed: () {
-                               ScaffoldMessenger.of(context).showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Added to cart!'),
                                   backgroundColor: accentColor,
@@ -130,8 +138,10 @@ class _WishlistPageState extends State<WishlistPage> {
                             },
                           ),
                           IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                color: Colors.redAccent),
+                            icon: const Icon(
+                              Icons.delete_outline,
+                              color: Colors.redAccent,
+                            ),
                             tooltip: 'Remove from Wishlist',
                             onPressed: () {
                               setState(() {
@@ -149,4 +159,3 @@ class _WishlistPageState extends State<WishlistPage> {
     );
   }
 }
-

@@ -5,6 +5,7 @@ import 'package:intellicart/data/datasources/sync_service.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/order.dart';
+import 'package:intellicart/models/review.dart';
 
 class OfflineFirstApiService {
   final ApiService _onlineService = ApiService();
@@ -138,6 +139,23 @@ class OfflineFirstApiService {
       
       // If online fails, return local data
       return await _dbHelper.getProducts();
+    }
+  }
+
+  Future<Product> addReviewToProduct(String productId, Review review) async {
+    try {
+      // Try online first
+      final updatedProduct = await _onlineService.productService.addReviewToProduct(productId, review);
+      
+      // Update local database
+      await _dbHelper.updateProduct(updatedProduct);
+      
+      return updatedProduct;
+    } catch (e) {
+      print('Online review submission failed, attempting local update: ${e.toString()}');
+      
+      // If online fails, we can't submit the review locally since it needs online verification
+      rethrow;
     }
   }
 

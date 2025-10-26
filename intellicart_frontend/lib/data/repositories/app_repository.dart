@@ -2,6 +2,7 @@
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/user.dart';
+import 'package:intellicart/models/review.dart';
 
 abstract class AppRepository {
   // App Mode Methods
@@ -21,6 +22,7 @@ abstract class AppRepository {
   Future<void> deleteProduct(int id);
   Future<List<Product>> getProductsPendingSync();
   Future<void> markProductAsSynced(String localId, String backendId);
+  Future<Product> addReviewToProduct(String productId, Review review);
   
   // Order Methods
   Future<void> insertOrders(List<Order> orders);

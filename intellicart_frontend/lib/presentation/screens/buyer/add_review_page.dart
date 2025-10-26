@@ -1,7 +1,7 @@
 // lib/screens/add_review_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/presentation/bloc/buyer/review_bloc.dart';
+import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/widgets/shared/star_rating_input.dart';
 
 class AddReviewPage extends StatefulWidget {
@@ -28,8 +28,8 @@ class _AddReviewPageState extends State<AddReviewPage> {
 
   void _submitReview() {
     if (_formKey.currentState!.validate() && _currentRating > 0) {
-      context.read<ReviewBloc>().add(
-            SubmitReview(
+      context.read<ProductBloc>().add(
+            AddReviewToProduct(
               productId: widget.productId,
               title: _titleController.text,
               reviewText: _reviewController.text,
@@ -62,134 +62,131 @@ class _AddReviewPageState extends State<AddReviewPage> {
       ),
     );
 
-    return BlocProvider(
-      create: (context) => ReviewBloc(),
-      child: Scaffold(
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
         backgroundColor: Colors.white,
-        appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: primaryTextColor),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: const Text(
-            'Write a Review',
-            style: TextStyle(
-              color: primaryTextColor,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          centerTitle: true,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: primaryTextColor),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: BlocListener<ReviewBloc, ReviewState>(
-          listener: (context, state) {
-            if (state is ReviewSubmitSuccess) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Thank you for your review!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              // Pop the page and return the new review
-              Navigator.pop(context, state.review);
-            }
-            if (state is ReviewSubmitFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Error: ${state.error}'),
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
-            }
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'What is your rating?',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: primaryTextColor,
-                    ),
+        title: const Text(
+          'Write a Review',
+          style: TextStyle(
+            color: primaryTextColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: BlocListener<ProductBloc, ProductState>(
+        listener: (context, state) {
+          if (state is ReviewSubmitted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Thank you for your review!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Pop the page and return the new review
+            Navigator.pop(context);
+          }
+          if (state is ProductError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Error: ${state.message}'),
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'What is your rating?',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: primaryTextColor,
                   ),
-                  const SizedBox(height: 12),
-                  Center(
-                    child: StarRatingInput(
-                      onRatingChanged: (rating) {
-                        setState(() {
-                          _currentRating = rating;
-                        });
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Review Title',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a title for your review.';
-                      }
-                      return null;
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: StarRatingInput(
+                    onRatingChanged: (rating) {
+                      setState(() {
+                        _currentRating = rating;
+                      });
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _reviewController,
-                    decoration: const InputDecoration(
-                      labelText: 'Your Review',
-                      alignLabelWithHint: true,
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 5,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your review.';
-      
-                      }
-                      return null;
-                    },
+                ),
+                const SizedBox(height: 24),
+                TextFormField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Review Title',
+                    border: OutlineInputBorder(),
                   ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: BlocBuilder<ReviewBloc, ReviewState>(
-                      builder: (context, state) {
-                        if (state is ReviewSubmitting) {
-                          return ElevatedButton(
-                            onPressed: null,
-                            style: submittingButtonStyle,
-                            child: const CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          );
-                        }
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter a title for your review.';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _reviewController,
+                  decoration: const InputDecoration(
+                    labelText: 'Your Review',
+                    alignLabelWithHint: true,
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 5,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter your review.';
+    
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: BlocBuilder<ProductBloc, ProductState>(
+                    builder: (context, state) {
+                      if (state is ReviewSubmitting) {
                         return ElevatedButton(
-                          onPressed: _submitReview,
-                          style: normalButtonStyle,
-                          child: const Text(
-                            'Submit Review',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                          onPressed: null,
+                          style: submittingButtonStyle,
+                          child: const CircularProgressIndicator(
+                            color: Colors.white,
                           ),
                         );
-                      },
-                    ),
+                      }
+                      return ElevatedButton(
+                        onPressed: _submitReview,
+                        style: normalButtonStyle,
+                        child: const Text(
+                          'Submit Review',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

@@ -2,6 +2,7 @@
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/user.dart';
+import 'package:intellicart/models/review.dart';
 import 'package:intellicart/data/repositories/app_repository.dart';
 import 'package:intellicart/data/datasources/offline_first_api_service.dart';
 
@@ -27,7 +28,7 @@ class OfflineFirstAppRepository implements AppRepository {
 
   @override
   Future<String?> getCurrentUser() async {
-    return await _apiService.getCurrentUser();
+    return await _apiService.getLocalCurrentUser();
   }
 
   @override
@@ -50,7 +51,12 @@ class OfflineFirstAppRepository implements AppRepository {
     // This would require implementation in the API service
     // For now, return from the list of all products
     final products = await getProducts();
-    return products.firstWhere((product) => int.tryParse(product.id ?? '0') == id, orElse: () => null);
+    try {
+      return products.firstWhere((product) => int.tryParse(product.id ?? '0') == id);
+    } catch (e) {
+      // If not found, return null
+      return null;
+    }
   }
 
   @override
@@ -65,13 +71,13 @@ class OfflineFirstAppRepository implements AppRepository {
     final products = await getProducts();
     final product = products.firstWhere((p) => int.tryParse(p.id ?? '0') == id, orElse: () => Product(
       id: id.toString(),
-      name: '',
-      description: '',
-      price: '',
+      name: 'Not Found',
+      description: 'Product not found',
+      price: '0',
       imageUrl: '',
       reviews: [],
     ));
-    await _apiService.deleteProduct(product);
+    await _apiService.deleteLocalProduct(product);
   }
 
   @override
@@ -152,5 +158,10 @@ class OfflineFirstAppRepository implements AppRepository {
   @override
   Future<bool> retryFailedSync() async {
     return await _apiService.retryFailedSync();
+  }
+
+  @override
+  Future<Product> addReviewToProduct(String productId, Review review) async {
+    return await _apiService.addReviewToProduct(productId, review);
   }
 }
