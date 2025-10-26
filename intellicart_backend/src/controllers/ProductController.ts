@@ -1,6 +1,6 @@
 /**
  * Product Controller
- * 
+ *
  * This controller handles all product-related business logic including:
  * - Retrieving all products
  * - Retrieving a specific product by ID
@@ -8,10 +8,9 @@
  * - Updating existing products
  * - Deleting products
  * - Retrieving products by seller
- * 
- * All methods are static for easy access from route handlers.
- * The controller uses the DatabaseManager for data persistence.
- * 
+ *
+ * The controller delegates business logic to the ProductService.
+ *
  * @class ProductController
  * @description Business logic layer for product operations
  * @author Intellicart Team
@@ -19,226 +18,19 @@
  */
 
 import { Context } from 'hono';
-import { dbManager } from '../database/Config';
+import { BaseController } from './BaseController';
+import { ProductService } from '../services/ProductService';
+import { ReviewService } from '../services/ReviewService';
+import { AddReviewRequest } from '../models/ProductDTO';
 
-export class ProductController {
-  /**
-   * Retrieve all products from the database
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing array of all products
-   * @route GET /api/products
-   */
-  static async getAllProducts(c: Context) {
-    try {
-      const db = dbManager.getDatabase<any>();
-      const products = await db.findAll('products');
-      
-      // Log the product fetch with count
-      console.log(`[INFO] Fetching products: ${products.length} products retrieved`);
-      
-      return c.json(products);
-    } catch (error) {
-      console.error('Error retrieving all products:', error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
-  }
+export class ProductController extends BaseController<any> {
+  private productService: ProductService;
+  private reviewService: ReviewService;
 
-  /**
-   * Retrieve a specific product by ID
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing the product object or error if not found
-   * @route GET /api/products/:id
-   */
-  static async getProductById(c: Context) {
-    try {
-      const id = Number(c.req.param('id'));
-      
-      const db = dbManager.getDatabase<any>();
-      const product = await db.findById('products', id);
-      
-      if (!product) {
-        return c.json({ error: 'Product not found' }, 404);
-      }
-      
-      return c.json(product);
-    } catch (error) {
-      console.error('Error retrieving product by ID:', error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
-  }
-
-  /**
-   * Create a new product in the database
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing the created product object
-   * @route POST /api/products
-   */
-  static async createProduct(c: Context) {
-    try {
-      const body = await c.req.json() as {
-        name: string;
-        description: string;
-        price: string;
-        originalPrice?: string;
-        imageUrl: string;
-      };
-      
-      const user = c.get('user');
-      
-      const db = dbManager.getDatabase<any>();
-      
-      const newProduct = {
-        ...body,
-        reviews: [],
-        sellerId: user.userId,
-        createdAt: new Date().toISOString(),
-      };
-      
-      const createdProduct = await db.create('products', newProduct);
-      
-      return c.json(createdProduct, 201);
-    } catch (error) {
-      console.error('Error creating product:', error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
-  }
-
-  /**
-   * Update an existing product by ID
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing the updated product object or error if not found
-   * @route PUT /api/products/:id
-   */
-  static async updateProduct(c: Context) {
-    try {
-      const rawId = c.req.param('id');
-      const id = Number(rawId);
-      
-      // Validate that the ID is a number
-      if (isNaN(id) || id <= 0) {
-        return c.json({ error: 'Invalid product ID' }, 400);
-      }
-      
-      const body = await c.req.json() as {
-        name?: string;
-        description?: string;
-        price?: string;
-        originalPrice?: string;
-        imageUrl?: string;
-        reviews?: any[]; // Allow reviews to be updated
-      };
-      
-      const user = c.get('user');
-      
-      const db = dbManager.getDatabase<any>();
-      
-      // Check if product exists
-      const existingProduct = await db.findById('products', id);
-      if (!existingProduct) {
-        return c.json({ error: 'Product not found' }, 404);
-      }
-      
-      // Check if the user is the seller of this product
-      if (existingProduct.sellerId !== user.userId) {
-        return c.json({ error: 'You can only update products you created' }, 403);
-      }
-      
-      const updatedProduct = await db.update('products', id, body);
-      
-      if (!updatedProduct) {
-        return c.json({ error: 'Product not found' }, 404);
-      }
-      
-      return c.json(updatedProduct);
-    } catch (error) {
-      console.error('Error updating product:', error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
-  }
-
-  /**
-   * Delete a product by ID
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response indicating success or error
-   * @route DELETE /api/products/:id
-   */
-  static async deleteProduct(c: Context) {
-    try {
-      const id = Number(c.req.param('id'));
-      
-      const user = c.get('user');
-      
-      const db = dbManager.getDatabase<any>();
-      
-      const product = await db.findById('products', id);
-      
-      if (!product) {
-        return c.json({ error: 'Product not found' }, 404);
-      }
-      
-      // Check if the user is the seller of this product
-      if (product.sellerId !== user.userId) {
-        return c.json({ error: 'You can only delete products you created' }, 403);
-      }
-      
-      const deleted = await db.delete('products', id);
-      
-      if (deleted) {
-        return c.json({
-          message: 'Product deleted successfully', 
-          product 
-        });
-      } else {
-        return c.json({ error: 'Failed to delete product' }, 500);
-      }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
-  }
-
-  /**
-   * Retrieve all products by a specific seller
-   * 
-   * @static
-   * @async
-   * @param {Context} c - Hono context object containing request/response information
-   * @returns {Promise} JSON response containing array of products by seller
-   * @route GET /api/products/seller/:sellerId
-   */
-  static async getSellerProducts(c: Context) {
-    try {
-      const sellerId = Number(c.req.param('sellerId'));
-      const user = c.get('user');
-      
-      // Check if the requesting user is the seller
-      if (user.userId !== sellerId) {
-        return c.json({ error: 'Access denied' }, 403);
-      }
-      
-      const db = dbManager.getDatabase<any>();
-      const products = await db.findBy('products', { sellerId: sellerId });
-      
-      return c.json(products);
-    } catch (error) {
-      console.error('Error retrieving seller products:', error);
-      return c.json({ error: 'Internal server error' }, 500);
-    }
+  constructor() {
+    super('products');
+    this.productService = new ProductService();
+    this.reviewService = new ReviewService();
   }
 
   /**
@@ -246,51 +38,39 @@ export class ProductController {
    *
    * @static
    * @async
-   * @param {number} productId - The ID of the product to add the review to.
-   * @param {any} reviewData - The review data (title, text, rating).
-   * @param {number} userId - The ID of the user submitting the review (optional, for tracking).
-   * @returns {Promise<any>} The updated product object with the new review.
-   * @throws {Error} Throws an error if the product is not found or on database error.
+   * @param {Context} c - Hono context object containing request/response information
+   * @returns {Promise} JSON response containing the updated product with the new review
+   * @route POST /api/products/:id/reviews
    */
-  static async addReviewToProduct(c: Context): Promise<any> {
+  static async addReviewToProduct(c: Context, productId: number, reviewData: AddReviewRequest): Promise<any> {
     try {
-      console.log(`[INFO] Attempting to add review to product`); 
-      const productId = Number(c.req.param('id'));
-      const reviewData = await c.req.json() as any;
       const user = c.get('user');
-      
-      const db = dbManager.getDatabase<any>();
 
-      // 1. Find the product
-      const product = await db.findById('products', productId);
-      if (!product) {
-        console.error(`[ERROR] Product not found for ID: ${productId} during addReview`); 
-        return c.json({ error: 'Product not found' }, 404);
-      }
+      const productService = new ProductService();
+      const updatedProduct = await productService.addReviewToProduct(
+        productId,
+        reviewData,
+        user.userId
+      );
 
-      // 2. Prepare the new review object
-      const newReview = {
-        id: (product.reviews?.length || 0) + 1, // Simple ID generation for the review within the product
-        ...reviewData,
-        timeAgo: 'Just now', // Or generate a timestamp server-side
-        // userId: userId // Optionally add userId if you track who submitted
-      };
-
-      // 3. Add the new review to the product's reviews array
-      const updatedReviews = [...(product.reviews || []), newReview];
-
-      // 4. Update the product in the database with the new reviews array
-      const updatedProduct = await db.update('products', productId, { reviews: updatedReviews });
-
-      if (!updatedProduct) {
-        // This case should ideally not happen if findById succeeded, but handle defensively
-        return c.json({ error: 'Failed to update product with review' }, 500);
-      }
-
-      console.log(`[INFO] Added review to product ${productId}. New review count: ${updatedReviews.length}`); 
-      return c.json(updatedProduct); // Return the full updated product
-    } catch (error) {
+      return c.json(updatedProduct, 201);
+    } catch (error: any) {
       console.error('Error adding review to product:', error);
+      if (error.message === 'Product not found') {
+        return c.json({ error: error.message }, 404);
+      }
+      return c.json({ error: 'Internal server error' }, 500);
+    }
+  }
+
+  async getSellerProducts(c: Context) {
+    try {
+      const user = c.get('user');
+      const sellerId = user.userId;
+      const products = await this.productService.getSellerProducts(sellerId);
+      return c.json(products);
+    } catch (error: any) {
+      console.error('Error retrieving seller products:', error);
       return c.json({ error: 'Internal server error' }, 500);
     }
   }

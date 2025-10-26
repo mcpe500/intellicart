@@ -10,10 +10,11 @@
  * @version 1.0.0
  */
 
-import { MiddlewareHandler } from "hono";
+import { MiddlewareHandler, Context, Next } from "hono";
 import jwt from "jsonwebtoken";
 import { dbManager } from "../database/Config";
 import { logger } from '../utils/logger';
+import { AuthenticationError } from '../types/errors';
 
 // Helper function to ensure the tokens table exists
 async function ensureTokensTable() {
@@ -40,16 +41,32 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
 
   // Check if authorization header exists and starts with 'Bearer '
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    logger.info("[AUTH] No authorization header provided or format incorrect", { ip: c.req.header('x-forwarded-for') || 'unknown', userAgent: c.req.header('user-agent') });
+    logger.info("[AUTH] No authorization header provided or format incorrect", { 
+      ip: c.req.header('x-forwarded-for') || 'unknown', 
+      userAgent: c.req.header('user-agent') 
+    });
     return c.json({ error: "Access token required" }, 401);
   }
 
   // Extract the token from the header
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-  logger.info(`[AUTH] Token verification attempt for token: ${token.substring(0, 10)}...`, { ip: c.req.header('x-forwarded-for') || 'unknown', userAgent: c.req.header('user-agent') });
+  
+  // Additional security: Check token length to prevent extremely long tokens
+  if (token.length > 5000) {
+    logger.warn("[AUTH] Token too long, potential attack", { 
+      ip: c.req.header('x-forwarded-for') || 'unknown', 
+      userAgent: c.req.header('user-agent') 
+    });
+    return c.json({ error: "Invalid token" }, 401);
+  }
+
+  logger.info(`[AUTH] Token verification attempt for token: ${token.substring(0, 10)}...`, { 
+    ip: c.req.header('x-forwarded-for') || 'unknown', 
+    userAgent: c.req.header('user-agent') 
+  });
 
   try {
-    // Check if token exists in our active tokens in the database
+    // First check if token exists in our active tokens in the database
     const db = dbManager.getDatabase<any>();
     let activeTokens;
     try {
@@ -60,10 +77,14 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
     }
 
     // Find the token in the stored tokens
-    const tokenRecord = activeTokens.find((t) => t.token === token);
+    const tokenRecord = activeTokens.find((t: any) => t.token === token);
 
     if (!tokenRecord) {
-      logger.warn("[AUTH] Token not found in active tokens database", { token: token.substring(0, 10) + '...', ip: c.req.header('x-forwarded-for') || 'unknown', userAgent: c.req.header('user-agent') });
+      logger.warn("[AUTH] Token not found in active tokens database", { 
+        token: token.substring(0, 10) + '...', 
+        ip: c.req.header('x-forwarded-for') || 'unknown', 
+        userAgent: c.req.header('user-agent') 
+      });
       return c.json({ error: "Invalid token" }, 401);
     }
     
@@ -128,6 +149,14 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
       ip: c.req.header('x-forwarded-for') || 'unknown',
       userAgent: c.req.header('user-agent')
     });
+    
+    // Check if it's a token expiration error specifically
+    if (error instanceof jwt.TokenExpiredError) {
+      return c.json({ error: "Token expired" }, 401);
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      return c.json({ error: "Invalid token" }, 401);
+    }
+    
     return c.json({ error: "Invalid token" }, 401);
   }
 };

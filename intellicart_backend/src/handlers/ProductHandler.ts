@@ -1,104 +1,80 @@
 import { Context } from 'hono';
 import { ProductController } from '../controllers/ProductController';
+import { AddReviewRequest } from '../models/ProductDTO';
 
 export class ProductHandler {
   static async getAllProducts(c: Context) {
     try {
-      return await ProductController.getAllProducts(c);
+      const productController = new ProductController();
+      return await productController.getAll(c);
     } catch (error: any) {
-      console.error('Error in getAllProducts handler:', error);
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in getAllProducts:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 
   static async getProductById(c: Context) {
     try {
-      // Pass context directly to controller which handles parameter extraction
-      return await ProductController.getProductById(c);
+      const productController = new ProductController();
+      return await productController.getById(c);
     } catch (error: any) {
-      console.error('Error in getProductById handler:', error);
-
-      // Handler formats the error JSON response
-      // Use status from error if available (like the 404 we added), else default to 500
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in getProductById:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 
   static async createProduct(c: Context) {
     try {
-      // Pass context directly to controller which handles extraction internally
-      return await ProductController.createProduct(c);
+      const productController = new ProductController();
+      const json = await c.req.json();
+      return await productController.create(c, json);
     } catch (error: any) {
-      console.error('Error in createProduct handler:', error);
-
-      // Handler formats the error JSON response
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in createProduct:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 
   static async updateProduct(c: Context) {
     try {
-      // Pass context directly to controller which handles extraction internally
-      return await ProductController.updateProduct(c);
+      const productController = new ProductController();
+      const json = await c.req.json();
+      return await productController.update(c, json);
     } catch (error: any) {
-      console.error('Error in updateProduct handler:', error);
-
-      // Handler formats the error JSON response
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in updateProduct:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 
   static async deleteProduct(c: Context) {
     try {
-      // Pass context directly to controller which handles extraction internally
-      return await ProductController.deleteProduct(c);
+      const productController = new ProductController();
+      return await productController.delete(c);
     } catch (error: any) {
-      console.error('Error in deleteProduct handler:', error);
-
-      // Handler formats the error JSON response
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in deleteProduct:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 
   static async getSellerProducts(c: Context) {
     try {
-      // Pass context directly to controller which handles extraction internally
-      return await ProductController.getSellerProducts(c);
+      const user = c.get('user');
+      const productController = new ProductController();
+      const items = await productController['db'].findBy('products', { sellerId: user.userId });
+      return c.json(items);
     } catch (error: any) {
-      console.error('Error in getSellerProducts handler:', error);
-
-      // Handler formats the error JSON response
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in getSellerProducts:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 
-  /**
-   * Handler for POST /api/products/:id/reviews
-   * Extracts data, calls controller, and handles HTTP response/errors.
-   */
   static async addReview(c: Context) {
     try {
-      // Pass context directly to controller which handles extraction internally
-      return await ProductController.addReviewToProduct(c);
-
+      const id = c.req.param('id');
+      const json = await c.req.json() as AddReviewRequest;
+      return await ProductController.addReviewToProduct(c, Number(id), json);
     } catch (error: any) {
-      console.error('Error in addReview handler:', error);
-      // Handler formats the error JSON response
-      const statusCode = error.status || 500;
-      const errorMessage = error.message || 'Internal server error';
-      return c.json({ error: errorMessage }, statusCode);
+      console.error('Error in addReview:', error);
+      return c.json({ error: 'Internal Server Error' }, 500);
     }
   }
 }

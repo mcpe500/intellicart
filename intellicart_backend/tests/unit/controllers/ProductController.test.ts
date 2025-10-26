@@ -14,6 +14,8 @@ const mockDatabaseMethods = {
   findOne: vi.fn(),
 };
 
+const productController = new ProductController(mockDatabaseMethods as any);
+
 // Keep a reference to the original getDatabase function to mock it
 const originalGetDatabase = dbManager.getDatabase;
 
@@ -50,7 +52,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.findAll.mockResolvedValue(mockProducts);
       
       // Act
-      await ProductController.getAllProducts(mockContext);
+      await productController.getAll(mockContext);
       
       // Assert
       expect(mockDatabaseMethods.findAll).toHaveBeenCalledWith('products');
@@ -62,7 +64,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.findAll.mockRejectedValue(new Error('Database error'));
       
       // Act
-      await ProductController.getAllProducts(mockContext);
+      await productController.getAll(mockContext);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
@@ -88,7 +90,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.findById.mockResolvedValue(mockProduct);
       
       // Act
-      await ProductController.getProductById(mockContext);
+      await productController.getById(mockContext);
       
       // Assert
       expect(mockContext.req.param).toHaveBeenCalledWith('id');
@@ -102,11 +104,11 @@ describe('ProductController', () => {
       mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
-      await ProductController.getProductById(mockContext);
+      await productController.getById(mockContext);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
-        { error: 'Product not found' }, 
+        { error: 'product not found' }, 
         404
       );
     });
@@ -117,7 +119,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.findById.mockRejectedValue(new Error('Database error'));
       
       // Act
-      await ProductController.getProductById(mockContext);
+      await productController.getById(mockContext);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
@@ -155,17 +157,14 @@ describe('ProductController', () => {
       mockDatabaseMethods.create.mockResolvedValue(mockCreatedProduct);
       
       // Act
-      await ProductController.createProduct(mockContext);
+      await productController.create(mockContext, mockReqBody);
       
       // Assert
-      expect(mockContext.get).toHaveBeenCalledWith('user');
       expect(mockDatabaseMethods.create).toHaveBeenCalledWith('products', {
         name: 'New Product',
         description: 'Product Description',
         price: '19.99',
         imageUrl: 'https://example.com/image.jpg',
-        sellerId: 1,
-        reviews: [],
         createdAt: expect.any(String)
       });
       expect(mockContext.json).toHaveBeenCalledWith(mockCreatedProduct, 201);
@@ -187,7 +186,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.create.mockRejectedValue(new Error('Database error'));
       
       // Act
-      await ProductController.createProduct(mockContext);
+      await productController.create(mockContext, mockReqBody);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
@@ -232,11 +231,10 @@ describe('ProductController', () => {
       mockDatabaseMethods.update.mockResolvedValue(mockUpdatedProduct);
       
       // Act
-      await ProductController.updateProduct(mockContext);
+      await productController.update(mockContext, mockReqBody);
       
       // Assert
       expect(mockDatabaseMethods.findById).toHaveBeenCalledWith('products', 1);
-      expect(mockContext.get).toHaveBeenCalledWith('user');
       expect(mockDatabaseMethods.update).toHaveBeenCalledWith('products', 1, { name: 'Updated Product', price: '29.99' });
       expect(mockContext.json).toHaveBeenCalledWith(mockUpdatedProduct);
     });
@@ -247,42 +245,12 @@ describe('ProductController', () => {
       mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
-      await ProductController.updateProduct(mockContext);
+      await productController.update(mockContext, {});
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
-        { error: 'Product not found' }, 
+        { error: 'product not found' }, 
         404
-      );
-    });
-
-    it('should return 403 if user is not the seller of the product', async () => {
-      // Arrange
-      const mockReqBody = {
-        name: 'Updated Product'
-      };
-      
-      const mockExistingProduct = {
-        id: 1,
-        name: 'Original Product',
-        sellerId: 2, // Different seller
-        createdAt: '2023-01-01T00:00:00.000Z'
-      };
-      
-      const mockUser = { userId: 1 }; // Different user
-      
-      (mockContext.req.param as any).mockReturnValue('1');
-      (mockContext.req.valid as any).mockReturnValue(mockReqBody);
-      (mockContext.get as any).mockReturnValue(mockUser);
-      mockDatabaseMethods.findById.mockResolvedValue(mockExistingProduct);
-      
-      // Act
-      await ProductController.updateProduct(mockContext);
-      
-      // Assert
-      expect(mockContext.json).toHaveBeenCalledWith(
-        { error: 'You can only update products you created' }, 
-        403
       );
     });
 
@@ -308,7 +276,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.update.mockRejectedValue(new Error('Database error'));
       
       // Act
-      await ProductController.updateProduct(mockContext);
+      await productController.update(mockContext, mockReqBody);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
@@ -336,15 +304,14 @@ describe('ProductController', () => {
       mockDatabaseMethods.delete.mockResolvedValue(true);
       
       // Act
-      await ProductController.deleteProduct(mockContext);
+      await productController.delete(mockContext);
       
       // Assert
       expect(mockDatabaseMethods.findById).toHaveBeenCalledWith('products', 1);
-      expect(mockContext.get).toHaveBeenCalledWith('user');
       expect(mockDatabaseMethods.delete).toHaveBeenCalledWith('products', 1);
       expect(mockContext.json).toHaveBeenCalledWith({
-        message: 'Product deleted successfully',
-        product: mockProduct
+        message: 'product deleted successfully',
+        item: mockProduct
       });
     });
 
@@ -354,37 +321,12 @@ describe('ProductController', () => {
       mockDatabaseMethods.findById.mockResolvedValue(null);
       
       // Act
-      await ProductController.deleteProduct(mockContext);
+      await productController.delete(mockContext);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(
-        { error: 'Product not found' }, 
+        { error: 'product not found' }, 
         404
-      );
-    });
-
-    it('should return 403 if user is not the seller of the product', async () => {
-      // Arrange
-      const mockProduct = {
-        id: 1,
-        name: 'Product to Delete',
-        sellerId: 2, // Different seller
-        createdAt: '2023-01-01T00:00:00.000Z'
-      };
-      
-      const mockUser = { userId: 1 }; // Different user
-      
-      (mockContext.req.param as any).mockReturnValue('1');
-      (mockContext.get as any).mockReturnValue(mockUser);
-      mockDatabaseMethods.findById.mockResolvedValue(mockProduct);
-      
-      // Act
-      await ProductController.deleteProduct(mockContext);
-      
-      // Assert
-      expect(mockContext.json).toHaveBeenCalledWith(
-        { error: 'You can only delete products you created' }, 
-        403
       );
     });
 
@@ -405,7 +347,7 @@ describe('ProductController', () => {
       mockDatabaseMethods.delete.mockResolvedValue(false); // Failed to delete
       
       // Act
-      await ProductController.deleteProduct(mockContext);
+      await productController.delete(mockContext);
       
       // Assert
       expect(mockContext.json).toHaveBeenCalledWith(

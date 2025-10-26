@@ -15,8 +15,10 @@
  */
 
 import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
-import { AuthController } from "../controllers/authController";
+import { zValidator } from "@hono/zod-validator";
+import { AuthHandler } from "../handlers/AuthHandler";
 import { verifyToken } from "../middleware/authMiddleware";
+import { authRateLimiter } from "../utils/security/rateLimiter";
 
 /**
  * Create a new OpenAPIHono instance for authentication routes
@@ -184,7 +186,7 @@ const registerRoute = createRoute({
 });
 
 // Register both OpenAPI spec and the handler
-authRoutes.openapi(registerRoute, AuthController.register);
+authRoutes.openapi(registerRoute, authRateLimiter(), AuthHandler.register);
 
 /**
  * Route: POST /api/auth/login
@@ -252,7 +254,7 @@ const loginRoute = createRoute({
 });
 
 // Register both OpenAPI spec and the handler
-authRoutes.openapi(loginRoute, AuthController.login);
+authRoutes.openapi(loginRoute, authRateLimiter(), AuthHandler.login);
 
 /**
  * Route: GET /api/auth/me
@@ -276,7 +278,6 @@ const getCurrentUserRoute = createRoute({
   path: "/me",
   tags: ["Authentication"], // Add tags for grouping in Swagger UI
   security: [{ BearerAuth: [] }], // Require authentication
-  middleware: [verifyToken],
   // Documentation for possible responses
   responses: {
     200: {
@@ -304,10 +305,12 @@ const getCurrentUserRoute = createRoute({
   },
 });
 
-// According to the Hono Zod OpenAPI documentation, when using middleware in the route definition,
-// we need to use the traditional Hono route registration method to ensure middleware is applied
-authRoutes.openapi(getCurrentUserRoute);
-authRoutes.get(getCurrentUserRoute.path, verifyToken, AuthController.getCurrentUser);
+// Register both OpenAPI spec and the handler
+authRoutes.openapi(getCurrentUserRoute, async (c) => {
+  await verifyToken(c, async () => {});
+  return AuthHandler.getMe(c);
+});
+
 /**
  * Route: POST /api/auth/logout
  * Description: Logout user (invalidate token)
@@ -330,7 +333,6 @@ const logoutRoute = createRoute({
   path: "/logout",
   tags: ["Authentication"], // Add tags for grouping in Swagger UI
   security: [{ BearerAuth: [] }], // Require authentication
-  middleware: [verifyToken],
   // Documentation for possible responses
   responses: {
     200: {
@@ -363,8 +365,10 @@ const logoutRoute = createRoute({
 });
 
 // Register both OpenAPI spec and the handler with middleware
-authRoutes.openapi(logoutRoute);
-authRoutes.post('/logout', verifyToken, AuthController.logout);
+authRoutes.openapi(logoutRoute, async (c) => {
+  await verifyToken(c, async () => {});
+  return AuthHandler.logout(c);
+});
 
 /**
  * Route: POST /api/auth/verify
@@ -442,7 +446,7 @@ const verifyTokenRoute = createRoute({
 });
 
 // Register both OpenAPI spec and the handler
-authRoutes.openapi(verifyTokenRoute, AuthController.verifyToken);
+authRoutes.openapi(verifyTokenRoute, AuthHandler.verifyToken);
 
 // Export the configured routes for use in the main application
 export { authRoutes };

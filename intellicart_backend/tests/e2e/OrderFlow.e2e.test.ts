@@ -5,6 +5,8 @@ import { OrderController } from '../../src/controllers/OrderController';
 import { ProductController } from '../../src/controllers/ProductController';
 import { dbManager } from '../../src/database/Config';
 
+const productController = new ProductController();
+
 // Create a test app to simulate the full server
 const app = new Hono();
 
@@ -50,7 +52,7 @@ app.put('/api/orders/:id/status', async (c) => {
   return OrderController.updateOrderStatus(c);
 });
 
-app.get('/api/products', (c) => ProductController.getAllProducts(c));
+app.get('/api/products', (c) => productController.getAll(c));
 app.post('/api/products', async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
@@ -62,7 +64,7 @@ app.post('/api/products', async (c) => {
     return (c as any)._context?.[key];
   };
   (c as any).set('user', { userId: 1 });
-  return ProductController.createProduct(c);
+  return productController.create(c, body);
 });
 
 describe('Complete Order Management Flow E2E Tests', () => {

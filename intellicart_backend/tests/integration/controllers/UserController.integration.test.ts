@@ -4,6 +4,8 @@ import { UserController } from '../../../src/controllers/UserController';
 import { AuthController } from '../../../src/controllers/authController';
 import { dbManager } from '../../../src/database/Config';
 
+const userController = new UserController();
+
 // Mock logger to avoid console output during tests
 const mockedLogger = {
   info: () => {},
@@ -22,20 +24,20 @@ const mockValid = (data: any) => (source: string) => {
 };
 
 // Mock routes for testing
-app.get('/users', (c) => UserController.getAllUsers(c));
+app.get('/users', (c) => userController.getAll(c));
 
 app.get('/users/:id', (c) => {
   // Mock param
   (c.req as any).param = (name: string) => {
     if (name === 'id') return c.req.path.split('/')[2]; // Extract ID from path
   };
-  return UserController.getUserById(c);
+  return userController.getById(c);
 });
 
 app.post('/users', async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
-  return UserController.createUser(c);
+  return userController.createUser(c);
 });
 
 app.put('/users/:id', async (c) => {
@@ -44,14 +46,14 @@ app.put('/users/:id', async (c) => {
     if (name === 'id') return c.req.path.split('/')[2]; // Extract ID from path
   };
   (c.req as any).valid = () => body;
-  return UserController.updateUser(c);
+  return userController.updateUser(c);
 });
 
 app.delete('/users/:id', (c) => {
   (c.req as any).param = (name: string) => {
     if (name === 'id') return c.req.path.split('/')[2]; // Extract ID from path
   };
-  return UserController.deleteUser(c);
+  return userController.delete(c);
 });
 
 describe('User Integration Tests', () => {

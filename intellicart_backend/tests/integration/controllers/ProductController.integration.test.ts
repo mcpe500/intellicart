@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { ProductController } from '../../../src/controllers/ProductController';
 import { dbManager } from '../../../src/database/Config';
 
+const productController = new ProductController();
+
 // Mock logger to avoid console output during tests
 const mockedLogger = {
   info: () => {},
@@ -21,13 +23,13 @@ const mockValid = (data: any) => (source: string) => {
 };
 
 // Mock routes for testing
-app.get('/products', (c) => ProductController.getAllProducts(c));
+app.get('/products', (c) => productController.getAll(c));
 
 app.get('/products/:id', (c) => {
   (c.req as any).param = (name: string) => {
     if (name === 'id') return c.req.path.split('/').pop(); // Extract ID from path
   };
-  return ProductController.getProductById(c);
+  return productController.getById(c);
 });
 
 app.post('/products', async (c) => {
@@ -43,7 +45,7 @@ app.post('/products', async (c) => {
   };
   // Set a mock user with ID 1
   (c as any).set('user', { userId: 1 });
-  return ProductController.createProduct(c);
+  return productController.create(c, body);
 });
 
 app.put('/products/:id', async (c) => {
@@ -62,7 +64,7 @@ app.put('/products/:id', async (c) => {
   };
   // Set a mock user with ID 1
   (c as any).set('user', { userId: 1 });
-  return ProductController.updateProduct(c);
+  return productController.update(c, body);
 });
 
 app.delete('/products/:id', (c) => {
@@ -79,7 +81,7 @@ app.delete('/products/:id', (c) => {
   };
   // Set a mock user with ID 1
   (c as any).set('user', { userId: 1 });
-  return ProductController.deleteProduct(c);
+  return productController.delete(c);
 });
 
 app.get('/products/seller/:sellerId', (c) => {

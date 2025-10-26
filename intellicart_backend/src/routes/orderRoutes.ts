@@ -15,8 +15,9 @@
  */
 
 import { OpenAPIHono, createRoute, z } from '@hono/zod-openapi';
+import { zValidator } from '@hono/zod-validator';
 import { verifyToken } from '../middleware/authMiddleware';
-import { OrderController } from '../controllers/OrderController';
+import { OrderHandler } from '../handlers/OrderHandler';
 
 /**
  * Create a new OpenAPIHono instance for order routes
@@ -143,7 +144,10 @@ const getSellerOrdersRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-orderRoutes.openapi(getSellerOrdersRoute, verifyToken, OrderController.getSellerOrders);
+orderRoutes.openapi(getSellerOrdersRoute, async (c) => {
+  await verifyToken(c, async () => {});
+  return OrderHandler.getSellerOrders(c);
+});
 
 /**
  * Route: PUT /api/orders/:id/status
@@ -218,7 +222,10 @@ const updateOrderStatusRoute = createRoute({
 });
 
 // Register the route with authentication middleware
-orderRoutes.openapi(updateOrderStatusRoute, verifyToken, OrderController.updateOrderStatus);
+orderRoutes.openapi(updateOrderStatusRoute, async (c) => {
+  await verifyToken(c, async () => {});
+  return OrderHandler.updateOrderStatus(c);
+});
 
 // Export the configured routes for use in the main application
 export { orderRoutes };

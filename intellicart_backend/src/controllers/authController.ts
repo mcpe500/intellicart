@@ -20,6 +20,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { dbManager } from "../database/Config";
 import { logger } from "../utils/logger";
+import { LoginRequest, RegisterRequest } from "../models/UserDTO";
 
 export class AuthController {
   /**
@@ -53,12 +54,7 @@ export class AuthController {
    */
   static async register(c: Context) {
     try {
-      const body = (await c.req.json()) as {
-        email: string;
-        password: string;
-        name: string;
-        role: string;
-      };
+      const body = (await c.req.json()) as RegisterRequest;
 
       const { email, password, name, role } = body;
 
@@ -135,7 +131,6 @@ export class AuthController {
     } catch (error) {
       logger.error("Error during user registration:", {
         error: error instanceof Error ? error.message : "Unknown error",
-        email: body?.email,
       });
       console.error("Error during user registration:", error);
       return c.json({ error: "Internal server error" }, 500);
@@ -171,10 +166,7 @@ export class AuthController {
    */
   static async login(c: Context) {
     try {
-      const body = (await c.req.json()) as {
-        email: string;
-        password: string;
-      };
+      const body = (await c.req.json()) as LoginRequest;
 
       const { email, password } = body;
 
@@ -243,7 +235,6 @@ export class AuthController {
     } catch (error) {
       logger.error("Error during user login:", {
         error: error instanceof Error ? error.message : "Unknown error",
-        email: body?.email,
       });
       console.error("Error during user login:", error);
       return c.json({ error: "Internal server error" }, 500);
@@ -282,7 +273,9 @@ export class AuthController {
           const token = tokenHeader.substring(7);
           try {
             const activeTokens = await dbTokens.findAll("tokens");
-            const tokenRecord = activeTokens.find((t: any) => t.token === token);
+            const tokenRecord = activeTokens.find(
+              (t: any) => t.token === token,
+            );
             if (tokenRecord) {
               await dbTokens.delete("tokens", tokenRecord.id);
             }

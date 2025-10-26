@@ -3,8 +3,10 @@ import { Hono } from 'hono';
 import { AuthController } from '../../src/controllers/authController';
 import { UserController } from '../../src/controllers/UserController';
 import { ProductController } from '../../src/controllers/ProductController';
-import { OrderController } from '../../src/controllers/OrderController';
 import { dbManager } from '../../src/database/Config';
+
+const userController = new UserController();
+const productController = new ProductController();
 
 // Create a test app to simulate the full server
 const app = new Hono();
@@ -34,25 +36,25 @@ app.post('/api/auth/verify', (c) => {
   return AuthController.verifyToken(c);
 });
 
-app.get('/api/users', (c) => UserController.getAllUsers(c));
+app.get('/api/users', (c) => userController.getAll(c));
 app.get('/api/users/:id', (c) => {
   (c.req as any).param = (name: string) => {
     if (name === 'id') return c.req.path.split('/')[3];
   };
-  return UserController.getUserById(c);
+  return userController.getById(c);
 });
 app.post('/api/users', async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
-  return UserController.createUser(c);
+  return userController.createUser(c);
 });
 
-app.get('/api/products', (c) => ProductController.getAllProducts(c));
+app.get('/api/products', (c) => productController.getAll(c));
 app.get('/api/products/:id', (c) => {
   (c.req as any).param = (name: string) => {
     if (name === 'id') return c.req.path.split('/')[3];
   };
-  return ProductController.getProductById(c);
+  return productController.getById(c);
 });
 app.post('/api/products', async (c) => {
   const body = await c.req.json();
@@ -65,19 +67,7 @@ app.post('/api/products', async (c) => {
     return (c as any)._context?.[key];
   };
   (c as any).set('user', { userId: 1 });
-  return ProductController.createProduct(c);
-});
-
-app.get('/api/orders', (c) => {
-  (c as any).set = (key: string, value: any) => {
-    (c as any)._context = (c as any)._context || {};
-    (c as any)._context[key] = value;
-  };
-  (c as any).get = (key: string) => {
-    return (c as any)._context?.[key];
-  };
-  (c as any).set('user', { userId: 1 });
-  return OrderController.getSellerOrders(c);
+  return productController.create(c, body);
 });
 
 describe('Complete Authentication Flow E2E Tests', () => {
