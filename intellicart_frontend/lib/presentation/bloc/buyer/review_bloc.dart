@@ -2,8 +2,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intellicart/models/review.dart';
-import 'package:intellicart/data/repositories/app_repository_impl.dart';
 import 'package:intellicart/data/datasources/api_service.dart';
+import '../../../core/services/logging_service.dart';
 
 // --- EVENTS ---
 abstract class ReviewEvent extends Equatable {
@@ -81,7 +81,7 @@ class ReviewBloc extends Bloc<ReviewEvent, ReviewState> {
         timeAgo: 'Just now',
       );
 
-      print('Review Submitted: ${newReview.title}');
+      loggingService.logInfo('Review Submitted: ${newReview.title}');
       emit(ReviewSubmitSuccess(newReview));
     } catch (e) {
       emit(ReviewSubmitFailure(e.toString()));

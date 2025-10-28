@@ -1,7 +1,6 @@
 // lib/data/repositories/offline_first_app_repository.dart
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
-import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/review.dart';
 import 'package:intellicart/data/repositories/app_repository.dart';
 import 'package:intellicart/data/datasources/offline_first_api_service.dart';

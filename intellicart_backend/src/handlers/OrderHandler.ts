@@ -1,6 +1,6 @@
-import { Context } from 'hono';
-import { BaseHandler } from './BaseHandler';
-import { OrderController } from '../controllers/OrderController';
+import { Context } from "hono";
+import { BaseHandler } from "./BaseHandler";
+import { OrderController } from "../controllers/OrderController";
 
 export class OrderHandler {
   static async getSellerOrders(c: Context) {

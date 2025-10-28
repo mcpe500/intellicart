@@ -1,7 +1,6 @@
 // lib/screens/seller/seller_product_list_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/models/product.dart';
 import 'package:intellicart/presentation/bloc/seller/seller_product_bloc.dart';
 import 'package:intellicart/presentation/screens/seller/seller_add_edit_product_page.dart';
 import 'package:intellicart/data/repositories/app_repository_impl.dart';

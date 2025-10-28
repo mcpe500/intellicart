@@ -13,8 +13,8 @@
 import { MiddlewareHandler, Context, Next } from "hono";
 import jwt from "jsonwebtoken";
 import { dbManager } from "../database/Config";
-import { logger } from '../utils/logger';
-import { AuthenticationError } from '../types/errors';
+import { logger } from "../utils/logger";
+import { AuthenticationError } from "../types/errors";
 
 // Helper function to ensure the tokens table exists
 async function ensureTokensTable() {
@@ -41,29 +41,32 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
 
   // Check if authorization header exists and starts with 'Bearer '
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    logger.info("[AUTH] No authorization header provided or format incorrect", { 
-      ip: c.req.header('x-forwarded-for') || 'unknown', 
-      userAgent: c.req.header('user-agent') 
+    logger.info("[AUTH] No authorization header provided or format incorrect", {
+      ip: c.req.header("x-forwarded-for") || "unknown",
+      userAgent: c.req.header("user-agent"),
     });
     return c.json({ error: "Access token required" }, 401);
   }
 
   // Extract the token from the header
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
-  
+
   // Additional security: Check token length to prevent extremely long tokens
   if (token.length > 5000) {
-    logger.warn("[AUTH] Token too long, potential attack", { 
-      ip: c.req.header('x-forwarded-for') || 'unknown', 
-      userAgent: c.req.header('user-agent') 
+    logger.warn("[AUTH] Token too long, potential attack", {
+      ip: c.req.header("x-forwarded-for") || "unknown",
+      userAgent: c.req.header("user-agent"),
     });
     return c.json({ error: "Invalid token" }, 401);
   }
 
-  logger.info(`[AUTH] Token verification attempt for token: ${token.substring(0, 10)}...`, { 
-    ip: c.req.header('x-forwarded-for') || 'unknown', 
-    userAgent: c.req.header('user-agent') 
-  });
+  logger.info(
+    `[AUTH] Token verification attempt for token: ${token.substring(0, 10)}...`,
+    {
+      ip: c.req.header("x-forwarded-for") || "unknown",
+      userAgent: c.req.header("user-agent"),
+    },
+  );
 
   try {
     // First check if token exists in our active tokens in the database
@@ -80,22 +83,37 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
     const tokenRecord = activeTokens.find((t: any) => t.token === token);
 
     if (!tokenRecord) {
-      logger.warn("[AUTH] Token not found in active tokens database", { 
-        token: token.substring(0, 10) + '...', 
-        ip: c.req.header('x-forwarded-for') || 'unknown', 
-        userAgent: c.req.header('user-agent') 
+      logger.warn("[AUTH] Token not found in active tokens database", {
+        token: token.substring(0, 10) + "...",
+        ip: c.req.header("x-forwarded-for") || "unknown",
+        userAgent: c.req.header("user-agent"),
       });
       return c.json({ error: "Invalid token" }, 401);
     }
-    
-    logger.info(`[AUTH] Token found for user ID: ${tokenRecord.userId}, email: ${tokenRecord.email}`, { userId: tokenRecord.userId, email: tokenRecord.email, ip: c.req.header('x-forwarded-for') || 'unknown' });
+
+    logger.info(
+      `[AUTH] Token found for user ID: ${tokenRecord.userId}, email: ${tokenRecord.email}`,
+      {
+        userId: tokenRecord.userId,
+        email: tokenRecord.email,
+        ip: c.req.header("x-forwarded-for") || "unknown",
+      },
+    );
 
     // Verify token hasn't expired
     const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-    logger.info(`[AUTH] Token expiration check`, { expiration: tokenRecord.exp, currentTime, ip: c.req.header('x-forwarded-for') || 'unknown' });
+    logger.info(`[AUTH] Token expiration check`, {
+      expiration: tokenRecord.exp,
+      currentTime,
+      ip: c.req.header("x-forwarded-for") || "unknown",
+    });
 
     if (currentTime > tokenRecord.exp) {
-      logger.warn("[AUTH] Token has expired, removing from database", { userId: tokenRecord.userId, email: tokenRecord.email, ip: c.req.header('x-forwarded-for') || 'unknown' });
+      logger.warn("[AUTH] Token has expired, removing from database", {
+        userId: tokenRecord.userId,
+        email: tokenRecord.email,
+        ip: c.req.header("x-forwarded-for") || "unknown",
+      });
       // Remove expired token from database
       await db.delete("tokens", tokenRecord.id);
       return c.json({ error: "Token expired" }, 401);
@@ -112,13 +130,13 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
       decoded.userId !== tokenRecord.userId ||
       decoded.email !== tokenRecord.email
     ) {
-      logger.warn(`[AUTH] Token payload mismatch`, { 
-        expectedUserId: tokenRecord.userId, 
-        expectedEmail: tokenRecord.email, 
-        actualUserId: decoded.userId, 
+      logger.warn(`[AUTH] Token payload mismatch`, {
+        expectedUserId: tokenRecord.userId,
+        expectedEmail: tokenRecord.email,
+        actualUserId: decoded.userId,
         actualEmail: decoded.email,
-        ip: c.req.header('x-forwarded-for') || 'unknown',
-        userAgent: c.req.header('user-agent')
+        ip: c.req.header("x-forwarded-for") || "unknown",
+        userAgent: c.req.header("user-agent"),
       });
       return c.json({ error: "Invalid token" }, 401);
     }
@@ -126,7 +144,11 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
     // Verify that the user actually exists in the users table
     const userInDb = await db.findById("users", decoded.userId);
     if (!userInDb) {
-      logger.warn(`[AUTH] Token valid but user does not exist in users table`, { userId: decoded.userId, email: decoded.email, ip: c.req.header('x-forwarded-for') || 'unknown' });
+      logger.warn(`[AUTH] Token valid but user does not exist in users table`, {
+        userId: decoded.userId,
+        email: decoded.email,
+        ip: c.req.header("x-forwarded-for") || "unknown",
+      });
       // Remove the token from the tokens table since the user is gone
       await db.delete("tokens", tokenRecord.id);
       return c.json({ error: "Invalid token" }, 401);
@@ -139,24 +161,31 @@ export const verifyToken: MiddlewareHandler = async (c, next) => {
     });
 
     // Continue to the next handler
-    logger.info(`[AUTH] Token validation successful`, { userId: decoded.userId, email: decoded.email, ip: c.req.header('x-forwarded-for') || 'unknown' });
+    logger.info(`[AUTH] Token validation successful`, {
+      userId: decoded.userId,
+      email: decoded.email,
+      ip: c.req.header("x-forwarded-for") || "unknown",
+    });
     await next();
   } catch (error) {
     // JWT verification failed
-    logger.error(`[AUTH] JWT verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`, { 
-      token: token.substring(0, 10) + '...', 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      ip: c.req.header('x-forwarded-for') || 'unknown',
-      userAgent: c.req.header('user-agent')
-    });
-    
+    logger.error(
+      `[AUTH] JWT verification failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      {
+        token: token.substring(0, 10) + "...",
+        error: error instanceof Error ? error.message : "Unknown error",
+        ip: c.req.header("x-forwarded-for") || "unknown",
+        userAgent: c.req.header("user-agent"),
+      },
+    );
+
     // Check if it's a token expiration error specifically
     if (error instanceof jwt.TokenExpiredError) {
       return c.json({ error: "Token expired" }, 401);
     } else if (error instanceof jwt.JsonWebTokenError) {
       return c.json({ error: "Invalid token" }, 401);
     }
-    
+
     return c.json({ error: "Invalid token" }, 401);
   }
 };

@@ -1,6 +1,6 @@
-import { Context } from 'hono';
-import { BaseHandler } from './BaseHandler';
-import { UserController } from '../controllers/UserController';
+import { Context } from "hono";
+import { BaseHandler } from "./BaseHandler";
+import { UserController } from "../controllers/UserController";
 
 export class UserHandler {
   static async getAllUsers(c: Context) {

@@ -1,10 +1,8 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/review.dart'; // Ensure Review model is imported
-import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart'; // Import ProductBloc
 import 'package:intellicart/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
+import '../../../core/services/logging_service.dart';
 
 class ProductDetailsPage extends StatefulWidget {
   final Product product;
@@ -154,7 +152,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                                 decoration: BoxDecoration(
                                   color: _currentPage == index
                                       ? Colors.white
-                                      : Colors.white.withOpacity(0.5),
+                                      : Colors.white.withValues(alpha: 0.5),
                                   shape: BoxShape.circle,
                                 ),
                               );
@@ -349,7 +347,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                 border: Border(top: BorderSide(color: Colors.grey.shade200)),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                   )
                 ],
@@ -385,7 +383,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        print(
+                        loggingService.logInfo(
                             'Added ${widget.product.name} (Qty: $_quantity) to cart.');
                         // Here you would typically call a state management provider
                         // or bloc to actually add the item to the cart.

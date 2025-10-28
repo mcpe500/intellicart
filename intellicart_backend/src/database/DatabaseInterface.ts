@@ -1,10 +1,10 @@
 /**
  * Database Interface
- * 
+ *
  * This interface defines the common operations that all database implementations must support.
  * It provides a contract for database operations that can be implemented by different database systems
  * such as JSON file storage, SQLite, Firebase, or MySQL.
- * 
+ *
  * @interface DatabaseInterface
  * @description Common interface for database operations
  * @author Intellicart Team
@@ -14,7 +14,7 @@
 export interface DatabaseInterface<T> {
   /**
    * Initialize the database connection/storage
-   * 
+   *
    * @function init
    * @returns {Promise<void>} A promise that resolves when initialization is complete
    */
@@ -22,7 +22,7 @@ export interface DatabaseInterface<T> {
 
   /**
    * Find all records of the specified type
-   * 
+   *
    * @function findAll
    * @param {string} tableName - The name of the table/collection to query
    * @returns {Promise<T[]>} A promise that resolves to an array of records
@@ -31,7 +31,7 @@ export interface DatabaseInterface<T> {
 
   /**
    * Find a record by its ID
-   * 
+   *
    * @function findById
    * @param {string} tableName - The name of the table/collection to query
    * @param {number | string} id - The ID of the record to find
@@ -41,7 +41,7 @@ export interface DatabaseInterface<T> {
 
   /**
    * Create a new record
-   * 
+   *
    * @function create
    * @param {string} tableName - The name of the table/collection to insert into
    * @param {T} data - The data to insert
@@ -51,18 +51,22 @@ export interface DatabaseInterface<T> {
 
   /**
    * Update an existing record by ID
-   * 
+   *
    * @function update
    * @param {string} tableName - The name of the table/collection to update
    * @param {number | string} id - The ID of the record to update
    * @param {T} data - The updated data
    * @returns {Promise<T | null>} A promise that resolves to the updated record or null if not found
    */
-  update(tableName: string, id: number | string, data: Partial<T>): Promise<T | null>;
+  update(
+    tableName: string,
+    id: number | string,
+    data: Partial<T>,
+  ): Promise<T | null>;
 
   /**
    * Delete a record by ID
-   * 
+   *
    * @function delete
    * @param {string} tableName - The name of the table/collection to delete from
    * @param {number | string} id - The ID of the record to delete
@@ -72,7 +76,7 @@ export interface DatabaseInterface<T> {
 
   /**
    * Find records matching specific criteria
-   * 
+   *
    * @function findBy
    * @param {string} tableName - The name of the table/collection to query
    * @param {Record<string, any>} criteria - The criteria to match against
@@ -82,7 +86,7 @@ export interface DatabaseInterface<T> {
 
   /**
    * Find a single record matching specific criteria
-   * 
+   *
    * @function findOne
    * @param {string} tableName - The name of the table/collection to query
    * @param {Record<string, any>} criteria - The criteria to match against
@@ -92,7 +96,7 @@ export interface DatabaseInterface<T> {
 
   /**
    * Close the database connection/storage
-   * 
+   *
    * @function close
    * @returns {Promise<void>} A promise that resolves when the connection is closed
    */

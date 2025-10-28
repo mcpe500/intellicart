@@ -38,11 +38,7 @@
             "example": 5
           }
         },
-        "required": [
-          "title",
-          "reviewText",
-          "rating"
-        ]
+        "required": ["title", "reviewText", "rating"]
       }
     },
     "parameters": {}
@@ -50,9 +46,7 @@
   "paths": {
     "/api/auth/register": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -83,11 +77,7 @@
                     "example": "buyer"
                   }
                 },
-                "required": [
-                  "email",
-                  "password",
-                  "name"
-                ]
+                "required": ["email", "password", "name"]
               }
             }
           }
@@ -131,13 +121,7 @@
                           "example": "2025-10-26T08:07:51.256Z"
                         }
                       },
-                      "required": [
-                        "id",
-                        "email",
-                        "name",
-                        "role",
-                        "createdAt"
-                      ]
+                      "required": ["id", "email", "name", "role", "createdAt"]
                     },
                     "token": {
                       "type": "string",
@@ -145,10 +129,7 @@
                       "example": "jwt-token-here"
                     }
                   },
-                  "required": [
-                    "user",
-                    "token"
-                  ]
+                  "required": ["user", "token"]
                 }
               }
             }
@@ -166,9 +147,7 @@
                       "example": "User with this email already exists"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -178,9 +157,7 @@
     },
     "/api/auth/login": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -199,10 +176,7 @@
                     "example": "password123"
                   }
                 },
-                "required": [
-                  "email",
-                  "password"
-                ]
+                "required": ["email", "password"]
               }
             }
           }
@@ -246,13 +220,7 @@
                           "example": "2025-10-26T08:07:51.256Z"
                         }
                       },
-                      "required": [
-                        "id",
-                        "email",
-                        "name",
-                        "role",
-                        "createdAt"
-                      ]
+                      "required": ["id", "email", "name", "role", "createdAt"]
                     },
                     "token": {
                       "type": "string",
@@ -260,10 +228,7 @@
                       "example": "jwt-token-here"
                     }
                   },
-                  "required": [
-                    "user",
-                    "token"
-                  ]
+                  "required": ["user", "token"]
                 }
               }
             }
@@ -281,9 +246,7 @@
                       "example": "Invalid email or password"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -293,9 +256,7 @@
     },
     "/api/auth/me": {
       "get": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "security": [
           {
             "BearerAuth": []
@@ -337,13 +298,7 @@
                       "example": "2025-10-26T08:07:51.256Z"
                     }
                   },
-                  "required": [
-                    "id",
-                    "email",
-                    "name",
-                    "role",
-                    "createdAt"
-                  ]
+                  "required": ["id", "email", "name", "role", "createdAt"]
                 }
               }
             }
@@ -361,9 +316,7 @@
                       "example": "Unauthorized"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -373,9 +326,7 @@
     },
     "/api/auth/logout": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "security": [
           {
             "BearerAuth": []
@@ -395,9 +346,7 @@
                       "example": "Successfully logged out"
                     }
                   },
-                  "required": [
-                    "message"
-                  ]
+                  "required": ["message"]
                 }
               }
             }
@@ -415,9 +364,7 @@
                       "example": "No token provided"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -427,9 +374,7 @@
     },
     "/api/auth/verify": {
       "post": {
-        "tags": [
-          "Authentication"
-        ],
+        "tags": ["Authentication"],
         "responses": {
           "200": {
             "description": "Token validation result",
@@ -458,16 +403,11 @@
                           "example": "user@example.com"
                         }
                       },
-                      "required": [
-                        "id",
-                        "email"
-                      ],
+                      "required": ["id", "email"],
                       "description": "User information (only included if token is valid)"
                     }
                   },
-                  "required": [
-                    "valid"
-                  ]
+                  "required": ["valid"]
                 }
               }
             }
@@ -481,14 +421,10 @@
                   "properties": {
                     "valid": {
                       "type": "boolean",
-                      "enum": [
-                        false
-                      ]
+                      "enum": [false]
                     }
                   },
-                  "required": [
-                    "valid"
-                  ]
+                  "required": ["valid"]
                 }
               }
             }
@@ -502,14 +438,10 @@
                   "properties": {
                     "valid": {
                       "type": "boolean",
-                      "enum": [
-                        false
-                      ]
+                      "enum": [false]
                     }
                   },
-                  "required": [
-                    "valid"
-                  ]
+                  "required": ["valid"]
                 }
               }
             }
@@ -519,9 +451,7 @@
     },
     "/api/products/": {
       "get": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "responses": {
           "200": {
             "description": "Returns all products in the system",
@@ -629,9 +559,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "security": [
           {
             "BearerAuth": []
@@ -673,12 +601,7 @@
                     "example": "https://example.com/product-image.jpg"
                   }
                 },
-                "required": [
-                  "name",
-                  "description",
-                  "price",
-                  "imageUrl"
-                ]
+                "required": ["name", "description", "price", "imageUrl"]
               }
             }
           }
@@ -789,9 +712,7 @@
     },
     "/api/products/{id}": {
       "get": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "parameters": [
           {
             "schema": {
@@ -919,9 +840,7 @@
                       "example": "Product not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -929,9 +848,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "security": [
           {
             "BearerAuth": []
@@ -1109,9 +1026,7 @@
                       "example": "Product not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -1119,9 +1034,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "security": [
           {
             "BearerAuth": []
@@ -1247,10 +1160,7 @@
                       ]
                     }
                   },
-                  "required": [
-                    "message",
-                    "product"
-                  ]
+                  "required": ["message", "product"]
                 }
               }
             }
@@ -1268,9 +1178,7 @@
                       "example": "Product not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -1280,9 +1188,7 @@
     },
     "/api/products/seller/{sellerId}": {
       "get": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "security": [
           {
             "BearerAuth": []
@@ -1410,9 +1316,7 @@
     },
     "/api/products/{id}/reviews": {
       "post": {
-        "tags": [
-          "Products"
-        ],
+        "tags": ["Products"],
         "security": [
           {
             "BearerAuth": []
@@ -1556,9 +1460,7 @@
                       "example": "Product not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -1568,9 +1470,7 @@
     },
     "/api/orders": {
       "get": {
-        "tags": [
-          "Orders"
-        ],
+        "tags": ["Orders"],
         "security": [
           {
             "BearerAuth": []
@@ -1727,9 +1627,7 @@
     },
     "/api/orders/{id}/status": {
       "put": {
-        "tags": [
-          "Orders"
-        ],
+        "tags": ["Orders"],
         "security": [
           {
             "BearerAuth": []
@@ -1760,9 +1658,7 @@
                     "example": "Shipped"
                   }
                 },
-                "required": [
-                  "status"
-                ]
+                "required": ["status"]
               }
             }
           }
@@ -1923,9 +1819,7 @@
                       "example": "Order not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -1935,9 +1829,7 @@
     },
     "/api/users": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "responses": {
           "200": {
             "description": "Returns all users in the system",
@@ -1977,12 +1869,7 @@
                         "example": "2025-10-26T08:07:51.254Z"
                       }
                     },
-                    "required": [
-                      "id",
-                      "name",
-                      "email",
-                      "createdAt"
-                    ]
+                    "required": ["id", "name", "email", "createdAt"]
                   }
                 }
               }
@@ -1991,9 +1878,7 @@
         }
       },
       "post": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "requestBody": {
           "content": {
             "application/json": {
@@ -2019,10 +1904,7 @@
                     "example": 30
                   }
                 },
-                "required": [
-                  "name",
-                  "email"
-                ]
+                "required": ["name", "email"]
               }
             }
           }
@@ -2064,12 +1946,7 @@
                       "example": "2025-10-26T08:07:51.254Z"
                     }
                   },
-                  "required": [
-                    "id",
-                    "name",
-                    "email",
-                    "createdAt"
-                  ]
+                  "required": ["id", "name", "email", "createdAt"]
                 }
               }
             }
@@ -2079,9 +1956,7 @@
     },
     "/api/users/{id}": {
       "get": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "parameters": [
           {
             "schema": {
@@ -2132,12 +2007,7 @@
                       "example": "2025-10-26T08:07:51.254Z"
                     }
                   },
-                  "required": [
-                    "id",
-                    "name",
-                    "email",
-                    "createdAt"
-                  ]
+                  "required": ["id", "name", "email", "createdAt"]
                 }
               }
             }
@@ -2155,9 +2025,7 @@
                       "example": "User not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -2165,9 +2033,7 @@
         }
       },
       "put": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "security": [
           {
             "BearerAuth": []
@@ -2252,12 +2118,7 @@
                       "example": "2025-10-26T08:07:51.254Z"
                     }
                   },
-                  "required": [
-                    "id",
-                    "name",
-                    "email",
-                    "createdAt"
-                  ]
+                  "required": ["id", "name", "email", "createdAt"]
                 }
               }
             }
@@ -2275,9 +2136,7 @@
                       "example": "User not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }
@@ -2285,9 +2144,7 @@
         }
       },
       "delete": {
-        "tags": [
-          "Users"
-        ],
+        "tags": ["Users"],
         "security": [
           {
             "BearerAuth": []
@@ -2351,18 +2208,10 @@
                           "example": "2025-10-26T08:07:51.254Z"
                         }
                       },
-                      "required": [
-                        "id",
-                        "name",
-                        "email",
-                        "createdAt"
-                      ]
+                      "required": ["id", "name", "email", "createdAt"]
                     }
                   },
-                  "required": [
-                    "message",
-                    "user"
-                  ]
+                  "required": ["message", "user"]
                 }
               }
             }
@@ -2380,9 +2229,7 @@
                       "example": "User not found"
                     }
                   },
-                  "required": [
-                    "error"
-                  ]
+                  "required": ["error"]
                 }
               }
             }

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:intellicart/models/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../core/services/logging_service.dart';
 
 class AuthApiService {
   static String? _baseUrl;
@@ -22,9 +23,9 @@ class AuthApiService {
 
   Future<User?> login(String email, String password) async {
     try {
-      print('AuthApiService.login called with email: $email');
+      loggingService.logInfo('AuthApiService.login called with email: $email');
       final baseUrl = await getBaseUrl();
-      print('Login API Base URL: $baseUrl');
+      loggingService.logInfo('Login API Base URL: $baseUrl');
       
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
@@ -37,8 +38,8 @@ class AuthApiService {
         }),
       );
       
-      print('Login response status: ${response.statusCode}');
-      print('Login response body: ${response.body}');
+      loggingService.logInfo('Login response status: ${response.statusCode}');
+      loggingService.logInfo('Login response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -48,23 +49,23 @@ class AuthApiService {
         _token = data['token'];
         await _saveToken(_token!);
         
-        print('Login successful, user: ${user.name}, token stored');
+        loggingService.logInfo('Login successful, user: ${user.name}, token stored');
         return user;
       } else {
-        print('Login failed with status: ${response.statusCode}, body: ${response.body}');
+        loggingService.logError('Login failed with status: ${response.statusCode}, body: ${response.body}');
         throw Exception('Failed to login: ${response.body}');
       }
     } catch (e) {
-      print('Error during login: $e');
+      loggingService.logError('Error during login: $e');
       throw Exception('Error during login: $e');
     }
   }
 
   Future<User> register(String email, String password, String name, String role) async {
     try {
-      print('AuthApiService.register called with email: $email, name: $name, role: $role');
+      loggingService.logInfo('AuthApiService.register called with email: $email, name: $name, role: $role');
       final baseUrl = await getBaseUrl();
-      print('Register API Base URL: $baseUrl');
+      loggingService.logInfo('Register API Base URL: $baseUrl');
       
       final response = await http.post(
         Uri.parse('$baseUrl/register'),
@@ -79,8 +80,8 @@ class AuthApiService {
         }),
       );
       
-      print('Register response status: ${response.statusCode}');
-      print('Register response body: ${response.body}');
+      loggingService.logInfo('Register response status: ${response.statusCode}');
+      loggingService.logInfo('Register response body: ${response.body}');
 
       if (response.statusCode == 201) {
         final Map<String, dynamic> data = jsonDecode(response.body);
@@ -90,14 +91,14 @@ class AuthApiService {
         _token = data['token'];
         await _saveToken(_token!);
         
-        print('Registration successful, user: ${user.name}, token stored');
+        loggingService.logInfo('Registration successful, user: ${user.name}, token stored');
         return user;
       } else {
-        print('Registration failed with status: ${response.statusCode}, body: ${response.body}');
+        loggingService.logError('Registration failed with status: ${response.statusCode}, body: ${response.body}');
         throw Exception('Failed to register: ${response.body}');
       }
     } catch (e) {
-      print('Error during registration: $e');
+      loggingService.logError('Error during registration: $e');
       throw Exception('Error during registration: $e');
     }
   }
@@ -128,9 +129,7 @@ class AuthApiService {
 
   Future<bool> verifyToken() async {
     try {
-      if (_token == null) {
-        _token = await _getToken();
-      }
+      _token ??= await _getToken();
       
       if (_token != null) {
         final baseUrl = await getBaseUrl();
@@ -155,9 +154,7 @@ class AuthApiService {
 
   // Method to get the current token
   static Future<String?> getToken() async {
-    if (_token == null) {
-      _token = await _getToken();
-    }
+    _token ??= await _getToken();
     return _token;
   }
 
@@ -202,7 +199,7 @@ class AuthApiService {
         return null;
       }
     } catch (e) {
-      print('Error getting current user: $e');
+      loggingService.logError('Error getting current user: $e');
       return null;
     }
   }

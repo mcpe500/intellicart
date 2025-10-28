@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/data/repositories/app_repository_impl.dart';
 import 'package:intellicart/data/datasources/offline_first_api_service.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
-import 'package:intellicart/presentation/screens/core/splash_screen.dart';
 import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/screens/auth_wrapper.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';

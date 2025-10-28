@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
+import '../../../core/services/logging_service.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -33,7 +34,7 @@ class _AuthScreenState extends State<AuthScreen> {
 
     if (_isLogin) {
       // Login
-      print('AuthScreen: Dispatching AuthLoginRequested with email: ${_emailController.text.trim()}');
+      loggingService.logInfo('AuthScreen: Dispatching AuthLoginRequested with email: ${_emailController.text.trim()}');
       context.read<AuthBloc>().add(
         AuthLoginRequested(
           _emailController.text.trim(),
@@ -42,7 +43,7 @@ class _AuthScreenState extends State<AuthScreen> {
       );
     } else {
       // Register
-      print('AuthScreen: Dispatching AuthRegisterRequested with email: ${_emailController.text.trim()}, name: ${_nameController.text.trim()}');
+      loggingService.logInfo('AuthScreen: Dispatching AuthRegisterRequested with email: ${_emailController.text.trim()}, name: ${_nameController.text.trim()}');
       context.read<AuthBloc>().add(
         AuthRegisterRequested(
           _emailController.text.trim(),

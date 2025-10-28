@@ -1,10 +1,10 @@
 /**
  * Product Data Transfer Object (DTO) Module
- * 
+ *
  * This module defines the data transfer objects for product-related operations.
  * These interfaces provide type safety and clear structure for product data
  * across the application.
- * 
+ *
  * @module ProductDTO
  * @description DTOs for product data structures
  * @author Intellicart Team

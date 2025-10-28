@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'bun:test';
-import { Hono } from 'hono';
-import { AuthController } from '../../src/controllers/authController';
-import { UserController } from '../../src/controllers/UserController';
-import { ProductController } from '../../src/controllers/ProductController';
-import { dbManager } from '../../src/database/Config';
+import { describe, it, expect, beforeAll, afterAll } from "bun:test";
+import { Hono } from "hono";
+import { AuthController } from "../../src/controllers/authController";
+import { UserController } from "../../src/controllers/UserController";
+import { ProductController } from "../../src/controllers/ProductController";
+import { dbManager } from "../../src/database/Config";
 
 const userController = new UserController();
 const productController = new ProductController();
@@ -12,51 +12,51 @@ const productController = new ProductController();
 const app = new Hono();
 
 // Mock routes to simulate the full API
-app.post('/api/auth/register', async (c) => {
+app.post("/api/auth/register", async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
   return AuthController.register(c);
 });
 
-app.post('/api/auth/login', async (c) => {
+app.post("/api/auth/login", async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
   return AuthController.login(c);
 });
 
-app.get('/api/auth/me', (c) => {
+app.get("/api/auth/me", (c) => {
   return AuthController.getCurrentUser(c);
 });
 
-app.post('/api/auth/logout', (c) => {
+app.post("/api/auth/logout", (c) => {
   return AuthController.logout(c);
 });
 
-app.post('/api/auth/verify', (c) => {
+app.post("/api/auth/verify", (c) => {
   return AuthController.verifyToken(c);
 });
 
-app.get('/api/users', (c) => userController.getAll(c));
-app.get('/api/users/:id', (c) => {
+app.get("/api/users", (c) => userController.getAll(c));
+app.get("/api/users/:id", (c) => {
   (c.req as any).param = (name: string) => {
-    if (name === 'id') return c.req.path.split('/')[3];
+    if (name === "id") return c.req.path.split("/")[3];
   };
   return userController.getById(c);
 });
-app.post('/api/users', async (c) => {
+app.post("/api/users", async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
   return userController.createUser(c);
 });
 
-app.get('/api/products', (c) => productController.getAll(c));
-app.get('/api/products/:id', (c) => {
+app.get("/api/products", (c) => productController.getAll(c));
+app.get("/api/products/:id", (c) => {
   (c.req as any).param = (name: string) => {
-    if (name === 'id') return c.req.path.split('/')[3];
+    if (name === "id") return c.req.path.split("/")[3];
   };
   return productController.getById(c);
 });
-app.post('/api/products', async (c) => {
+app.post("/api/products", async (c) => {
   const body = await c.req.json();
   (c.req as any).valid = () => body;
   (c as any).set = (key: string, value: any) => {
@@ -66,11 +66,11 @@ app.post('/api/products', async (c) => {
   (c as any).get = (key: string) => {
     return (c as any)._context?.[key];
   };
-  (c as any).set('user', { userId: 1 });
+  (c as any).set("user", { userId: 1 });
   return productController.create(c, body);
 });
 
-describe('Complete Authentication Flow E2E Tests', () => {
+describe("Complete Authentication Flow E2E Tests", () => {
   let userToken: string | null = null;
   let userId: number | null = null;
   let productId: number | null = null;
@@ -86,215 +86,218 @@ describe('Complete Authentication Flow E2E Tests', () => {
     const db = dbManager.getDatabase();
     try {
       if (userId) {
-        await db.delete('users', userId);
+        await db.delete("users", userId);
       }
       if (productId) {
-        await db.delete('products', productId);
+        await db.delete("products", productId);
       }
       if (orderId) {
-        await db.delete('orders', orderId);
+        await db.delete("orders", orderId);
       }
     } catch (e) {
       // Database might not support this operation in test mode
     }
 
-    if (db.close && typeof db.close === 'function') {
+    if (db.close && typeof db.close === "function") {
       await db.close();
     }
   });
 
-  it('should complete the full authentication flow: register -> login -> get profile -> verify token -> logout', async () => {
+  it("should complete the full authentication flow: register -> login -> get profile -> verify token -> logout", async () => {
     // Step 1: Register a new user
-    const registerResponse = await app.request('/api/auth/register', {
-      method: 'POST',
+    const registerResponse = await app.request("/api/auth/register", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: 'e2e-test@example.com',
-        password: 'password123',
-        name: 'E2E Test User',
-        role: 'buyer'
+        email: "e2e-test@example.com",
+        password: "password123",
+        name: "E2E Test User",
+        role: "buyer",
       }),
     });
 
     expect(registerResponse.status).toBe(201);
-    const registerBody = await registerResponse.json();
+    const registerBody: any = await registerResponse.json();
     expect(registerBody.user).toBeDefined();
-    expect(registerBody.user.email).toBe('e2e-test@example.com');
+    expect(registerBody.user.email).toBe("e2e-test@example.com");
     expect(registerBody.token).toBeDefined();
     userId = registerBody.user.id;
 
     // Step 2: Login with the new user
-    const loginResponse = await app.request('/api/auth/login', {
-      method: 'POST',
+    const loginResponse = await app.request("/api/auth/login", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: 'e2e-test@example.com',
-        password: 'password123'
+        email: "e2e-test@example.com",
+        password: "password123",
       }),
     });
 
     expect(loginResponse.status).toBe(200);
-    const loginBody = await loginResponse.json();
+    const loginBody: any = await loginResponse.json();
     expect(loginBody.user).toBeDefined();
-    expect(loginBody.user.email).toBe('e2e-test@example.com');
+    expect(loginBody.user.email).toBe("e2e-test@example.com");
     expect(loginBody.token).toBeDefined();
     userToken = loginBody.token;
 
     // Step 3: Get user profile with valid token
-    const profileResponse = await app.request('/api/auth/me', {
-      method: 'GET',
+    const profileResponse = await app.request("/api/auth/me", {
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${userToken}`
-      }
+        Authorization: `Bearer ${userToken}`,
+      },
     });
 
     expect(profileResponse.status).toBe(200);
-    const profileBody = await profileResponse.json();
-    expect(profileBody.email).toBe('e2e-test@example.com');
-    expect(profileBody.name).toBe('E2E Test User');
+    const profileBody: any = await profileResponse.json();
+    expect(profileBody.email).toBe("e2e-test@example.com");
+    expect(profileBody.name).toBe("E2E Test User");
 
     // Step 4: Verify token
-    const verifyResponse = await app.request('/api/auth/verify', {
-      method: 'POST',
+    const verifyResponse = await app.request("/api/auth/verify", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${userToken}`
-      }
+        Authorization: `Bearer ${userToken}`,
+      },
     });
 
     expect(verifyResponse.status).toBe(200);
-    const verifyBody = await verifyResponse.json();
+    const verifyBody: any = await verifyResponse.json();
     expect(verifyBody.valid).toBe(true);
     expect(verifyBody.user).toBeDefined();
-    expect(verifyBody.user.email).toBe('e2e-test@example.com');
+    expect(verifyBody.user.email).toBe("e2e-test@example.com");
 
     // Step 5: Logout
-    const logoutResponse = await app.request('/api/auth/logout', {
-      method: 'POST',
+    const logoutResponse = await app.request("/api/auth/logout", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${userToken}`
-      }
+        Authorization: `Bearer ${userToken}`,
+      },
     });
 
     expect(logoutResponse.status).toBe(200);
-    const logoutBody = await logoutResponse.json();
-    expect(logoutBody.message).toBe('Successfully logged out');
+    const logoutBody: any = await logoutResponse.json();
+    expect(logoutBody.message).toBe("Successfully logged out");
   });
 
-  it('should allow user to interact with other resources after authentication', async () => {
+  it("should allow user to interact with other resources after authentication", async () => {
     // First, login to get a token
-    const loginResponse = await app.request('/api/auth/login', {
-      method: 'POST',
+    const loginResponse = await app.request("/api/auth/login", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: 'e2e-test@example.com',
-        password: 'password123'
+        email: "e2e-test@example.com",
+        password: "password123",
       }),
     });
 
     expect(loginResponse.status).toBe(200);
-    const loginBody = await loginResponse.json();
+    const loginBody: any = await loginResponse.json();
     expect(loginBody.token).toBeDefined();
     const token = loginBody.token;
 
     // Create a product with the authenticated user
-    const productResponse = await app.request('/api/products', {
-      method: 'POST',
+    const productResponse = await app.request("/api/products", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        name: 'E2E Test Product',
-        description: 'Test product for E2E flow',
-        price: '29.99',
-        imageUrl: 'https://example.com/e2e-test-product.jpg'
+        name: "E2E Test Product",
+        description: "Test product for E2E flow",
+        price: "29.99",
+        imageUrl: "https://example.com/e2e-test-product.jpg",
       }),
     });
 
     expect(productResponse.status).toBe(201);
-    const productBody = await productResponse.json();
-    expect(productBody.name).toBe('E2E Test Product');
+    const productBody: any = await productResponse.json();
+    expect(productBody.name).toBe("E2E Test Product");
     expect(productBody.sellerId).toBe(1); // Mocked user ID
     productId = productBody.id;
 
     // Get all products
-    const allProductsResponse = await app.request('/api/products', {
-      method: 'GET',
+    const allProductsResponse = await app.request("/api/products", {
+      method: "GET",
     });
 
     expect(allProductsResponse.status).toBe(200);
-    const allProductsBody = await allProductsResponse.json();
+    const allProductsBody: any = await allProductsResponse.json();
     expect(Array.isArray(allProductsBody)).toBe(true);
 
     // Get the specific product by ID
-    const specificProductResponse = await app.request(`/api/products/${productId}`, {
-      method: 'GET',
-    });
+    const specificProductResponse = await app.request(
+      `/api/products/${productId}`,
+      {
+        method: "GET",
+      },
+    );
 
     expect(specificProductResponse.status).toBe(200);
-    const specificProductBody = await specificProductResponse.json();
+    const specificProductBody: any = await specificProductResponse.json();
     expect(specificProductBody.id).toBe(productId);
-    expect(specificProductBody.name).toBe('E2E Test Product');
+    expect(specificProductBody.name).toBe("E2E Test Product");
 
     // Get user's orders (should be empty initially)
-    const ordersResponse = await app.request('/api/orders', {
-      method: 'GET',
+    const ordersResponse = await app.request("/api/orders", {
+      method: "GET",
       headers: {
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     expect(ordersResponse.status).toBe(200);
-    const ordersBody = await ordersResponse.json();
+    const ordersBody: any = await ordersResponse.json();
     expect(Array.isArray(ordersBody)).toBe(true);
   });
 
-  it('should fail authentication with invalid credentials', async () => {
-    const loginResponse = await app.request('/api/auth/login', {
-      method: 'POST',
+  it("should fail authentication with invalid credentials", async () => {
+    const loginResponse = await app.request("/api/auth/login", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email: 'e2e-test@example.com',
-        password: 'wrongpassword'
+        email: "e2e-test@example.com",
+        password: "wrongpassword",
       }),
     });
 
     expect(loginResponse.status).toBe(401);
-    const loginBody = await loginResponse.json();
-    expect(loginBody.error).toBe('Invalid email or password');
+    const loginBody: any = await loginResponse.json();
+    expect(loginBody.error).toBe("Invalid email or password");
   });
 
-  it('should fail to get profile with invalid token', async () => {
-    const profileResponse = await app.request('/api/auth/me', {
-      method: 'GET',
+  it("should fail to get profile with invalid token", async () => {
+    const profileResponse = await app.request("/api/auth/me", {
+      method: "GET",
       headers: {
-        'Authorization': 'Bearer invalidtoken'
-      }
+        Authorization: "Bearer invalidtoken",
+      },
     });
 
     expect(profileResponse.status).toBe(401);
-    const profileBody = await profileResponse.json();
-    expect(profileBody.error).toBe('Unauthorized');
+    const profileBody: any = await profileResponse.json();
+    expect(profileBody.error).toBe("Unauthorized");
   });
 
-  it('should handle logout with invalid token gracefully', async () => {
-    const logoutResponse = await app.request('/api/auth/logout', {
-      method: 'POST',
+  it("should handle logout with invalid token gracefully", async () => {
+    const logoutResponse = await app.request("/api/auth/logout", {
+      method: "POST",
       headers: {
-        'Authorization': 'Bearer invalidtoken'
-      }
+        Authorization: "Bearer invalidtoken",
+      },
     });
 
     expect(logoutResponse.status).toBe(400);
-    const logoutBody = await logoutResponse.json();
-    expect(logoutBody.error).toBe('No token provided');
+    const logoutBody: any = await logoutResponse.json();
+    expect(logoutBody.error).toBe("No token provided");
   });
 });

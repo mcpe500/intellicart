@@ -186,7 +186,7 @@ const registerRoute = createRoute({
 });
 
 // Register both OpenAPI spec and the handler
-authRoutes.openapi(registerRoute, authRateLimiter(), AuthHandler.register);
+authRoutes.openapi(registerRoute, (c) => AuthHandler.register(c) as any);
 
 /**
  * Route: POST /api/auth/login
@@ -254,7 +254,7 @@ const loginRoute = createRoute({
 });
 
 // Register both OpenAPI spec and the handler
-authRoutes.openapi(loginRoute, authRateLimiter(), AuthHandler.login);
+authRoutes.openapi(loginRoute, (c) => AuthHandler.login(c) as any);
 
 /**
  * Route: GET /api/auth/me

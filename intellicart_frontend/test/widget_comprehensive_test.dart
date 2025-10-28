@@ -7,7 +7,7 @@ import 'package:intellicart/presentation/pages/register_page.dart';
 import 'package:intellicart/presentation/pages/product_detail_page.dart';
 import 'package:intellicart/presentation/pages/profile_page.dart';
 import 'package:intellicart/presentation/widgets/product_card.dart';
-import 'package:intellicart/domain/entities/product.dart';
+import 'package:intellicart/models/product.dart';
 
 void main() {
   group('App Widget Tests', () {
@@ -234,15 +234,14 @@ void main() {
 
   group('Product Detail Page Tests', () {
     final testProduct = Product(
-      id: 1,
+      id: '1',
       name: 'Test Product',
       description: 'Test Description',
-      price: 99.99,
-      originalPrice: 109.99,
+      price: '99.99',
+      originalPrice: '109.99',
       imageUrl: 'https://example.com/image.jpg',
-      sellerId: 1,
+      sellerId: '1',
       reviews: [],
-      createdAt: DateTime.now(),
     );
 
     testWidgets('ProductDetailPage displays product details', (WidgetTester tester) async {

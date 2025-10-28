@@ -71,7 +71,8 @@ export const init = async () => {
    */
   app.get("/", (c) => {
     return c.json({
-      message: "Welcome to Intellicart API! Visit /ui for Swagger documentation.",
+      message:
+        "Welcome to Intellicart API! Visit /ui for Swagger documentation.",
     });
   });
 

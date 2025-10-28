@@ -1,13 +1,13 @@
 /**
  * Product Routes Module
- * 
+ *
  * This module defines all product-related API endpoints with proper validation
  * using Zod schemas. Each route is documented with OpenAPI specifications
  * that are automatically generated and displayed in Swagger UI.
- * 
+ *
  * The routes follow RESTful conventions and include proper HTTP status codes,
  * request validation, and response schemas.
- * 
+ *
  * @module productRoutes
  * @description API routes for product management
  * @author Intellicart Team
@@ -101,14 +101,9 @@ export const productRoutes = () => {
       example: "https://example.com/product-image.jpg",
       description: "Product's image URL",
     }),
-    reviews: z
-      .array(
-        ReviewSchema
-      )
-      .optional()
-      .openapi({
-        description: "Product's reviews",
-      }),
+    reviews: z.array(ReviewSchema).optional().openapi({
+      description: "Product's reviews",
+    }),
     sellerId: z.number().openapi({
       example: 1,
       description: "ID of the seller who added this product",
@@ -152,7 +147,8 @@ export const productRoutes = () => {
       .optional()
       .openapi({
         example: "Wireless Headphones",
-        description: "Product's name (optional, minimum 1 character if provided)",
+        description:
+          "Product's name (optional, minimum 1 character if provided)",
       }),
     description: z.string().optional().openapi({
       example: "High-quality wireless headphones with noise cancellation",
@@ -196,7 +192,10 @@ export const productRoutes = () => {
     },
   });
 
-  productRoutes.openapi(getAllProductsRoute, ProductHandler.getAllProducts);
+  productRoutes.openapi(
+    getAllProductsRoute,
+    (c) => ProductHandler.getAllProducts(c) as any,
+  );
 
   const getProductByIdRoute = createRoute({
     method: "get",
@@ -239,7 +238,9 @@ export const productRoutes = () => {
     },
   });
 
-  productRoutes.openapi(getProductByIdRoute, ProductHandler.getProductById);
+  productRoutes.openapi(getProductByIdRoute, (c) =>
+    ProductHandler.getProductById(c),
+  );
 
   const createProductRoute = createRoute({
     method: "post",
@@ -269,7 +270,7 @@ export const productRoutes = () => {
 
   productRoutes.openapi(createProductRoute, async (c) => {
     await verifyToken(c, async () => {});
-    return ProductHandler.createProduct(c);
+    return (await ProductHandler.createProduct(c)) as any;
   });
 
   const updateProductRoute = createRoute({
@@ -323,7 +324,7 @@ export const productRoutes = () => {
 
   productRoutes.openapi(updateProductRoute, async (c) => {
     await verifyToken(c, async () => {});
-    return ProductHandler.updateProduct(c);
+    return await ProductHandler.updateProduct(c);
   });
 
   const deleteProductRoute = createRoute({
@@ -353,7 +354,7 @@ export const productRoutes = () => {
                 example: "Product deleted successfully",
                 description: "Confirmation message",
               }),
-              product: ProductSchema,
+              item: ProductSchema,
             }),
           },
         },
@@ -376,7 +377,7 @@ export const productRoutes = () => {
 
   productRoutes.openapi(deleteProductRoute, async (c) => {
     await verifyToken(c, async () => {});
-    return ProductHandler.deleteProduct(c);
+    return await ProductHandler.deleteProduct(c);
   });
 
   const getSellerProductsRoute = createRoute({
@@ -390,7 +391,7 @@ export const productRoutes = () => {
           .string()
           .regex(/^\d+$/, { message: "Seller ID must be a positive number" })
           .transform(Number)
-                    .openapi({
+          .openapi({
             example: 1,
             description: "Unique identifier of the seller",
           }),
@@ -410,7 +411,7 @@ export const productRoutes = () => {
 
   productRoutes.openapi(getSellerProductsRoute, async (c) => {
     await verifyToken(c, async () => {});
-    return ProductHandler.getSellerProducts(c);
+    return (await ProductHandler.getSellerProducts(c)) as any;
   });
 
   const addReviewRoute = createRoute({
@@ -461,7 +462,9 @@ export const productRoutes = () => {
         content: {
           "application/json": {
             schema: z.object({
-              error: z.string().openapi({ example: "Title, reviewText, and rating (1-5) are required" }),
+              error: z.string().openapi({
+                example: "Title, reviewText, and rating (1-5) are required",
+              }),
             }),
           },
         },
@@ -481,7 +484,7 @@ export const productRoutes = () => {
 
   productRoutes.openapi(addReviewRoute, async (c) => {
     await verifyToken(c, async () => {});
-    return ProductHandler.addReview(c);
+    return await ProductHandler.addReview(c);
   });
 
   return productRoutes;

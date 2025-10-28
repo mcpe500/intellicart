@@ -1,9 +1,9 @@
 /**
  * JSON Database Implementation
- * 
+ *
  * This class implements the DatabaseInterface using JSON file storage.
  * It provides basic CRUD operations using JSON file as the storage medium.
- * 
+ *
  * @class JSONDatabase
  * @implements {DatabaseInterface<any>}
  * @description JSON file-based database implementation
@@ -11,9 +11,9 @@
  * @version 1.0.0
  */
 
-import { DatabaseInterface } from '../../DatabaseInterface';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { DatabaseInterface } from "../../DatabaseInterface";
+import * as fs from "fs/promises";
+import * as path from "path";
 
 export class JSONDatabase implements DatabaseInterface<any> {
   private dataPath: string;
@@ -21,7 +21,7 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Constructor for JSONDatabase
-   * 
+   *
    * @param {string} dataPath - Path to the JSON data file
    */
   constructor(dataPath: string) {
@@ -31,7 +31,7 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Initialize the database by reading the JSON file
-   * 
+   *
    * @function init
    * @returns {Promise<void>} A promise that resolves when initialization is complete
    */
@@ -40,12 +40,12 @@ export class JSONDatabase implements DatabaseInterface<any> {
       // Ensure directory exists
       const dir = path.dirname(this.dataPath);
       await fs.mkdir(dir, { recursive: true });
-      
+
       // Check if file exists
       try {
         await fs.access(this.dataPath);
         // File exists, read its content
-        const fileContent = await fs.readFile(this.dataPath, 'utf-8');
+        const fileContent = await fs.readFile(this.dataPath, "utf-8");
         this.data = fileContent ? JSON.parse(fileContent) : {};
       } catch (error) {
         // File doesn't exist, create it with empty data
@@ -60,7 +60,7 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Save the current data to the JSON file
-   * 
+   *
    * @private
    * @function saveData
    * @returns {Promise<void>} A promise that resolves when the data is saved
@@ -88,14 +88,14 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   // Add a method to clear ALL data if needed, useful for seeding
   async clearAllData(): Promise<void> {
-    console.log('[INFO] Clearing all data from JSON database...'); // Add log
+    console.log("[INFO] Clearing all data from JSON database..."); // Add log
     this.data = {}; // Reset the entire data object
     await this.saveData();
   }
 
   /**
    * Find all records of the specified type
-   * 
+   *
    * @function findAll
    * @param {string} tableName - The name of the table/collection to query
    * @returns {Promise<any[]>} A promise that resolves to an array of records
@@ -106,7 +106,7 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Find a record by its ID
-   * 
+   *
    * @function findById
    * @param {string} tableName - The name of the table/collection to query
    * @param {number | string} id - The ID of the record to find
@@ -114,10 +114,12 @@ export class JSONDatabase implements DatabaseInterface<any> {
    */
   async findById(tableName: string, id: number | string): Promise<any | null> {
     const table = this.data[tableName] || [];
-    const records = table.filter(item => item.id == id); // Find ALL matching records
+    const records = table.filter((item) => item.id == id); // Find ALL matching records
 
     if (records.length > 1) {
-      console.warn(`[WARN] Duplicate ID found for id ${id} in table ${tableName}. Returning the first one.`);
+      console.warn(
+        `[WARN] Duplicate ID found for id ${id} in table ${tableName}. Returning the first one.`,
+      );
     }
 
     return records.length > 0 ? records[0] : null; // Return the first match or null
@@ -125,7 +127,7 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Create a new record
-   * 
+   *
    * @function create
    * @param {string} tableName - The name of the table/collection to insert into
    * @param {any} data - The data to insert
@@ -141,8 +143,12 @@ export class JSONDatabase implements DatabaseInterface<any> {
       // If ID is provided, check for duplicates
       const existing = await this.findById(tableName, data.id);
       if (existing) {
-        console.error(`[ERROR] Attempted to create record with duplicate ID ${data.id} in table ${tableName}.`);
-        throw new Error(`Record with ID ${data.id} already exists in ${tableName}.`);
+        console.error(
+          `[ERROR] Attempted to create record with duplicate ID ${data.id} in table ${tableName}.`,
+        );
+        throw new Error(
+          `Record with ID ${data.id} already exists in ${tableName}.`,
+        );
       }
       newId = data.id;
     } else {
@@ -158,17 +164,21 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Update an existing record by ID
-   * 
+   *
    * @function update
    * @param {string} tableName - The name of the table/collection to update
    * @param {number | string} id - The ID of the record to update
    * @param {any} data - The updated data
    * @returns {Promise<any | null>} A promise that resolves to the updated record or null if not found
    */
-  async update(tableName: string, id: number | string, data: Partial<any>): Promise<any | null> {
+  async update(
+    tableName: string,
+    id: number | string,
+    data: Partial<any>,
+  ): Promise<any | null> {
     const table = this.data[tableName] || [];
-    const index = table.findIndex(item => item.id == id); // Using == to match both string and number IDs
-    
+    const index = table.findIndex((item) => item.id == id); // Using == to match both string and number IDs
+
     if (index === -1) {
       return null;
     }
@@ -181,7 +191,7 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Delete a record by ID
-   * 
+   *
    * @function delete
    * @param {string} tableName - The name of the table/collection to delete from
    * @param {number | string} id - The ID of the record to delete
@@ -190,9 +200,9 @@ export class JSONDatabase implements DatabaseInterface<any> {
   async delete(tableName: string, id: number | string): Promise<boolean> {
     const table = this.data[tableName] || [];
     const initialLength = table.length;
-    
-    const filteredTable = table.filter(item => item.id != id); // Using != to match both string and number IDs
-    
+
+    const filteredTable = table.filter((item) => item.id != id); // Using != to match both string and number IDs
+
     if (filteredTable.length === initialLength) {
       return false; // No record was deleted
     }
@@ -204,37 +214,47 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Find records matching specific criteria
-   * 
+   *
    * @function findBy
    * @param {string} tableName - The name of the table/collection to query
    * @param {Record<string, any>} criteria - The criteria to match against
    * @returns {Promise<any[]>} A promise that resolves to an array of matching records
    */
-  async findBy(tableName: string, criteria: Record<string, any>): Promise<any[]> {
+  async findBy(
+    tableName: string,
+    criteria: Record<string, any>,
+  ): Promise<any[]> {
     const table = this.data[tableName] || [];
-    return table.filter(item => {
-      return Object.keys(criteria).every(key => 
-        item[key] === criteria[key] || (typeof criteria[key] === 'string' && typeof item[key] === 'string' && item[key].toLowerCase().includes(criteria[key].toLowerCase()))
+    return table.filter((item) => {
+      return Object.keys(criteria).every(
+        (key) =>
+          item[key] === criteria[key] ||
+          (typeof criteria[key] === "string" &&
+            typeof item[key] === "string" &&
+            item[key].toLowerCase().includes(criteria[key].toLowerCase())),
       );
     });
   }
 
   /**
    * Find a single record matching specific criteria
-   * 
+   *
    * @function findOne
    * @param {string} tableName - The name of the table/collection to query
    * @param {Record<string, any>} criteria - The criteria to match against
    * @returns {Promise<any | null>} A promise that resolves to the first matching record or null
    */
-  async findOne(tableName: string, criteria: Record<string, any>): Promise<any | null> {
+  async findOne(
+    tableName: string,
+    criteria: Record<string, any>,
+  ): Promise<any | null> {
     const records = await this.findBy(tableName, criteria);
     return records.length > 0 ? records[0] : null;
   }
 
   /**
    * Close the database connection (not needed for JSON implementation)
-   * 
+   *
    * @function close
    * @returns {Promise<void>} A promise that resolves when the connection is closed
    */
@@ -245,14 +265,14 @@ export class JSONDatabase implements DatabaseInterface<any> {
 
   /**
    * Generate a unique ID for new records
-   * 
+   *
    * @private
    * @function generateId
    * @returns {number} A unique ID
    */
   private generateId(tableName: string): number {
     const table = this.data[tableName] || [];
-    const maxId = Math.max(0, ...table.map(item => parseInt(item.id) || 0));
+    const maxId = Math.max(0, ...table.map((item) => parseInt(item.id) || 0));
     return maxId + 1;
   }
 }

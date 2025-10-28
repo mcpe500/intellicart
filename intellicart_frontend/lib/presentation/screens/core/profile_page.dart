@@ -1,7 +1,6 @@
 // lib/presentation/screens/core/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:intellicart/presentation/screens/auth_wrapper.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
@@ -241,7 +240,7 @@ class ProfilePage extends StatelessWidget {
           borderRadius: BorderRadius.circular(12.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),

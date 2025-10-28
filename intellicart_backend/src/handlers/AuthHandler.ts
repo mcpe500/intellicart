@@ -1,6 +1,6 @@
-import { Context } from 'hono';
-import { BaseHandler } from './BaseHandler';
-import { AuthController } from '../controllers/authController';
+import { Context } from "hono";
+import { BaseHandler } from "./BaseHandler";
+import { AuthController } from "../controllers/authController";
 
 export class AuthHandler {
   static async register(c: Context) {

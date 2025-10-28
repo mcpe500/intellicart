@@ -1,10 +1,10 @@
 /**
  * User Data Transfer Object (DTO) Module
- * 
+ *
  * This module defines the data transfer objects for user-related operations.
  * These interfaces provide type safety and clear structure for user data
  * across the application.
- * 
+ *
  * @module UserDTO
  * @description DTOs for user data structures
  * @author Intellicart Team

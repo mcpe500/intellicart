@@ -53,7 +53,7 @@ export class OrderController {
    */
   static async updateOrderStatus(c: Context) {
     try {
-      const { id } = c.req.param('id');
+      const id = c.req.param("id");
       const body = await c.req.json();
       const { status } = body;
       const user = c.get("user");

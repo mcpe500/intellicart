@@ -49,8 +49,6 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     const Color primaryTextColor = Color(0xFF181411);
-    const Color accentColor = Color(0xFFD97706);
-    const Color lightGreyBackground = Color(0xFFF5F2F0);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -155,7 +153,7 @@ class _CartPageState extends State<CartPage> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),

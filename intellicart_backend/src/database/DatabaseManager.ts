@@ -1,24 +1,24 @@
 /**
  * Database Manager
- * 
+ *
  * This class provides a centralized way to manage database operations with support for multiple
  * database implementations (JSON, SQLite, Firebase, MySQL). It uses a factory pattern to
  * instantiate the appropriate database implementation based on configuration.
- * 
+ *
  * @class DatabaseManager
  * @description Centralized database manager supporting multiple implementations
  * @author Intellicart Team
  * @version 1.0.0
  */
 
-import { DatabaseInterface } from './DatabaseInterface';
+import { DatabaseInterface } from "./DatabaseInterface";
 
 // Enum for supported database types
 export enum DatabaseType {
-  JSON = 'json',
-  SQLITE = 'sqlite',
-  FIREBASE = 'firebase',
-  MYSQL = 'mysql'
+  JSON = "json",
+  SQLITE = "sqlite",
+  FIREBASE = "firebase",
+  MYSQL = "mysql",
 }
 
 // Configuration interface for database connections
@@ -39,7 +39,7 @@ export class DatabaseManager {
 
   /**
    * Constructor for DatabaseManager
-   * 
+   *
    * @param {DatabaseConfig} config - Configuration for the database connection
    */
   constructor(config: DatabaseConfig) {
@@ -48,38 +48,48 @@ export class DatabaseManager {
 
   /**
    * Initialize the database manager by creating the appropriate database implementation
-   * 
+   *
    * @function initialize
    * @returns {Promise<void>} A promise that resolves when initialization is complete
    */
   async initialize(): Promise<void> {
     switch (this.config.type) {
       case DatabaseType.JSON:
-        const { JSONDatabase } = await import('./implementations/json/JSONDatabase');
-        this.database = new JSONDatabase(this.config.path || './data.json');
+        const { JSONDatabase } = await import(
+          "./implementations/json/JSONDatabase"
+        );
+        this.database = new JSONDatabase(this.config.path || "./data.json");
         break;
-      
+
       case DatabaseType.SQLITE:
-        const { SQLiteDatabase } = await import('./implementations/sqlite/SQLiteDatabase');
-        this.database = new SQLiteDatabase(this.config.path || './database.sqlite');
+        const { SQLiteDatabase } = await import(
+          "./implementations/sqlite/SQLiteDatabase"
+        );
+        this.database = new SQLiteDatabase(
+          this.config.path || "./database.sqlite",
+        );
         break;
-      
+
       case DatabaseType.FIREBASE:
-        const { FireDatabase } = await import('./implementations/firebase/FireDatabase');
+        const { FireDatabase } = await import(
+          "./implementations/firebase/FireDatabase"
+        );
         this.database = new FireDatabase(this.config.firebaseConfig);
         break;
-      
+
       case DatabaseType.MYSQL:
-        const { MySQLDatabase } = await import('./implementations/mysql/MySQLDatabase');
+        const { MySQLDatabase } = await import(
+          "./implementations/mysql/MySQLDatabase"
+        );
         this.database = new MySQLDatabase({
-          host: this.config.host || 'localhost',
+          host: this.config.host || "localhost",
           port: this.config.port || 3306,
-          username: this.config.username || 'root',
-          password: this.config.password || '',
-          database: this.config.database || 'intellicart'
+          username: this.config.username || "root",
+          password: this.config.password || "",
+          database: this.config.database || "intellicart",
         });
         break;
-      
+
       default:
         throw new Error(`Unsupported database type: ${this.config.type}`);
     }
@@ -89,20 +99,20 @@ export class DatabaseManager {
 
   /**
    * Get the initialized database instance
-   * 
+   *
    * @function getDatabase
    * @returns {DatabaseInterface<any> | null} The database instance or null if not initialized
    */
   getDatabase<T>(): DatabaseInterface<T> {
     if (!this.database) {
-      throw new Error('Database not initialized. Call initialize() first.');
+      throw new Error("Database not initialized. Call initialize() first.");
     }
     return this.database as DatabaseInterface<T>;
   }
 
   /**
    * Switch to a different database implementation at runtime
-   * 
+   *
    * @function switchDatabase
    * @param {DatabaseConfig} newConfig - New configuration for the database connection
    * @returns {Promise<void>} A promise that resolves when the switch is complete
@@ -120,7 +130,7 @@ export class DatabaseManager {
 
   /**
    * Close the current database connection
-   * 
+   *
    * @function close
    * @returns {Promise<void>} A promise that resolves when the database is closed
    */

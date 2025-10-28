@@ -5,6 +5,7 @@ import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/review.dart';
 import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../../../core/services/logging_service.dart';
 
 class ProductApiService {
   static String? _baseUrl;
@@ -35,14 +36,14 @@ class ProductApiService {
   Future<List<Product>> getProducts() async {
     try {
       final baseUrl = await getBaseUrl();
-      print('Making API call to fetch products: $baseUrl'); // Debug log
+      loggingService.logInfo('Making API call to fetch products: $baseUrl'); // Debug log
       final response = await http.get(
         Uri.parse(baseUrl),
         headers: await _getHeaders(),
       );
 
       if (response.statusCode == 200) {
-        print('Successfully received ${jsonDecode(response.body).length} products from API'); // Debug log
+        loggingService.logInfo('Successfully received ${jsonDecode(response.body).length} products from API'); // Debug log
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) => Product.fromJson(json)).toList();
       } else {
@@ -131,7 +132,7 @@ class ProductApiService {
   Future<Product> addReviewToProduct(String productId, Review review) async {
     try {
       final baseUrl = await getBaseUrl();
-      print('Adding review to product via API: $baseUrl/$productId/reviews'); // Debug log
+      loggingService.logInfo('Adding review to product via API: $baseUrl/$productId/reviews'); // Debug log
 
       // Use POST to the new reviews endpoint
       final response = await http.post(
@@ -140,19 +141,19 @@ class ProductApiService {
         body: jsonEncode(review.toJson()), // Send only the review data
       );
 
-      print('Add review response status: ${response.statusCode}'); // Debug log
-      print('Add review response body: ${response.body}'); // Debug log
+      loggingService.logInfo('Add review response status: ${response.statusCode}'); // Debug log
+      loggingService.logInfo('Add review response body: ${response.body}'); // Debug log
 
 
       if (response.statusCode == 200) { // Expect 200 OK now
         final Map<String, dynamic> data = jsonDecode(response.body);
-        print('Successfully added review, received updated product from API'); // Debug log
+        loggingService.logInfo('Successfully added review, received updated product from API'); // Debug log
         return Product.fromJson(data); // Backend returns the updated product
       } else {
         throw Exception('Failed to add review to product: ${response.body}');
       }
     } catch (e) {
-      print('Error in addReviewToProduct API call: $e'); // Enhanced error log
+      loggingService.logError('Error in addReviewToProduct API call: $e'); // Enhanced error log
       throw Exception('Error adding review to product: $e');
     }
   }

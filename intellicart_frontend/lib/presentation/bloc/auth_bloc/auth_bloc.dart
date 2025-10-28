@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:intellicart/data/datasources/api_service.dart';
 import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 import 'package:intellicart/models/user.dart';
+import '../../../core/services/logging_service.dart';
 
 // Events
 abstract class AuthEvent extends Equatable {
@@ -107,21 +108,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthLoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print('AuthBloc _onLogin called with email: ${event.email}');
+    loggingService.logInfo('AuthBloc _onLogin called with email: ${event.email}');
     emit(const AuthLoading());
     
     try {
       final user = await _apiService.login(event.email, event.password);
       
       if (user != null) {
-        print('AuthBloc login successful, user: ${user.name}');
+        loggingService.logInfo('AuthBloc login successful, user: ${user.name}');
         emit(AuthAuthenticated(user));
       } else {
-        print('AuthBloc login failed - no user returned');
+        loggingService.logWarning('AuthBloc login failed - no user returned');
         emit(const AuthError('Invalid email or password'));
       }
     } catch (e) {
-      print('AuthBloc login error: $e');
+      loggingService.logError('AuthBloc login error: $e');
       emit(AuthError(e.toString()));
     }
   }
@@ -130,7 +131,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthRegisterRequested event,
     Emitter<AuthState> emit,
   ) async {
-    print('AuthBloc _onRegister called with email: ${event.email}, name: ${event.name}, role: ${event.role}');
+    loggingService.logInfo('AuthBloc _onRegister called with email: ${event.email}, name: ${event.name}, role: ${event.role}');
     emit(const AuthLoading());
     
     try {
@@ -141,15 +142,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         event.role,
       );
       
-      if (user != null) {
-        print('AuthBloc register successful, user: ${user.name}');
-        emit(AuthAuthenticated(user));
-      } else {
-        print('AuthBloc register failed - no user returned');
-        emit(const AuthError('Registration failed'));
-      }
+      loggingService.logInfo('AuthBloc register successful, user: ${user.name}');
+      emit(AuthAuthenticated(user));
     } catch (e) {
-      print('AuthBloc register error: $e');
+      loggingService.logError('AuthBloc register error: $e');
       emit(AuthError(e.toString()));
     }
   }

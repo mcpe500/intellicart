@@ -2,7 +2,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intellicart/models/order.dart';
-import 'package:intellicart/models/product.dart';
 import 'package:intellicart/data/repositories/app_repository.dart';
 
 // --- EVENTS ---

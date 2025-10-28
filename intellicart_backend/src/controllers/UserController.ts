@@ -16,16 +16,16 @@
  * @version 1.0.0
  */
 
-import { Context } from 'hono';
-import { BaseController } from './BaseController';
-import { UserService } from '../services/UserService';
-import { CreateUserRequest, UpdateUserRequest } from '../models/UserDTO';
+import { Context } from "hono";
+import { BaseController } from "./BaseController";
+import { UserService } from "../services/UserService";
+import { CreateUserRequest, UpdateUserRequest } from "../models/UserDTO";
 
 export class UserController extends BaseController<any> {
   private userService: UserService;
 
   constructor() {
-    super('users');
+    super("users");
     this.userService = new UserService();
   }
 
@@ -37,31 +37,31 @@ export class UserController extends BaseController<any> {
       const createdUser = await this.userService.createUser(body);
       return c.json(createdUser, 201);
     } catch (error: any) {
-      if (error.message === 'User with this email already exists') {
+      if (error.message === "User with this email already exists") {
         return c.json({ error: error.message }, 409);
       }
-      console.error('Error creating user:', error);
-      return c.json({ error: 'Internal server error' }, 500);
+      console.error("Error creating user:", error);
+      return c.json({ error: "Internal server error" }, 500);
     }
   }
 
   // Override the update method to add user-specific logic
   async updateUser(c: Context) {
     try {
-      const { id } = c.req.param('id');
+      const id = Number(c.req.param("id"));
       const body = await c.req.json();
 
       const updatedUser = await this.userService.updateUser(id, body);
       return c.json(updatedUser);
     } catch (error: any) {
-      if (error.message === 'User not found') {
+      if (error.message === "User not found") {
         return c.json({ error: error.message }, 404);
       }
-      if (error.message === 'User with this email already exists') {
+      if (error.message === "User with this email already exists") {
         return c.json({ error: error.message }, 409);
       }
-      console.error('Error updating user:', error);
-      return c.json({ error: 'Internal server error' }, 500);
+      console.error("Error updating user:", error);
+      return c.json({ error: "Internal server error" }, 500);
     }
   }
 }

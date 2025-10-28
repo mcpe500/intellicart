@@ -1,17 +1,17 @@
 /**
  * Order Data Transfer Object (DTO) Module
- * 
+ *
  * This module defines the data transfer objects for order-related operations.
  * These interfaces provide type safety and clear structure for order data
  * across the application.
- * 
+ *
  * @module OrderDTO
  * @description DTOs for order data structures
  * @author Intellicart Team
  * @version 1.0.0
  */
 
-import { Product } from './ProductDTO';
+import { Product } from "./ProductDTO";
 
 // Interface for an Order Item
 export interface OrderItem extends Product {

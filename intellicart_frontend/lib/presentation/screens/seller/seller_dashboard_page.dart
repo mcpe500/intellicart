@@ -4,10 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:intellicart/presentation/screens/auth_wrapper.dart';
-import 'package:intellicart/presentation/screens/buyer/ecommerce_home_page.dart';
 import 'package:intellicart/presentation/screens/seller/seller_order_management_page.dart';
 import 'package:intellicart/presentation/screens/seller/seller_product_list_page.dart';
-import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 
 class SellerDashboardPage extends StatelessWidget {
   const SellerDashboardPage({super.key});

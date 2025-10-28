@@ -36,15 +36,18 @@ void main() {
       // Arrange
       final products = [
         Product(
-          id: 1,
+          id: '1',
           name: 'Test Product',
           description: 'Test Description',
           price: 99.99,
           originalPrice: 109.99,
+          quantity: 10,
           imageUrl: 'https://example.com/image.jpg',
-          sellerId: 1,
+          sellerId: '1',
+          rating: 4.5,
+          reviewCount: 5,
+          category: 'Electronics',
           reviews: [],
-          createdAt: DateTime.now(),
         ),
       ];
       when(mockRepository.getAllProducts()).thenAnswer((_) async => products);
@@ -60,17 +63,20 @@ void main() {
 
     test('GetProductById should call repository.getProductById', () async {
       // Arrange
-      const productId = 1;
+      const productId = '1';
       final product = Product(
-        id: 1,
+        id: '1',
         name: 'Test Product',
         description: 'Test Description',
         price: 99.99,
         originalPrice: 109.99,
+        quantity: 10,
         imageUrl: 'https://example.com/image.jpg',
-        sellerId: 1,
+        sellerId: '1',
+        rating: 4.5,
+        reviewCount: 5,
+        category: 'Electronics',
         reviews: [],
-        createdAt: DateTime.now(),
       );
       when(mockRepository.getProductById(any)).thenAnswer((_) async => product);
       final usecase = GetProductById(mockRepository);
@@ -86,15 +92,18 @@ void main() {
     test('CreateProduct should call repository.createProduct', () async {
       // Arrange
       final product = Product(
-        id: 1,
+        id: '1',
         name: 'Test Product',
         description: 'Test Description',
-        price: 99.99,
+        price: 9.99,
         originalPrice: 109.99,
+        quantity: 10,
         imageUrl: 'https://example.com/image.jpg',
-        sellerId: 1,
+        sellerId: '1',
+        rating: 4.5,
+        reviewCount: 5,
+        category: 'Electronics',
         reviews: [],
-        createdAt: DateTime.now(),
       );
       when(mockRepository.createProduct(any)).thenAnswer((_) async => product);
       final usecase = CreateProduct(mockRepository);
@@ -110,15 +119,18 @@ void main() {
     test('UpdateProduct should call repository.updateProduct', () async {
       // Arrange
       final product = Product(
-        id: 1,
+        id: '1',
         name: 'Test Product',
         description: 'Test Description',
         price: 99.99,
         originalPrice: 109.99,
+        quantity: 10,
         imageUrl: 'https://example.com/image.jpg',
-        sellerId: 1,
+        sellerId: '1',
+        rating: 4.5,
+        reviewCount: 5,
+        category: 'Electronics',
         reviews: [],
-        createdAt: DateTime.now(),
       );
       when(mockRepository.updateProduct(any)).thenAnswer((_) async => product);
       final usecase = UpdateProduct(mockRepository);
@@ -133,7 +145,7 @@ void main() {
 
     test('DeleteProduct should call repository.deleteProduct', () async {
       // Arrange
-      const productId = 1;
+      const productId = '1';
       when(mockRepository.deleteProduct(any)).thenAnswer((_) async {});
       final usecase = DeleteProduct(mockRepository);
 
@@ -146,27 +158,14 @@ void main() {
 
     test('SyncProducts should call repository.syncProducts', () async {
       // Arrange
-      final products = [
-        Product(
-          id: 1,
-          name: 'Test Product',
-          description: 'Test Description',
-          price: 99.99,
-          originalPrice: 109.99,
-          imageUrl: 'https://example.com/image.jpg',
-          sellerId: 1,
-          reviews: [],
-          createdAt: DateTime.now(),
-        ),
-      ];
-      when(mockRepository.syncProducts(any)).thenAnswer((_) async {});
+      when(mockRepository.syncProducts()).thenAnswer((_) async {});
       final usecase = SyncProducts(mockRepository);
 
       // Act
-      await usecase(products);
+      await usecase();
 
       // Assert
-      verify(mockRepository.syncProducts(products)).called(1);
+      verify(mockRepository.syncProducts()).called(1);
     });
   });
 
@@ -198,41 +197,27 @@ void main() {
 
     test('Register should call repository.register', () async {
       // Arrange
+      const email = 'test@example.com';
+      const password = 'password123';
+      const name = 'Test User';
       final user = User(
-        id: 1,
-        name: 'Test User',
-        email: 'test@example.com',
+        id: '1',
+        name: name,
+        email: email,
         role: 'buyer',
-        createdAt: DateTime.now(),
       );
-      when(mockUserRepository.register(any)).thenAnswer((_) async => user);
+      when(mockUserRepository.register(any, any, any)).thenAnswer((_) async => user);
 
       // Act
-      final result = await mockUserRepository.register(user);
+      final result = await mockUserRepository.register(email, password, name);
 
       // Assert
       expect(result, equals(user));
-      verify(mockUserRepository.register(user)).called(1);
+      verify(mockUserRepository.register(email, password, name)).called(1);
     });
 
-    test('GetUserProfile should call repository.getUserProfile', () async {
-      // Arrange
-      final user = User(
-        id: 1,
-        name: 'Test User',
-        email: 'test@example.com',
-        role: 'buyer',
-        createdAt: DateTime.now(),
-      );
-      when(mockUserRepository.getUserProfile()).thenAnswer((_) async => user);
-
-      // Act
-      final result = await mockUserRepository.getUserProfile();
-
-      // Assert
-      expect(result, equals(user));
-      verify(mockUserRepository.getUserProfile()).called(1);
-    });
+    // The getUserProfile method doesn't exist in the UserRepository interface
+    // So we'll remove this test
   });
 
   group('Order Use Cases', () {
@@ -244,14 +229,17 @@ void main() {
 
     test('GetUserOrders should call repository.getUserOrders', () async {
       // Arrange
-      const userId = 1;
+      const userId = '1';
       final orders = [
         Order(
-          id: 1,
-          productId: 1,
-          buyerId: userId,
+          id: '1',
+          userId: '1',
+          productId: '1',
+          buyerId: '2',
+          items: [],
+          totalAmount: 99.99,
           status: 'pending',
-          createdAt: DateTime.now(),
+          orderDate: DateTime.now(),
         ),
       ];
       when(mockOrderRepository.getUserOrders(any)).thenAnswer((_) async => orders);
@@ -267,14 +255,17 @@ void main() {
 
     test('UpdateOrderStatus should call repository.updateOrderStatus', () async {
       // Arrange
-      const orderId = 1;
+      const orderId = '1';
       const status = 'shipped';
       final order = Order(
-        id: 1,
-        productId: 1,
-        buyerId: 1,
+        id: '1',
+        userId: '1',
+        productId: '1',
+        buyerId: '2',
+        items: [],
+        totalAmount: 99.99,
         status: status,
-        createdAt: DateTime.now(),
+        orderDate: DateTime.now(),
       );
       when(mockOrderRepository.updateOrderStatus(any, any)).thenAnswer((_) async => order);
       final usecase = UpdateOrderStatus(mockOrderRepository);
@@ -286,5 +277,5 @@ void main() {
       expect(result, equals(order));
       verify(mockOrderRepository.updateOrderStatus(orderId, status)).called(1);
     });
-  });
+  }
 }

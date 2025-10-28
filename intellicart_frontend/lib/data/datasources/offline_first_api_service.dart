@@ -6,6 +6,7 @@ import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/review.dart';
+import 'package:intellicart/core/services/logging_service.dart';
 
 class OfflineFirstApiService {
   final ApiService _onlineService = ApiService();
@@ -34,13 +35,10 @@ class OfflineFirstApiService {
     try {
       // Try online first
       final user = await _onlineService.register(email, password, name, role);
-      if (user != null) {
-        // Update local state
-        await _dbHelper.setCurrentUser(user.id!);
-        await _dbHelper.setAppMode(user.role == 'seller' ? 'seller' : 'buyer');
-        return user;
-      }
-      throw Exception('Registration failed');
+      // Update local state
+      await _dbHelper.setCurrentUser(user.id!);
+      await _dbHelper.setAppMode(user.role == 'seller' ? 'seller' : 'buyer');
+      return user;
     } catch (e) {
       // If online fails, we can't register offline since it needs backend verification
       rethrow;
@@ -57,7 +55,7 @@ class OfflineFirstApiService {
       return await _dbHelper.getProducts();
     } catch (e) {
       // If online sync fails, return local data
-      print('Online sync failed, returning local data: ${e.toString()}');
+      loggingService.logWarning('Online sync failed, returning local data: ${e.toString()}');
       return await _dbHelper.getProducts();
     }
   }
@@ -72,7 +70,7 @@ class OfflineFirstApiService {
       
       return createdProduct;
     } catch (e) {
-      print('Online product creation failed, saving locally: ${e.toString()}');
+      loggingService.logWarning('Online product creation failed, saving locally: ${e.toString()}');
       
       // If online fails, save locally and mark for sync
       await _dbHelper.insertProduct(product, isLocal: true);
@@ -94,7 +92,7 @@ class OfflineFirstApiService {
       
       return updatedProduct;
     } catch (e) {
-      print('Online product update failed, updating locally: ${e.toString()}');
+      loggingService.logWarning('Online product update failed, updating locally: ${e.toString()}');
       
       // If online fails, update locally and mark for sync
       await _dbHelper.updateProduct(product);
@@ -114,7 +112,7 @@ class OfflineFirstApiService {
       // Update local database
       await _dbHelper.deleteProduct(int.tryParse(product.id ?? '0') ?? 0);
     } catch (e) {
-      print('Online product deletion failed: ${e.toString()}');
+      loggingService.logWarning('Online product deletion failed: ${e.toString()}');
       
       // If online fails, try to mark locally for deletion (in a real app you'd want a delete queue)
       // For now, just delete locally
@@ -135,7 +133,7 @@ class OfflineFirstApiService {
       
       return products;
     } catch (e) {
-      print('Online seller products fetch failed, returning local data: ${e.toString()}');
+      loggingService.logWarning('Online seller products fetch failed, returning local data: ${e.toString()}');
       
       // If online fails, return local data
       return await _dbHelper.getProducts();
@@ -152,7 +150,7 @@ class OfflineFirstApiService {
       
       return updatedProduct;
     } catch (e) {
-      print('Online review submission failed, saving for later sync: ${e.toString()}');
+      loggingService.logWarning('Online review submission failed, saving for later sync: ${e.toString()}');
       
       // If online fails, save the review locally for later synchronization
       final userId = await _dbHelper.getCurrentUser();
@@ -184,7 +182,7 @@ class OfflineFirstApiService {
       
       return orders;
     } catch (e) {
-      print('Online seller orders fetch failed, returning local data: ${e.toString()}');
+      loggingService.logWarning('Online seller orders fetch failed, returning local data: ${e.toString()}');
       
       // If online fails, return local data
       return await _dbHelper.getOrders();
@@ -200,7 +198,7 @@ class OfflineFirstApiService {
       // For now, we'll just sync from backend after the update
       await _syncService.syncFromBackend();
     } catch (e) {
-      print('Online order status update failed: ${e.toString()}');
+      loggingService.logWarning('Online order status update failed: ${e.toString()}');
       
       // If online fails, we can't update offline since status updates need backend
       // But we could queue the update for later sync
@@ -269,7 +267,7 @@ class OfflineFirstApiService {
       try {
         await _syncService.syncToBackend();
       } catch (e) {
-        print('Background sync failed: ${e.toString()}');
+        loggingService.logWarning('Background sync failed: ${e.toString()}');
       }
     });
   }
@@ -327,7 +325,7 @@ class OfflineFirstApiService {
       
       return orders;
     } catch (e) {
-      print('Online seller orders fetch failed, returning local data: ${e.toString()}');
+      loggingService.logWarning('Online seller orders fetch failed, returning local data: ${e.toString()}');
       
       // If online fails, return local data
       return await _dbHelper.getOrders();

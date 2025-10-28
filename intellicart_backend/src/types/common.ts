@@ -1,10 +1,10 @@
 /**
  * Common Type Definitions Module
- * 
+ *
  * This module defines common types used throughout the Intellicart API application.
  * These types provide type safety and clear structure for various components
  * across the application.
- * 
+ *
  * @module CommonTypes
  * @description Common type definitions for the Intellicart API
  * @author Intellicart Team
@@ -30,7 +30,7 @@ export interface ApiResponse<T> {
 
 // Database configuration type
 export interface DatabaseConfig {
-  type: 'json' | 'sqlite' | 'mysql' | 'firebase';
+  type: "json" | "sqlite" | "mysql" | "firebase";
   path?: string;
   host?: string;
   port?: number;
@@ -69,7 +69,7 @@ export interface ErrorResponse {
 export type APIResponse<T = any> = SuccessResponse<T> | ErrorResponse;
 
 // Sort order type
-export type SortOrder = 'asc' | 'desc';
+export type SortOrder = "asc" | "desc";
 
 // Sort options interface
 export interface SortOptions {
@@ -108,7 +108,14 @@ export interface TokenRecord {
 }
 
 // HTTP methods type
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+export type HttpMethod =
+  | "GET"
+  | "POST"
+  | "PUT"
+  | "DELETE"
+  | "PATCH"
+  | "HEAD"
+  | "OPTIONS";
 
 // Rate limit configuration type
 export interface RateLimitConfig {
@@ -123,5 +130,5 @@ export interface EnvironmentConfig {
   dbType: string;
   dbPath?: string;
   jwtSecret: string;
-  nodeEnv: 'development' | 'production' | 'test';
+  nodeEnv: "development" | "production" | "test";
 }

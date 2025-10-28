@@ -1,6 +1,5 @@
-
-import { dbManager } from '../database/Config';
-import { DatabaseInterface } from '../database/DatabaseInterface';
+import { dbManager } from "../database/Config";
+import { DatabaseInterface } from "../database/DatabaseInterface";
 
 export class BaseService<T> {
   protected tableName: string;
@@ -24,7 +23,7 @@ export class BaseService<T> {
       ...data,
       createdAt: new Date().toISOString(),
     };
-    return await this.db.create(this.tableName, newItem);
+    return await this.db.create(this.tableName, newItem as T);
   }
 
   async update(id: number, data: Partial<T>) {

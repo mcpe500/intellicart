@@ -1,10 +1,7 @@
 // lib/presentation/screens/auth_wrapper.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intellicart/data/datasources/api_service.dart';
-import 'package:intellicart/data/datasources/auth/auth_api_service.dart';
 import 'package:intellicart/data/repositories/app_repository_impl.dart';
-import 'package:intellicart/models/product.dart';
 import 'package:intellicart/presentation/bloc/app_mode_bloc.dart';
 import 'package:intellicart/presentation/bloc/auth_bloc/auth_bloc.dart';
 import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';

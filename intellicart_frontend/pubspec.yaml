@@ -53,6 +53,24 @@ dependencies:
   
   # For shared preferences (cross-platform storage)
   shared_preferences: ^2.2.2
+  
+  # Service locator
+  get_it: ^7.6.4
+  
+  # HTTP client with advanced features
+  dio: ^5.4.0
+  
+  # File system operations
+  path_provider: ^2.1.1
+  
+  # Crypto utilities
+  crypto: ^3.0.3
+  
+  # Speech recognition
+  speech_to_text: ^7.0.0
+  
+  # Riverpod for state management
+  riverpod: ^2.4.9
 
 dev_dependencies:
   flutter_test:

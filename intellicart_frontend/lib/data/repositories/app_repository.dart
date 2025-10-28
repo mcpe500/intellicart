@@ -1,7 +1,6 @@
 // lib/data/repositories/app_repository.dart
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/models/order.dart';
-import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/review.dart';
 
 abstract class AppRepository {

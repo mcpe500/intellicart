@@ -2,7 +2,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/order.dart';
 import 'package:intellicart/models/review.dart';
 import 'dart:convert';
@@ -520,7 +519,7 @@ class OfflineDatabaseHelper {
         'customer_name': order.customerName,
         'total': order.total,
         'status': order.status,
-        'order_date': order.orderDate?.toIso8601String(),
+        'order_date': order.orderDate.toIso8601String(),
         'seller_id': order.sellerId,
         'items_json': jsonEncode(order.items.map((item) => item.toJson()).toList()),
         'created_at': DateTime.now().toIso8601String(),
@@ -538,7 +537,7 @@ class OfflineDatabaseHelper {
       'customer_name': order.customerName,
       'total': order.total,
       'status': order.status,
-      'order_date': order.orderDate?.toIso8601String(),
+      'order_date': order.orderDate.toIso8601String(),
       'seller_id': order.sellerId,
       'items_json': jsonEncode(order.items.map((item) => item.toJson()).toList()),
       'created_at': DateTime.now().toIso8601String(),

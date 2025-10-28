@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/widgets/shared/star_rating_input.dart';
-import 'package:intellicart/data/repositories/app_repository_impl.dart';
 
 class AddReviewPage extends StatefulWidget {
   final String productId; // Pass the product ID to associate the review

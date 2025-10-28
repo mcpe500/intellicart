@@ -9,7 +9,6 @@ import 'package:intellicart/presentation/screens/core/profile_page.dart'; // Imp
 import 'package:intellicart/presentation/screens/buyer/cart_page.dart'; // Import the new CartPage
 import 'package:intellicart/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
 import 'package:intellicart/features/product/presentation/widgets/product_grid.dart';
-import 'package:intellicart/features/product/presentation/widgets/product_card.dart';
 
 class EcommerceHomePage extends StatefulWidget {
   const EcommerceHomePage({super.key});
@@ -289,7 +288,7 @@ class _ProductCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(8.0),
           boxShadow: [
             BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
+              color: Colors.grey.withValues(alpha: 0.1),
               spreadRadius: 1,
               blurRadius: 3,
               offset: const Offset(0, 1),

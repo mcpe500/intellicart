@@ -1,11 +1,8 @@
 // lib/data/datasources/sync_service.dart
 import 'package:intellicart/data/datasources/offline_sqlite_helper.dart';
 import 'package:intellicart/data/datasources/api_service.dart';
-import 'package:intellicart/models/product.dart';
-import 'package:intellicart/models/order.dart';
-import 'package:intellicart/models/user.dart';
 import 'package:intellicart/models/review.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:intellicart/core/services/logging_service.dart';
 
 class SyncService {
   final OfflineDatabaseHelper _dbHelper = OfflineDatabaseHelper();
@@ -31,7 +28,7 @@ class SyncService {
             await _dbHelper.markProductAsSynced(product.id!, product.id!);
           }
         } catch (e) {
-          print('Failed to sync product: ${e.toString()}');
+          loggingService.logWarning('Failed to sync product: ${e.toString()}');
           await _dbHelper.markProductSyncFailed(product.id!);
           success = false;
         }
@@ -52,7 +49,7 @@ class SyncService {
             await _dbHelper.markOrderAsSynced(order.id!, order.id!);
           }
         } catch (e) {
-          print('Failed to sync order: ${e.toString()}');
+          loggingService.logWarning('Failed to sync order: ${e.toString()}');
           await _dbHelper.markOrderSyncFailed(order.id!);
           success = false;
         }
@@ -71,7 +68,7 @@ class SyncService {
           await _apiService.productService.addReviewToProduct(reviewData['product_id'], review);
           await _dbHelper.deletePendingReview(reviewData['id']);
         } catch (e) {
-          print('Failed to sync review: ${e.toString()}');
+          loggingService.logWarning('Failed to sync review: ${e.toString()}');
           success = false;
         }
       }
@@ -83,7 +80,7 @@ class SyncService {
       
       return success;
     } catch (e) {
-      print('Sync error: ${e.toString()}');
+      loggingService.logError('Sync error: ${e.toString()}');
       return false;
     }
   }
@@ -108,7 +105,7 @@ class SyncService {
       } catch (e) {
         // Check if this is a unique constraint error by examining the error message
         if (e.toString().contains('UNIQUE constraint failed') && e.toString().contains('products.external_id')) {
-          print('Unique constraint error detected, clearing database and retrying sync...');
+          loggingService.logWarning('Unique constraint error detected, clearing database and retrying sync...');
           // Clear the local database and try again
           await _clearLocalDatabase();
           await _dbHelper.insertProducts(products);
@@ -127,14 +124,14 @@ class SyncService {
       await _dbHelper.setLastSyncTime();
       return true;
     } catch (e) {
-      print('Sync from backend error: ${e.toString()}');
+      loggingService.logError('Sync from backend error: ${e.toString()}');
       return false;
     }
   }
   
   // Helper method to clear local database completely
   Future<void> _clearLocalDatabase() async {
-    print('Clearing local database completely to resolve constraint issues...');
+    loggingService.logInfo('Clearing local database completely to resolve constraint issues...');
     // Clear all data - this should force a clean sync
     await _dbHelper.insertProducts([]); // This will clear all products and reviews
   }

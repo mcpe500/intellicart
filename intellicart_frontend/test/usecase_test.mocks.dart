@@ -45,14 +45,12 @@ class MockProductRepository extends _i1.Mock implements _i3.ProductRepository {
           as _i4.Future<List<_i2.Product>>);
 
   @override
-  _i4.Future<_i2.Product> getProduct(int? id) =>
+  _i4.Future<_i2.Product?> getProductById(String? id) =>
       (super.noSuchMethod(
-            Invocation.method(#getProduct, [id]),
-            returnValue: _i4.Future<_i2.Product>.value(
-              _FakeProduct_0(this, Invocation.method(#getProduct, [id])),
-            ),
+            Invocation.method(#getProductById, [id]),
+            returnValue: _i4.Future<_i2.Product?>.value(),
           )
-          as _i4.Future<_i2.Product>);
+          as _i4.Future<_i2.Product?>);
 
   @override
   _i4.Future<_i2.Product> createProduct(_i2.Product? product) =>
@@ -81,7 +79,7 @@ class MockProductRepository extends _i1.Mock implements _i3.ProductRepository {
           as _i4.Future<_i2.Product>);
 
   @override
-  _i4.Future<void> deleteProduct(int? id) =>
+  _i4.Future<void> deleteProduct(String? id) =>
       (super.noSuchMethod(
             Invocation.method(#deleteProduct, [id]),
             returnValue: _i4.Future<void>.value(),
@@ -90,9 +88,9 @@ class MockProductRepository extends _i1.Mock implements _i3.ProductRepository {
           as _i4.Future<void>);
 
   @override
-  _i4.Future<void> syncProducts(List<_i2.Product>? products) =>
+  _i4.Future<void> syncProducts() =>
       (super.noSuchMethod(
-            Invocation.method(#syncProducts, [products]),
+            Invocation.method(#syncProducts, []),
             returnValue: _i4.Future<void>.value(),
             returnValueForMissingStub: _i4.Future<void>.value(),
           )

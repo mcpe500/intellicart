@@ -1,9 +1,11 @@
 # Fix for 404 Error on POST /api/products/:id/reviews Endpoint (Hono Framework)
 
 ## Problem Description
+
 The POST request to `/api/products/:id/reviews` is returning a 404 error because the route was implemented using Express.js syntax, but the application is using the Hono framework. Hono and Express have different routing syntax and context objects, so Express routes are not recognized by the Hono server.
 
 ## Current Error Log Analysis
+
 ```
 [2025-10-26T14:09:29.027Z] [INFO] API Request Started | Context: {"method":"POST","url":"http://192.168.18.136:3000/api/products/1/reviews","ip":"unknown","userAgent":"Dart/3.9 (dart:io)","timestamp":"2025-10-26T14:09:29.027Z"}
 [2025-10-26T14:09:29.029Z] [INFO] Request Body | Context: {"url":"http://192.168.18.136:3000/api/products/1/reviews","body":{"title":"hddhhdj","reviewText":"bdhdhdhd","rating":4,"timeAgo":"Just now"},"timestamp":"2025-10-26T14:09:29.029Z"}
@@ -13,6 +15,7 @@ The POST request to `/api/products/:id/reviews` is returning a 404 error because
 ## Required Implementation
 
 ### 1. Database Model for Reviews
+
 First, we need to create a Review model/structure in the database:
 
 ```typescript
@@ -37,11 +40,12 @@ const reviewExample = {
   reviewText: "This product exceeded my expectations.",
   rating: 5,
   timeAgo: "2 days ago",
-  createdAt: new Date()
+  createdAt: new Date(),
 };
 ```
 
 ### 2. Update Data Structure in db.json
+
 Complete `data/db.json` file with products, users, and reviews:
 
 ```json
@@ -266,22 +270,25 @@ Complete `data/db.json` file with products, users, and reviews:
 ```
 
 ### 3. Database Service for Reviews
+
 Create a service to handle review operations in `src/services/review.service.ts`:
 
 ```typescript
-import fs from 'fs';
-import path from 'path';
-import { Review } from '../models/review.model';
+import fs from "fs";
+import path from "path";
+import { Review } from "../models/review.model";
 
-const dbPath = path.join(__dirname, '../../data/db.json');
+const dbPath = path.join(__dirname, "../../data/db.json");
 
 export const getReviewsByProductId = (productId: number): Review[] => {
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-  return dbData.reviews.filter((review: Review) => review.productId === productId);
+  const dbData = JSON.parse(fs.readFileSync(dbPath, "utf8"));
+  return dbData.reviews.filter(
+    (review: Review) => review.productId === productId,
+  );
 };
 
-export const addReview = (review: Omit<Review, 'id' | 'createdAt'>): Review => {
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+export const addReview = (review: Omit<Review, "id" | "createdAt">): Review => {
+  const dbData = JSON.parse(fs.readFileSync(dbPath, "utf8"));
   const newReview: Review = {
     ...review,
     id: Math.max(...dbData.reviews.map((r: Review) => r.id), 0) + 1,
@@ -293,74 +300,89 @@ export const addReview = (review: Omit<Review, 'id' | 'createdAt'>): Review => {
 };
 
 export const getAllReviews = (): Review[] => {
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  const dbData = JSON.parse(fs.readFileSync(dbPath, "utf8"));
   return dbData.reviews;
 };
 
 export const getReviewById = (reviewId: number): Review | undefined => {
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  const dbData = JSON.parse(fs.readFileSync(dbPath, "utf8"));
   return dbData.reviews.find((review: Review) => review.id === reviewId);
 };
 
-export const updateReview = (reviewId: number, updates: Partial<Review>): Review | null => {
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
-  const reviewIndex = dbData.reviews.findIndex((review: Review) => review.id === reviewId);
-  
+export const updateReview = (
+  reviewId: number,
+  updates: Partial<Review>,
+): Review | null => {
+  const dbData = JSON.parse(fs.readFileSync(dbPath, "utf8"));
+  const reviewIndex = dbData.reviews.findIndex(
+    (review: Review) => review.id === reviewId,
+  );
+
   if (reviewIndex === -1) return null;
-  
+
   const updatedReview = { ...dbData.reviews[reviewIndex], ...updates };
   dbData.reviews[reviewIndex] = updatedReview;
   fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 2));
-  
+
   return updatedReview;
 };
 
 export const deleteReview = (reviewId: number): boolean => {
-  const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  const dbData = JSON.parse(fs.readFileSync(dbPath, "utf8"));
   const initialLength = dbData.reviews.length;
-  dbData.reviews = dbData.reviews.filter((review: Review) => review.id !== reviewId);
+  dbData.reviews = dbData.reviews.filter(
+    (review: Review) => review.id !== reviewId,
+  );
   const finalLength = dbData.reviews.length;
-  
+
   if (initialLength !== finalLength) {
     fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 2));
     return true;
   }
-  
+
   return false;
 };
 ```
 
 ### 4. Hono Review Routes (Correct Syntax)
+
 Create the Hono-based routes in `src/routes/review.route.ts`:
 
 ```typescript
 // src/routes/review.route.ts
-import { Hono } from 'hono';
-import type { Context } from 'hono';
-import { 
+import { Hono } from "hono";
+import type { Context } from "hono";
+import {
   addReview as addReviewService,
   getReviewsByProductId as getReviewsService,
   getAllReviews as getAllReviewsService,
   getReviewById as getReviewByIdService,
   updateReview as updateReviewService,
-  deleteReview as deleteReviewService
-} from '../services/review.service';
-import { logger } from '../utils/logger';
+  deleteReview as deleteReviewService,
+} from "../services/review.service";
+import { logger } from "../utils/logger";
 
 const reviewRoutes = new Hono();
 
 // POST: Add a review to a product
-reviewRoutes.post('/api/products/:id/reviews', async (c: Context) => {
+reviewRoutes.post("/api/products/:id/reviews", async (c: Context) => {
   try {
-    const productId = c.req.param('id');
+    const productId = c.req.param("id");
     const body = await c.req.json();
     const { title, reviewText, rating, timeAgo, userId } = body;
 
     // --- Validation ---
-    if (!title || !reviewText || rating === undefined || rating < 1 || rating > 5) {
+    if (
+      !title ||
+      !reviewText ||
+      rating === undefined ||
+      rating < 1 ||
+      rating > 5
+    ) {
       c.status(400);
       return c.json({
-        error: 'Title, reviewText, and rating (1-5) are required, rating must be between 1 and 5'
+        error:
+          "Title, reviewText, and rating (1-5) are required, rating must be between 1 and 5",
       });
     }
 
@@ -369,91 +391,96 @@ reviewRoutes.post('/api/products/:id/reviews', async (c: Context) => {
       title,
       reviewText,
       rating: parseInt(rating.toString()),
-      timeAgo: timeAgo || 'Just now',
-      userId: userId || undefined
+      timeAgo: timeAgo || "Just now",
+      userId: userId || undefined,
     };
 
     // --- Call the service ---
     const newReview = addReviewService(reviewData);
 
-    logger.info('Review added successfully', { reviewId: newReview.id, productId: reviewData.productId });
-    
+    logger.info("Review added successfully", {
+      reviewId: newReview.id,
+      productId: reviewData.productId,
+    });
+
     // --- Send Hono response ---
     c.status(201);
     return c.json({
-      message: 'Review added successfully',
-      review: newReview
+      message: "Review added successfully",
+      review: newReview,
     });
-
   } catch (error) {
     const err = error as Error;
-    logger.error('Error adding review', { error: err.message });
+    logger.error("Error adding review", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
 // GET: Get all reviews for a specific product
-reviewRoutes.get('/api/products/:id/reviews', (c: Context) => {
+reviewRoutes.get("/api/products/:id/reviews", (c: Context) => {
   try {
-    const productId = c.req.param('id');
+    const productId = c.req.param("id");
     const reviews = getReviewsService(parseInt(productId));
 
     return c.json({ reviews });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error fetching reviews', { error: err.message });
+    logger.error("Error fetching reviews", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
 // GET: Get all reviews
-reviewRoutes.get('/api/reviews', (c: Context) => {
+reviewRoutes.get("/api/reviews", (c: Context) => {
   try {
     const reviews = getAllReviewsService();
 
     return c.json({ reviews });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error fetching all reviews', { error: err.message });
+    logger.error("Error fetching all reviews", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
 // GET: Get a specific review by ID
-reviewRoutes.get('/api/reviews/:id', (c: Context) => {
+reviewRoutes.get("/api/reviews/:id", (c: Context) => {
   try {
-    const reviewId = c.req.param('id');
+    const reviewId = c.req.param("id");
     const review = getReviewByIdService(parseInt(reviewId));
 
     if (!review) {
       c.status(404);
-      return c.json({ error: 'Review not found' });
+      return c.json({ error: "Review not found" });
     }
 
     return c.json({ review });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error fetching review by ID', { error: err.message });
+    logger.error("Error fetching review by ID", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
 // PUT: Update a review by ID
-reviewRoutes.put('/api/reviews/:id', async (c: Context) => {
+reviewRoutes.put("/api/reviews/:id", async (c: Context) => {
   try {
-    const reviewId = c.req.param('id');
+    const reviewId = c.req.param("id");
     const body = await c.req.json();
     const updates = body;
 
     // Validate rating if provided
-    if (updates.rating !== undefined && (updates.rating < 1 || updates.rating > 5)) {
+    if (
+      updates.rating !== undefined &&
+      (updates.rating < 1 || updates.rating > 5)
+    ) {
       c.status(400);
       return c.json({
-        error: 'Rating must be between 1 and 5'
+        error: "Rating must be between 1 and 5",
       });
     }
 
@@ -461,42 +488,46 @@ reviewRoutes.put('/api/reviews/:id', async (c: Context) => {
 
     if (!updatedReview) {
       c.status(404);
-      return c.json({ error: 'Review not found' });
+      return c.json({ error: "Review not found" });
     }
 
-    logger.info('Review updated successfully', { reviewId: parseInt(reviewId) });
+    logger.info("Review updated successfully", {
+      reviewId: parseInt(reviewId),
+    });
     return c.json({
-      message: 'Review updated successfully',
-      review: updatedReview
+      message: "Review updated successfully",
+      review: updatedReview,
     });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error updating review', { error: err.message });
+    logger.error("Error updating review", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
 // DELETE: Delete a review by ID
-reviewRoutes.delete('/api/reviews/:id', (c: Context) => {
+reviewRoutes.delete("/api/reviews/:id", (c: Context) => {
   try {
-    const reviewId = c.req.param('id');
+    const reviewId = c.req.param("id");
     const deleted = deleteReviewService(parseInt(reviewId));
 
     if (!deleted) {
       c.status(404);
-      return c.json({ error: 'Review not found' });
+      return c.json({ error: "Review not found" });
     }
 
-    logger.info('Review deleted successfully', { reviewId: parseInt(reviewId) });
+    logger.info("Review deleted successfully", {
+      reviewId: parseInt(reviewId),
+    });
     return c.json({
-      message: 'Review deleted successfully'
+      message: "Review deleted successfully",
     });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error deleting review', { error: err.message });
+    logger.error("Error deleting review", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
@@ -504,33 +535,39 @@ export default reviewRoutes;
 ```
 
 ### 5. Hono Authentication Middleware (Hono Syntax)
+
 If you want to require authentication for adding reviews, create a middleware in `src/middlewares/auth.middleware.ts`:
 
 ```typescript
 // src/middlewares/auth.middleware.ts
-import { MiddlewareHandler } from 'hono';
-import { verify } from 'hono/jwt';
-import { logger } from '../utils/logger';
+import { MiddlewareHandler } from "hono";
+import { verify } from "hono/jwt";
+import { logger } from "../utils/logger";
 
 export const authenticateJWT: MiddlewareHandler = async (c, next) => {
-  const authHeader = c.req.header('Authorization');
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const authHeader = c.req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     c.status(401);
-    return c.json({ error: 'Access token is missing' });
+    return c.json({ error: "Access token is missing" });
   }
 
   const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
   try {
-    const decoded = await verify(token, process.env.JWT_SECRET || 'fallback_secret');
+    const decoded = await verify(
+      token,
+      process.env.JWT_SECRET || "fallback_secret",
+    );
     // Store user info in context for use in handlers
-    c.set('user', decoded);
+    c.set("user", decoded);
     await next();
   } catch (error) {
-    logger.error('JWT verification failed', { error: (error as Error).message });
+    logger.error("JWT verification failed", {
+      error: (error as Error).message,
+    });
     c.status(403);
-    return c.json({ error: 'Invalid or expired token' });
+    return c.json({ error: "Invalid or expired token" });
   }
 };
 ```
@@ -539,185 +576,200 @@ Then update your route to use authentication:
 
 ```typescript
 // Updated version of the POST route with authentication in src/routes/review.route.ts
-import { Hono } from 'hono';
-import type { Context } from 'hono';
-import { 
+import { Hono } from "hono";
+import type { Context } from "hono";
+import {
   addReview as addReviewService,
-  getReviewsByProductId as getReviewsService
-} from '../services/review.service';
-import { logger } from '../utils/logger';
-import { authenticateJWT } from '../middlewares/auth.middleware';
+  getReviewsByProductId as getReviewsService,
+} from "../services/review.service";
+import { logger } from "../utils/logger";
+import { authenticateJWT } from "../middlewares/auth.middleware";
 
 const reviewRoutes = new Hono();
 
 // GET: Get all reviews for a specific product (no auth required)
-reviewRoutes.get('/api/products/:id/reviews', (c: Context) => {
+reviewRoutes.get("/api/products/:id/reviews", (c: Context) => {
   try {
-    const productId = c.req.param('id');
+    const productId = c.req.param("id");
     const reviews = getReviewsService(parseInt(productId));
 
     return c.json({ reviews });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error fetching reviews', { error: err.message });
+    logger.error("Error fetching reviews", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
 // POST: Add a review to a product (auth required)
-reviewRoutes.post('/api/products/:id/reviews', authenticateJWT, async (c: Context) => {
-  try {
-    const productId = c.req.param('id');
-    const body = await c.req.json();
-    const { title, reviewText, rating, timeAgo, userId } = body;
+reviewRoutes.post(
+  "/api/products/:id/reviews",
+  authenticateJWT,
+  async (c: Context) => {
+    try {
+      const productId = c.req.param("id");
+      const body = await c.req.json();
+      const { title, reviewText, rating, timeAgo, userId } = body;
 
-    // --- Validation ---
-    if (!title || !reviewText || rating === undefined || rating < 1 || rating > 5) {
-      c.status(400);
-      return c.json({
-        error: 'Title, reviewText, and rating (1-5) are required, rating must be between 1 and 5'
+      // --- Validation ---
+      if (
+        !title ||
+        !reviewText ||
+        rating === undefined ||
+        rating < 1 ||
+        rating > 5
+      ) {
+        c.status(400);
+        return c.json({
+          error:
+            "Title, reviewText, and rating (1-5) are required, rating must be between 1 and 5",
+        });
+      }
+
+      // Extract user info from context (set by auth middleware)
+      const user = c.get("user");
+      const reviewData = {
+        productId: parseInt(productId),
+        title,
+        reviewText,
+        rating: parseInt(rating.toString()),
+        timeAgo: timeAgo || "Just now",
+        userId: user.id || userId, // Use authenticated user ID or provided user ID
+      };
+
+      // --- Call the service ---
+      const newReview = addReviewService(reviewData);
+
+      logger.info("Review added successfully", {
+        reviewId: newReview.id,
+        productId: reviewData.productId,
       });
+
+      // --- Send Hono response ---
+      c.status(201);
+      return c.json({
+        message: "Review added successfully",
+        review: newReview,
+      });
+    } catch (error) {
+      const err = error as Error;
+      logger.error("Error adding review", { error: err.message });
+      c.status(500);
+      return c.json({ error: "Internal server error" });
     }
-
-    // Extract user info from context (set by auth middleware)
-    const user = c.get('user');
-    const reviewData = {
-      productId: parseInt(productId),
-      title,
-      reviewText,
-      rating: parseInt(rating.toString()),
-      timeAgo: timeAgo || 'Just now',
-      userId: user.id || userId // Use authenticated user ID or provided user ID
-    };
-
-    // --- Call the service ---
-    const newReview = addReviewService(reviewData);
-
-    logger.info('Review added successfully', { reviewId: newReview.id, productId: reviewData.productId });
-    
-    // --- Send Hono response ---
-    c.status(201);
-    return c.json({
-      message: 'Review added successfully',
-      review: newReview
-    });
-
-  } catch (error) {
-    const err = error as Error;
-    logger.error('Error adding review', { error: err.message });
-    c.status(500);
-    return c.json({ error: 'Internal server error' });
-  }
-});
+  },
+);
 
 export default reviewRoutes;
 ```
 
 ### 6. Hono Main Server File (Correct Syntax)
+
 Create or update your main server file using Hono syntax in `src/server.ts`:
 
 ```typescript
 // src/server.ts or src/index.ts
-import { Hono } from 'hono';
-import { logger } from './utils/logger';
-import { cors } from 'hono/cors'; // Import Hono's CORS middleware
+import { Hono } from "hono";
+import { logger } from "./utils/logger";
+import { cors } from "hono/cors"; // Import Hono's CORS middleware
 
 // Import your Hono-based route files
-import reviewRoutes from './routes/review.route';
-import productRoutes from './routes/product.route'; // (Make sure this is also Hono)
-import authRoutes from './routes/auth.route';       // (Make sure this is also Hono)
+import reviewRoutes from "./routes/review.route";
+import productRoutes from "./routes/product.route"; // (Make sure this is also Hono)
+import authRoutes from "./routes/auth.route"; // (Make sure this is also Hono)
 
 const app = new Hono();
 
 // --- Middleware (Hono way) ---
-app.use('*', cors()); // Use Hono's CORS middleware
+app.use("*", cors()); // Use Hono's CORS middleware
 // Note: Hono has a built-in JSON parser, so `express.json()` is not needed.
 
 // Logging middleware (Example for Hono)
-app.use('*', async (c, next) => {
+app.use("*", async (c, next) => {
   const startTime = Date.now();
-  logger.info('API Request Started', {
+  logger.info("API Request Started", {
     method: c.req.method,
     url: c.req.url,
-    ip: c.req.header('x-forwarded-for') || 'unknown',
-    userAgent: c.req.header('user-agent') || 'unknown',
-    timestamp: new Date().toISOString()
+    ip: c.req.header("x-forwarded-for") || "unknown",
+    userAgent: c.req.header("user-agent") || "unknown",
+    timestamp: new Date().toISOString(),
   });
 
   await next(); // Continue to the route
 
   const responseTime = Date.now() - startTime;
-  logger.info('API Request Completed', {
+  logger.info("API Request Completed", {
     method: c.req.method,
     url: c.req.url,
     statusCode: c.res.status,
     responseTime: `${responseTime}ms`,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
 // --- Register Routes (Hono way) ---
 // Use app.route() to chain/register your Hono sub-applications
-app.route('/', authRoutes);
-app.route('/', productRoutes);
-app.route('/', reviewRoutes); // This registers all routes from review.route.ts
+app.route("/", authRoutes);
+app.route("/", productRoutes);
+app.route("/", reviewRoutes); // This registers all routes from review.route.ts
 
 // --- 404 Handler (Hono way) ---
 app.notFound((c) => {
-  return c.json({ error: 'Route not found' }, 404);
+  return c.json({ error: "Route not found" }, 404);
 });
 
 // --- Error Handler (Hono way) ---
 app.onError((err, c) => {
-  logger.error('Unhandled error', {
+  logger.error("Unhandled error", {
     error: err.message,
     stack: err.stack,
     url: c.req.url,
-    method: c.req.method
+    method: c.req.method,
   });
-  return c.json({ error: 'Internal server error' }, 500);
+  return c.json({ error: "Internal server error" }, 500);
 });
 
 export default app;
 ```
 
 ### 7. Update Product Controller (Optional)
+
 If you want to include reviews when fetching a product in Hono, update your product controller:
 
 ```typescript
 // In src/controllers/product.controller.ts (if you have one)
 // Or directly in your product route file (src/routes/product.route.ts)
 
-import { Hono } from 'hono';
-import { Context } from 'hono';
-import { getReviewsByProductId } from '../services/review.service';
+import { Hono } from "hono";
+import { Context } from "hono";
+import { getReviewsByProductId } from "../services/review.service";
 
 const productRoutes = new Hono();
 
 // Example: Get product by ID with reviews (Hono syntax)
-productRoutes.get('/api/products/:id', (c: Context) => {
+productRoutes.get("/api/products/:id", (c: Context) => {
   try {
-    const productId = parseInt(c.req.param('id'));
-    
+    const productId = parseInt(c.req.param("id"));
+
     // ... your existing product retrieval logic
     // This is just an example - you'll need to adjust based on your existing implementation
-    
+
     // Example:
     // const product = getProductByIdFromDB(productId);
-    
+
     // Add reviews to the response
     const reviews = getReviewsByProductId(productId);
-    
+
     return c.json({
       // ...productData,
-      reviews
+      reviews,
     });
   } catch (error) {
     const err = error as Error;
-    logger.error('Error getting product with reviews', { error: err.message });
+    logger.error("Error getting product with reviews", { error: err.message });
     c.status(500);
-    return c.json({ error: 'Internal server error' });
+    return c.json({ error: "Internal server error" });
   }
 });
 
@@ -725,6 +777,7 @@ export default productRoutes;
 ```
 
 ### 8. Add Review Model Interface
+
 Create `src/models/review.model.ts`:
 
 ```typescript
@@ -741,17 +794,18 @@ export interface Review {
 ```
 
 ### 9. Starting the Hono Server
+
 Finally, in your main entry file (like `src/index.ts`), start the Hono server:
 
 ```typescript
 // src/index.ts
-import app from './server';
-import { logger } from './utils/logger';
+import app from "./server";
+import { logger } from "./utils/logger";
 
 const port = 3000;
 
 // Initialize database if needed
-logger.info('Database initialized successfully');
+logger.info("Database initialized successfully");
 
 // Start Hono server
 export default {
@@ -768,8 +822,11 @@ export default {
 ```
 
 ## Testing the Endpoint
+
 After implementing these changes, test the endpoint with:
+
 - POST to `/api/products/1/reviews` with body:
+
 ```json
 {
   "title": "Great product!",

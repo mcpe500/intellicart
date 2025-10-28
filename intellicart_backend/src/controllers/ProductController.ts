@@ -17,18 +17,18 @@
  * @version 1.0.0
  */
 
-import { Context } from 'hono';
-import { BaseController } from './BaseController';
-import { ProductService } from '../services/ProductService';
-import { ReviewService } from '../services/ReviewService';
-import { AddReviewRequest } from '../models/ProductDTO';
+import { Context } from "hono";
+import { BaseController } from "./BaseController";
+import { ProductService } from "../services/ProductService";
+import { ReviewService } from "../services/ReviewService";
+import { AddReviewRequest } from "../models/ProductDTO";
 
 export class ProductController extends BaseController<any> {
   private productService: ProductService;
   private reviewService: ReviewService;
 
   constructor() {
-    super('products');
+    super("products");
     this.productService = new ProductService();
     this.reviewService = new ReviewService();
   }
@@ -42,36 +42,40 @@ export class ProductController extends BaseController<any> {
    * @returns {Promise} JSON response containing the updated product with the new review
    * @route POST /api/products/:id/reviews
    */
-  static async addReviewToProduct(c: Context, productId: number, reviewData: AddReviewRequest): Promise<any> {
+  static async addReviewToProduct(
+    c: Context,
+    productId: number,
+    reviewData: AddReviewRequest,
+  ): Promise<any> {
     try {
-      const user = c.get('user');
+      const user = c.get("user");
 
       const productService = new ProductService();
       const updatedProduct = await productService.addReviewToProduct(
         productId,
         reviewData,
-        user.userId
+        user.userId,
       );
 
       return c.json(updatedProduct, 201);
     } catch (error: any) {
-      console.error('Error adding review to product:', error);
-      if (error.message === 'Product not found') {
+      console.error("Error adding review to product:", error);
+      if (error.message === "Product not found") {
         return c.json({ error: error.message }, 404);
       }
-      return c.json({ error: 'Internal server error' }, 500);
+      return c.json({ error: "Internal server error" }, 500);
     }
   }
 
   async getSellerProducts(c: Context) {
     try {
-      const user = c.get('user');
+      const user = c.get("user");
       const sellerId = user.userId;
       const products = await this.productService.getSellerProducts(sellerId);
       return c.json(products);
     } catch (error: any) {
-      console.error('Error retrieving seller products:', error);
-      return c.json({ error: 'Internal server error' }, 500);
+      console.error("Error retrieving seller products:", error);
+      return c.json({ error: "Internal server error" }, 500);
     }
   }
 }

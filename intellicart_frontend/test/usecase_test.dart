@@ -4,7 +4,7 @@ import 'package:intellicart/domain/usecases/create_product.dart';
 import 'package:intellicart/domain/usecases/update_product.dart';
 import 'package:intellicart/domain/usecases/delete_product.dart';
 import 'package:intellicart/domain/usecases/sync_products.dart';
-import 'package:intellicart/domain/entities/product.dart';
+import 'package:intellicart/models/product.dart';
 import 'package:intellicart/domain/repositories/product_repository.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -25,11 +25,13 @@ void main() {
       // Arrange
       final products = [
         Product(
-          id: 1,
+          id: '1',
           name: 'Test Product',
           description: 'Test Description',
-          price: 99.99,
+          price: '99.99',
           imageUrl: 'https://example.com/image.jpg',
+          sellerId: '1',
+          reviews: [],
         ),
       ];
       when(mockRepository.getAllProducts()).thenAnswer((_) async => products);
@@ -46,11 +48,13 @@ void main() {
     test('CreateProduct should call repository.createProduct', () async {
       // Arrange
       final product = Product(
-        id: 1,
+        id: '1',
         name: 'Test Product',
         description: 'Test Description',
-        price: 99.99,
+        price: '99.99',
         imageUrl: 'https://example.com/image.jpg',
+        sellerId: '1',
+        reviews: [],
       );
       when(mockRepository.createProduct(any)).thenAnswer((_) async => product);
       final usecase = CreateProduct(mockRepository);
@@ -66,11 +70,13 @@ void main() {
     test('UpdateProduct should call repository.updateProduct', () async {
       // Arrange
       final product = Product(
-        id: 1,
+        id: '1',
         name: 'Test Product',
         description: 'Test Description',
-        price: 99.99,
+        price: '99.99',
         imageUrl: 'https://example.com/image.jpg',
+        sellerId: '1',
+        reviews: [],
       );
       when(mockRepository.updateProduct(any)).thenAnswer((_) async => product);
       final usecase = UpdateProduct(mockRepository);
@@ -100,11 +106,13 @@ void main() {
       // Arrange
       final products = [
         Product(
-          id: 1,
+          id: '1',
           name: 'Test Product',
           description: 'Test Description',
-          price: 99.99,
+          price: '99.99',
           imageUrl: 'https://example.com/image.jpg',
+          sellerId: '1',
+          reviews: [],
         ),
       ];
       when(mockRepository.syncProducts(any)).thenAnswer((_) async {});
