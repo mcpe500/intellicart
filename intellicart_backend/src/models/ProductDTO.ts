@@ -18,6 +18,7 @@ export interface Review {
   reviewText: string;
   rating: number;
   timeAgo: string; // e.g., "2 days ago", "Just now"
+  images?: string[]; // Optional list of image URLs for the review
   userId?: number; // Optional user ID who submitted the review
 }
 
@@ -58,4 +59,5 @@ export interface AddReviewRequest {
   title: string;
   reviewText: string;
   rating: number;
+  images?: string[]; // Optional list of image URLs for the review
 }

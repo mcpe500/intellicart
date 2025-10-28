@@ -5,9 +5,9 @@ class ProductDetailPage extends StatelessWidget {
   final Product? product;
 
   const ProductDetailPage({
-    Key? key,
+    super.key,
     this.product,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

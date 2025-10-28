@@ -9,10 +9,10 @@ class ProductCard extends StatelessWidget {
   final Color accentColor;
 
   const ProductCard({
-    Key? key,
+    super.key,
     required this.product,
     this.accentColor = const Color(0xFFD95F18),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -41,6 +41,7 @@ export class ProductService extends BaseService<Product> {
       ...reviewData,
       userId,
       timeAgo: "Just now",
+      images: reviewData.images || [], // Add images if provided
     };
 
     const updatedReviews = [...(product.reviews || []), newReview];

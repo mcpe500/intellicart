@@ -1,6 +1,8 @@
 // lib/screens/add_review_page.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/widgets/shared/star_rating_input.dart';
 
@@ -18,12 +20,57 @@ class _AddReviewPageState extends State<AddReviewPage> {
   final _titleController = TextEditingController();
   final _reviewController = TextEditingController();
   int _currentRating = 0;
+  List<XFile> _selectedImages = [];
 
   @override
   void dispose() {
     _titleController.dispose();
     _reviewController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImages() async {
+    if (_selectedImages.length >= 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Maximum 10 images allowed'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final picker = ImagePicker();
+    final List<XFile>? pickedImages = await picker.pickMultiImage(
+      maxHeight: 600,
+      maxWidth: 600,
+      imageQuality: 80,
+    );
+
+    if (pickedImages != null && pickedImages.isNotEmpty) {
+      List<XFile> newImages = List.from(_selectedImages);
+      newImages.addAll(pickedImages);
+      
+      if (newImages.length > 10) {
+        newImages = newImages.take(10).toList();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Maximum 10 images allowed'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      
+      setState(() {
+        _selectedImages = newImages;
+      });
+    }
+  }
+
+  void _removeImage(int index) {
+    setState(() {
+      _selectedImages.removeAt(index);
+    });
   }
 
   void _submitReview() {
@@ -36,6 +83,7 @@ class _AddReviewPageState extends State<AddReviewPage> {
           title: _titleController.text,
           reviewText: _reviewController.text,
           rating: _currentRating,
+          images: _selectedImages.map((image) => image.path).toList(), // Convert to image paths
         ),
       );
     } else if (_currentRating == 0) {
@@ -159,6 +207,106 @@ class _AddReviewPageState extends State<AddReviewPage> {
                     return null;
                   },
                 ),
+                const SizedBox(height: 24),
+                
+                // Image Upload Section
+                const Text(
+                  'Add Images',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: primaryTextColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Wrap(
+                    spacing: 8.0,
+                    runSpacing: 8.0,
+                    children: [
+                      // Add button to pick images
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ElevatedButton(
+                          onPressed: _selectedImages.length < 10 ? _pickImages : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey[200],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12.0),
+                              side: BorderSide(
+                                color: _selectedImages.length < 10 ? Colors.grey : Colors.grey.shade400,
+                              ),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add,
+                                color: _selectedImages.length < 10 ? Colors.grey : Colors.grey.shade400,
+                              ),
+                              const Text(
+                                'Add',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Display selected images
+                      ..._selectedImages.asMap().entries.map((entry) {
+                        int index = entry.key;
+                        XFile image = entry.value;
+                        return SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: Stack(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12.0),
+                                child: Image.file(
+                                  File(image.path),
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              Positioned(
+                                top: -5,
+                                right: -5,
+                                child: GestureDetector(
+                                  onTap: () => _removeImage(index),
+                                  child: CircleAvatar(
+                                    radius: 12,
+                                    backgroundColor: Colors.red,
+                                    child: const Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${_selectedImages.length}/10 images',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+                
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,

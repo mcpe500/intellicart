@@ -4,7 +4,7 @@ import 'package:intellicart/domain/usecases/create_product.dart';
 import 'package:intellicart/domain/usecases/update_product.dart';
 import 'package:intellicart/domain/usecases/delete_product.dart';
 import 'package:intellicart/domain/usecases/sync_products.dart';
-import 'package:intellicart/models/product.dart';
+import 'package:intellicart/domain/entities/product.dart';
 import 'package:intellicart/domain/repositories/product_repository.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
@@ -28,9 +28,13 @@ void main() {
           id: '1',
           name: 'Test Product',
           description: 'Test Description',
-          price: '99.99',
+          price: 99.99,
           imageUrl: 'https://example.com/image.jpg',
           sellerId: '1',
+          quantity: 10,
+          rating: 0.0,
+          reviewCount: 0,
+          category: 'Electronics',
           reviews: [],
         ),
       ];
@@ -51,9 +55,13 @@ void main() {
         id: '1',
         name: 'Test Product',
         description: 'Test Description',
-        price: '99.99',
+        price: 99.99,
         imageUrl: 'https://example.com/image.jpg',
         sellerId: '1',
+        quantity: 10,
+        rating: 0.0,
+        reviewCount: 0,
+        category: 'Electronics',
         reviews: [],
       );
       when(mockRepository.createProduct(any)).thenAnswer((_) async => product);
@@ -73,9 +81,13 @@ void main() {
         id: '1',
         name: 'Test Product',
         description: 'Test Description',
-        price: '99.99',
+        price: 99.99,
         imageUrl: 'https://example.com/image.jpg',
         sellerId: '1',
+        quantity: 10,
+        rating: 0.0,
+        reviewCount: 0,
+        category: 'Electronics',
         reviews: [],
       );
       when(mockRepository.updateProduct(any)).thenAnswer((_) async => product);
@@ -91,7 +103,7 @@ void main() {
 
     test('DeleteProduct should call repository.deleteProduct', () async {
       // Arrange
-      const productId = 1;
+      const productId = '1';
       when(mockRepository.deleteProduct(any)).thenAnswer((_) async {});
       final usecase = DeleteProduct(mockRepository);
 
@@ -104,25 +116,14 @@ void main() {
 
     test('SyncProducts should call repository.syncProducts', () async {
       // Arrange
-      final products = [
-        Product(
-          id: '1',
-          name: 'Test Product',
-          description: 'Test Description',
-          price: '99.99',
-          imageUrl: 'https://example.com/image.jpg',
-          sellerId: '1',
-          reviews: [],
-        ),
-      ];
-      when(mockRepository.syncProducts(any)).thenAnswer((_) async {});
+      when(mockRepository.syncProducts()).thenAnswer((_) async {});
       final usecase = SyncProducts(mockRepository);
 
       // Act
-      await usecase(products);
+      await usecase();
 
       // Assert
-      verify(mockRepository.syncProducts(products)).called(1);
+      verify(mockRepository.syncProducts()).called(1);
     });
   });
 }

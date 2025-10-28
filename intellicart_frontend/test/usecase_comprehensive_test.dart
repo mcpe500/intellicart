@@ -22,7 +22,7 @@ import 'package:mockito/annotations.dart';
   UserRepository,
   OrderRepository
 ])
-import 'usecase_comprehensive_test.mocks.dart';
+import 'usecase_comprehensive_test.mocks.dart';  // Keep this import after @GenerateMocks
 
 void main() {
   group('Product Use Cases', () {
@@ -180,18 +180,23 @@ void main() {
       // Arrange
       const email = 'test@example.com';
       const password = 'password123';
-      const token = 'test_token';
-      when(mockUserRepository.login(any, any)).thenAnswer((_) async => token);
+      final user = User(
+        id: '1',
+        name: 'Test User',
+        email: email,
+        role: 'buyer',
+      );
+      when(mockUserRepository.login(any, any)).thenAnswer((_) async => user);
       
       // Since there's no Login use case in the imports, we'll create a mock scenario
       // This test simulates what a login use case would do
-      when(mockUserRepository.login(email, password)).thenAnswer((_) async => token);
+      when(mockUserRepository.login(email, password)).thenAnswer((_) async => user);
 
       // Act
       final result = await mockUserRepository.login(email, password);
 
       // Assert
-      expect(result, equals(token));
+      expect(result, equals(user));
       verify(mockUserRepository.login(email, password)).called(1);
     });
 
@@ -277,5 +282,5 @@ void main() {
       expect(result, equals(order));
       verify(mockOrderRepository.updateOrderStatus(orderId, status)).called(1);
     });
-  }
+  });
 }

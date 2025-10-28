@@ -8,10 +8,10 @@ class ProductGrid extends StatelessWidget {
   final Color accentColor;
 
   const ProductGrid({
-    Key? key,
+    super.key,
     required this.products,
     this.accentColor = const Color(0xFFD95F18),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

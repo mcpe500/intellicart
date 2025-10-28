@@ -31,12 +31,12 @@ class AgenticAIWrapperStateless extends StatelessWidget {
 
   const AgenticAIWrapperStateless({
     super.key,
-    required this.child,
     this.aiPrompt,
     this.enableVoiceControl = true,
     this.enableChatControl = true,
     this.onAIAction,
     this.aiService,
+    required this.child,
   });
 
   @override
@@ -64,12 +64,12 @@ class AgenticAIWrapperStatefulWidget extends StatefulWidget {
 
   const AgenticAIWrapperStatefulWidget({
     super.key,
-    required this.child,
     this.aiPrompt,
     this.enableVoiceControl = true,
     this.enableChatControl = true,
     this.onAIAction,
     this.aiService,
+    required this.child,
   });
 
   @override

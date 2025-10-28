@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/models/product.dart';
 import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/screens/buyer/ecommerce_search_page.dart';
-import 'package:intellicart/presentation/screens/buyer/product_details_page.dart';
+
 import 'package:intellicart/presentation/screens/core/profile_page.dart'; // Import the new ProfilePage
 import 'package:intellicart/presentation/screens/buyer/cart_page.dart'; // Import the new CartPage
 import 'package:intellicart/presentation/screens/buyer/wishlist_page.dart'; // Import the new WishlistPage
@@ -151,7 +151,6 @@ class _HomePageContent extends StatelessWidget {
   Widget _buildHomePageContent(BuildContext context, List<Product> products) {
     const Color warmOrange100 = Color(0xFFFFF4E6);
     const Color warmOrange500 = Color(0xFFFF9800);
-    const Color warmOrange700 = Color(0xFFF57C00);
     const Color warmGray100 = Color(0xFFF5F5F5);
     const Color warmGray500 = Color(0xFF9E9E9E);
     const Color warmGray800 = Color(0xFF424242);
@@ -259,93 +258,3 @@ class _HomePageContent extends StatelessWidget {
 }
 
 
-// The Product Card now navigates to the details page
-class _ProductCard extends StatelessWidget {
-  const _ProductCard({
-    required this.product,
-    required this.warmOrange700,
-  });
-
-  final Product product;
-  final Color warmOrange700;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductDetailsPage(product: product),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(8.0),
-      child: Container(
-        // ... (The rest of the _ProductCard code is unchanged)
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8.0),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withValues(alpha: 0.1),
-              spreadRadius: 1,
-              blurRadius: 3,
-              offset: const Offset(0, 1),
-            ),
-          ],
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Image.network(
-                product.imageUrl,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Center(
-                      child: Icon(Icons.broken_image, color: Colors.grey, size: 40),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    style: const TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4.0),
-                  Text(
-                    product.description,
-                    style: const TextStyle(fontSize: 12.0, color: Colors.grey),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8.0),
-                  Text(
-                    product.price,
-                    style: TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: warmOrange700),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

@@ -1,11 +1,15 @@
 // lib/screens/product_details_page.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intellicart/models/product.dart';
+import 'package:intellicart/models/review.dart';
+import 'package:intellicart/presentation/bloc/buyer/product_bloc.dart';
 import 'package:intellicart/presentation/screens/buyer/add_review_page.dart'; // <-- ADD THIS IMPORT
+import 'package:intellicart/presentation/screens/buyer/all_reviews_screen.dart'; // <-- ADD THIS IMPORT
 import '../../../core/services/logging_service.dart';
 
 class ProductDetailsPage extends StatefulWidget {
-  final Product product;
+  final Product product; // Keep original parameter
 
   const ProductDetailsPage({super.key, required this.product});
 
@@ -17,6 +21,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   int _quantity = 1; // State variable for the quantity
+  Product? _product;
 
   // Function to increment quantity
   void _incrementQuantity() {
@@ -55,32 +60,50 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Define colors from the HTML for consistency
-    const Color pageBgColor = Color(0xFFFDFBF8);
-    const Color primaryTextColor = Color(0xFF181411);
-    const Color secondaryTextColor = Color(0xFF655546);
-    const Color lightTextColor = Color(0xFF8A7260);
-    const Color accentColor = Color(0xFFD95F18);
-    const Color starColor = Color(0xFFFF9500);
+    return BlocListener<ProductBloc, ProductState>(
+      listener: (context, state) {
+        // Update the local product when a review is successfully submitted
+        if (state is ReviewSubmitted) {
+          setState(() {
+            _product = state.updatedProduct;
+          });
+        }
+      },
+      child: BlocBuilder<ProductBloc, ProductState>(
+        builder: (context, state) {
+          Product currentProduct = _product ?? widget.product;
+          
+          // If we have a more recent product from the bloc, use that
+          if (state is ProductDetailsLoaded) {
+            currentProduct = state.product;
+          }
 
-    // Dummy data for the carousel, as the model doesn't contain multiple images yet
-    final List<String> productImages = [
-      widget.product.imageUrl,
-      // You can add more image URLs here if your product model supports it in the future
-      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop',
-    ];
+          // Define colors from the HTML for consistency
+          const Color pageBgColor = Color(0xFFFDFBF8);
+          const Color primaryTextColor = Color(0xFF181411);
+          const Color secondaryTextColor = Color(0xFF655546);
+          const Color lightTextColor = Color(0xFF8A7260);
+          const Color accentColor = Color(0xFFD95F18);
+          const Color starColor = Color(0xFFFF9500);
 
-    return Scaffold(
-      backgroundColor: pageBgColor,
-      // The body is wrapped in a Stack to allow for the sticky bottom bar
-      body: Stack(
-        children: [
-          // Main scrollable content
-          SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          // Dummy data for the carousel, as the model doesn't contain multiple images yet
+          final List<String> productImages = [
+            currentProduct.imageUrl,
+            // You can add more image URLs here if your product model supports it in the future
+            'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1999&auto=format&fit=crop',
+            'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=2070&auto=format&fit=crop',
+          ];
+
+          return Scaffold(
+            backgroundColor: pageBgColor,
+            // The body is wrapped in a Stack to allow for the sticky bottom bar
+            body: Stack(
               children: [
+                // Main scrollable content
+                SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                 // Custom App Bar section (using a Padding and Row instead of a real AppBar)
                 Padding(
                   padding: EdgeInsets.only(
@@ -272,33 +295,69 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                               color: primaryTextColor,
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to the AddReviewPage, passing the ProductBloc
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AddReviewPage(
-                                    // Use the actual product ID
-                                    productId: widget.product.id.toString(),
+                          Row(
+                            children: [
+                              TextButton(
+                                onPressed: () async {
+                                  // Navigate to the new AllReviewsScreen
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AllReviewsScreen(
+                                        product: currentProduct,
+                                      ),
+                                    ),
+                                  );
+                                  
+                                  // After returning from AllReviewsScreen,
+                                  // refresh the UI in case there were changes
+                                  // Since we don't have direct access to load product by ID,
+                                  // we'll just setState to rebuild
+                                  setState(() {});
+                                },
+                                child: const Text(
+                                  'View All',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColor,
                                   ),
                                 ),
-                              );
-                            },
-                            child: const Text(
-                              'Write a Review', // <-- CHANGED TEXT
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: accentColor,
                               ),
-                            ),
+                              TextButton(
+                                onPressed: () async {
+                                  // Navigate to the AddReviewPage, passing the ProductBloc
+                                  // and await for the result to trigger a refresh if needed
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddReviewPage(
+                                        // Use the actual product ID
+                                        productId: currentProduct.id.toString(),
+                                      ),
+                                    ),
+                                  );
+                                  
+                                  // After returning from AddReviewPage, 
+                                  // refresh the UI to show the new review
+                                  setState(() {});
+                                },
+                                child: const Text(
+                                  'Write a Review', // <-- CHANGED TEXT
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: accentColor,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                       const SizedBox(height: 8.0),
-                      // Build reviews from the product model
-                      if (widget.product.reviews.isEmpty)
+                      // Build reviews from the product model (limit to first 3)
+                      if (currentProduct.reviews.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 20.0),
                           child: Text(
@@ -310,16 +369,13 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                         ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: widget.product.reviews.length,
+                          itemCount: currentProduct.reviews.length > 3 ? 3 : currentProduct.reviews.length,
                           separatorBuilder: (context, index) =>
                           const SizedBox(height: 12.0),
                           itemBuilder: (context, index) {
-                            final review = widget.product.reviews[index];
+                            final review = currentProduct.reviews[index];
                             return _buildReviewCard(
-                              review.title,
-                              review.reviewText,
-                              review.rating,
-                              review.timeAgo,
+                              review,
                               starColor,
                             );
                           },
@@ -384,7 +440,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
                     child: ElevatedButton(
                       onPressed: () {
                         loggingService.logInfo(
-                            'Added ${widget.product.name} (Qty: $_quantity) to cart.');
+                            'Added ${currentProduct.name} (Qty: $_quantity) to cart.');
                         // Here you would typically call a state management provider
                         // or bloc to actually add the item to the cart.
                       },
@@ -413,6 +469,9 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
         ],
       ),
     );
+        } // Close builder function for BlocBuilder
+      ), // Close child property of BlocListener 
+    ); // Close BlocListener widget
   }
 
   // Helper widget to build the star rating row
@@ -432,8 +491,7 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
   }
 
   // Helper widget for a single review card
-  Widget _buildReviewCard(
-      String title, String review, int rating, String time, Color starColor) {
+  Widget _buildReviewCard(Review review, Color starColor) {
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
@@ -446,23 +504,49 @@ class _ProductDetailsPageState extends State<ProductDetailsPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStarRating(rating.toDouble(), starColor),
+              _buildStarRating(review.rating.toDouble(), starColor),
               Text(
-                time,
+                review.timeAgo,
                 style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               ),
             ],
           ),
           const SizedBox(height: 8.0),
           Text(
-            title,
+            review.title,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 4.0),
           Text(
-            review,
+            review.reviewText,
             style: TextStyle(fontSize: 12, color: Colors.grey[700]),
           ),
+          // Display images if they exist
+          if (review.images != null && review.images!.isNotEmpty)
+            const SizedBox(height: 8.0),
+          if (review.images != null && review.images!.isNotEmpty)
+            Wrap(
+              spacing: 4.0,
+              runSpacing: 4.0,
+              children: review.images!.map((image) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(4.0),
+                  child: Image.network(
+                    image,
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => 
+                      Container(
+                        width: 60,
+                        height: 60,
+                        color: Colors.grey[300],
+                        child: const Icon(Icons.image, size: 20, color: Colors.grey),
+                      ),
+                  ),
+                );
+              }).toList(),
+            ),
         ],
       ),
     );

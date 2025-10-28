@@ -42,6 +42,10 @@ export const productRoutes = () => {
       example: "2 days ago",
       description: "Time string (e.g., '2 days ago', 'Just now')",
     }),
+    images: z.array(z.string()).max(10, { message: "Maximum 10 images allowed" }).optional().nullable().openapi({
+      example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg", "/path/to/local/image.jpg"],
+      description: "Array of image URLs or file paths for the review (optional, max 10)",
+    }),
     userId: z.number().optional().openapi({
       example: 1,
       description: "ID of the user who submitted the review (optional)",
@@ -74,6 +78,10 @@ export const productRoutes = () => {
         example: 5,
         description: "Rating from 1 to 5 (required)",
       }),
+    images: z.array(z.string()).max(10, { message: "Maximum 10 images allowed" }).optional().nullable().openapi({
+      example: ["https://example.com/image1.jpg", "https://example.com/image2.jpg", "/path/to/local/image.jpg"],
+      description: "Array of image URLs or file paths for the review (optional, max 10)",
+    }),
   });
 
   const ProductSchema = z.object({

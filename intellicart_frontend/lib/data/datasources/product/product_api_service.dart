@@ -134,21 +134,42 @@ class ProductApiService {
       final baseUrl = await getBaseUrl();
       loggingService.logInfo('Adding review to product via API: $baseUrl/$productId/reviews'); // Debug log
 
-      // Use POST to the new reviews endpoint
+      // If there are images, we need to upload them first and get URLs
+      List<String>? imageUrls;
+      if (review.images != null && review.images!.isNotEmpty) {
+        try {
+          imageUrls = await _uploadReviewImages(review.images!);
+        } catch (e) {
+          loggingService.logWarning('Failed to upload images, proceeding without them: $e');
+          // Proceed without images if upload fails
+          imageUrls = null;
+        }
+      }
+      
+      // Create a copy of the review with the uploaded image URLs (or null if upload failed)
+      final reviewWithUrls = Review(
+        title: review.title,
+        reviewText: review.reviewText,
+        rating: review.rating,
+        timeAgo: review.timeAgo,
+        images: imageUrls, // Use the uploaded image URLs or null
+      );
+
       final response = await http.post(
-        Uri.parse('$baseUrl/$productId/reviews'), // Correct endpoint
+        Uri.parse('$baseUrl/$productId/reviews'), // Reviews endpoint
         headers: await _getHeaders(),
-        body: jsonEncode(review.toJson()), // Send only the review data
+        body: jsonEncode(reviewWithUrls.toJson()),
       );
 
       loggingService.logInfo('Add review response status: ${response.statusCode}'); // Debug log
       loggingService.logInfo('Add review response body: ${response.body}'); // Debug log
 
-
-      if (response.statusCode == 200) { // Expect 200 OK now
+      if (response.statusCode == 201) { // Handle 201 Created status
         final Map<String, dynamic> data = jsonDecode(response.body);
-        loggingService.logInfo('Successfully added review, received updated product from API'); // Debug log
-        return Product.fromJson(data); // Backend returns the updated product
+        loggingService.logInfo('Successfully added review and received full product with all reviews'); // Debug log
+        
+        // Return the full product with all reviews (including the new one) that was sent by the backend
+        return Product.fromJson(data);
       } else {
         throw Exception('Failed to add review to product: ${response.body}');
       }
@@ -156,5 +177,52 @@ class ProductApiService {
       loggingService.logError('Error in addReviewToProduct API call: $e'); // Enhanced error log
       throw Exception('Error adding review to product: $e');
     }
+  }
+
+  // Helper method to upload images and return URLs
+  Future<List<String>?> _uploadReviewImages(List<String> imagePaths) async {
+    try {
+      final imageBaseUrl = await _getImageBaseUrl();
+      final headers = await _getHeaders(); // Use the same headers as other API calls
+      
+      List<String> uploadedUrls = [];
+      
+      // Upload each image individually
+      for (String imagePath in imagePaths) {
+        var request = http.MultipartRequest('POST', Uri.parse('$imageBaseUrl/upload'));
+        
+        // Add the authentication headers
+        request.headers.addAll(headers);
+        
+        // Add the image file to the request
+        final file = await http.MultipartFile.fromPath('image', imagePath);
+        request.files.add(file);
+        
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+        
+        if (response.statusCode == 201) {
+          final responseData = jsonDecode(response.body);
+          if (responseData['success'] == true && responseData['url'] != null) {
+            uploadedUrls.add(responseData['url']);
+          } else {
+            loggingService.logError('Image upload failed: ${response.body}');
+          }
+        } else {
+          loggingService.logError('Image upload failed with status ${response.statusCode}: ${response.body}');
+        }
+      }
+      
+      return uploadedUrls.isEmpty ? null : uploadedUrls;
+    } catch (e) {
+      loggingService.logError('Error uploading review images: $e');
+      throw Exception('Error uploading review images: $e');
+    }
+  }
+
+  static Future<String> _getImageBaseUrl() async {
+    await dotenv.load(fileName: ".env");
+    final apiBaseUrl = dotenv.env['API_BASE_URL'] ?? 'http://localhost:3000';
+    return '$apiBaseUrl/api/images';
   }
 }

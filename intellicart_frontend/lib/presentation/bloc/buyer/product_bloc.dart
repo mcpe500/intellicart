@@ -28,16 +28,18 @@ class AddReviewToProduct extends ProductEvent {
   final String title;
   final String reviewText;
   final int rating;
+  final List<String>? images;
 
   const AddReviewToProduct({
     required this.productId,
     required this.title,
     required this.reviewText,
     required this.rating,
+    this.images,
   });
 
   @override
-  List<Object> get props => [productId, title, reviewText, rating];
+  List<Object> get props => [productId, title, reviewText, rating, images ?? []];
 }
 
 // --- STATES ---
@@ -164,6 +166,7 @@ class ProductBloc extends Bloc<ProductEvent, ProductState> {
         reviewText: event.reviewText,
         rating: event.rating,
         timeAgo: 'Just now',
+        images: event.images,
       );
 
       // Update the product by adding the review through the repository

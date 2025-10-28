@@ -4,6 +4,8 @@ import { userRoutes } from "./routes/userRoutes";
 import { authRoutes } from "./routes/authRoutes";
 import { productRoutes } from "./routes/productRoutes";
 import { orderRoutes } from "./routes/orderRoutes";
+import { imageRoutes } from "./routes/imageRoutes";
+import { serveStatic } from "@hono/node-server/serve-static";
 import { loggingMiddleware } from "./middleware/loggingMiddleware";
 import { dbManager } from "./database/Config";
 import { apiRateLimiter, authRateLimiter } from "./utils/security/rateLimiter";
@@ -66,6 +68,14 @@ export const init = async () => {
   app.route("/api/users", userRoutes());
 
   /**
+   * Register all image-related routes under the '/api/images' prefix
+   * This creates endpoints such as:
+   * - POST /api/images/upload
+   * - POST /api/images/upload-multiple
+   */
+  app.route("/api/images", imageRoutes());
+
+  /**
    * Root endpoint for API health check and information
    * Returns a welcome message with instructions for accessing documentation
    */
@@ -97,6 +107,9 @@ export const init = async () => {
     bearerFormat: "JWT",
     description: "Enter JWT token in format: Bearer <token>",
   });
+
+  // Serve static files from public directory (for uploaded images)
+  app.get("/uploads/*", serveStatic({ root: "./public" }));
 
   /**
    * Generate OpenAPI documentation specification
